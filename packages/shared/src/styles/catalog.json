@@ -1,5 +1,5 @@
 {
-  "version": "c98adef",
+  "version": "958204e",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -24,7 +24,7 @@
     {
       "file": "admin/desk.css",
       "tokens": 0,
-      "classes": 62
+      "classes": 57
     },
     {
       "file": "admin/index.css",
@@ -2903,11 +2903,11 @@
       {
         "section": "Групи",
         "names": [
-          "desk-brand",
           "desk-group",
           "desk-group--active",
           "desk-groups",
-          "desk-note"
+          "desk-note",
+          "desk-note--error"
         ]
       },
       {
@@ -2919,10 +2919,7 @@
           "desk-empty",
           "desk-list",
           "desk-list-head",
-          "desk-newbtn",
           "desk-room-tags",
-          "desk-search",
-          "desk-search-row",
           "desk-tag",
           "desk-thread",
           "desk-thread--active",
@@ -2937,26 +2934,28 @@
       {
         "section": "Тема",
         "names": [
-          "desk",
-          "desk--room",
-          "desk-brand",
-          "desk-chip",
-          "desk-chip--new",
-          "desk-chips",
-          "desk-composer",
-          "desk-composer-files",
-          "desk-composer-input",
-          "desk-composer-kind",
-          "desk-composer-row",
-          "desk-composer-tools",
           "desk-control",
+          "desk-danger",
+          "desk-room",
+          "desk-room--empty",
+          "desk-room-actions",
+          "desk-room-bar",
+          "desk-room-buttons",
+          "desk-room-head",
+          "desk-room-path",
+          "desk-room-title",
+          "wb-select"
+        ]
+      },
+      {
+        "section": "Стрічка",
+        "names": [
           "desk-entry",
           "desk-entry--buffy",
+          "desk-entry-actions",
           "desk-entry-author",
           "desk-entry-body",
-          "desk-entry-drop",
           "desk-entry-head",
-          "desk-entry-kind",
           "desk-entry-when",
           "desk-feed",
           "desk-file",
@@ -2965,24 +2964,36 @@
           "desk-file-name",
           "desk-file-size",
           "desk-files",
+          "desk-loose",
+          "desk-loose-title"
+        ]
+      },
+      {
+        "section": "Композер",
+        "names": [
+          "desk",
+          "desk--room",
+          "desk-chip",
+          "desk-chips",
+          "desk-composer",
+          "desk-composer-files",
+          "desk-composer-input",
+          "desk-composer-row",
+          "desk-composer-tools",
+          "desk-entry",
+          "desk-feed",
+          "desk-file-chip",
+          "desk-file-drop",
           "desk-group",
           "desk-groups",
           "desk-hint",
           "desk-list",
-          "desk-loose",
-          "desk-loose-title",
-          "desk-newform",
-          "desk-note",
-          "desk-note--error",
           "desk-room",
-          "desk-room--empty",
-          "desk-room-back",
-          "desk-room-controls",
+          "desk-room-buttons",
           "desk-room-head",
-          "desk-room-path",
           "desk-room-title",
-          "desk-search",
-          "desk-threads"
+          "desk-threads",
+          "wb-select"
         ]
       }
     ],

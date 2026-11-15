@@ -28,6 +28,8 @@ export interface DeskThreadsQuery {
   status?: string;
   turn?: string;
   q?: string;
+  /** `hide` (типово), `only`, `all` — архів не зникає, а відходить у свою вкладку. */
+  archived?: string;
 }
 
 type Param = string | number | null | undefined;
@@ -56,6 +58,12 @@ export function saveDeskThread(input: Record<string, unknown>): Promise<DeskRoom
   return apiFetch<DeskRoomResponse>("/api/admin/desk/thread", {
     method: "POST",
     body: JSON.stringify(input),
+  });
+}
+
+export function deleteDeskThread(id: number): Promise<{ ok: boolean }> {
+  return apiFetch<{ ok: boolean }>(withQuery("/api/admin/desk/thread", { id }), {
+    method: "DELETE",
   });
 }
 

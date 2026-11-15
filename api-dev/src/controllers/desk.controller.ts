@@ -19,13 +19,8 @@ import {
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
-import {
-  deleteFile,
-  dropObjects,
-  fileKeysOfEntry,
-  serveFile,
-  uploadFile,
-} from "../services/desk/files";
+import { deleteFile, serveFile, uploadFile } from "../services/desk/files";
+import { deleteEntry, deleteThread } from "./desk-remove";
 
 /** Стеля списку: стіл — робоча поверхня, а не нескінченна стрічка. */
 const LIST_LIMIT = 200;
@@ -117,6 +112,8 @@ async function listThreads(request: Request, env: Env, side: DeskSide): Promise<
   const status = url.searchParams.get("status") ?? "all";
   const turn = url.searchParams.get("turn") ?? "all";
   const query = (url.searchParams.get("q") ?? "").trim().toLowerCase();
+  // Архів: `hide` (типово), `only`, `all`. Сховане не зникає — його видно в архіві.
+  const archived = url.searchParams.get("archived") ?? "hide";
 
   const where: string[] = [];
   const conditions: unknown[] = [];
@@ -132,6 +129,8 @@ async function listThreads(request: Request, env: Env, side: DeskSide): Promise<
     where.push("t.turn = ?");
     conditions.push(turn);
   }
+  if (archived === "hide") where.push("t.archived_at IS NULL");
+  if (archived === "only") where.push("t.archived_at IS NOT NULL");
   if (query) {
     where.push("(LOWER(t.title) LIKE ? OR LOWER(t.tags) LIKE ? OR LOWER(t.subgroup) LIKE ?)");
     conditions.push(`%${query}%`, `%${query}%`, `%${query}%`);
@@ -208,11 +207,19 @@ async function saveThread(request: Request, env: Env, side: DeskSide): Promise<R
   const tags = tagsToJson(input.tags);
 
   if (Number.isInteger(id) && id > 0) {
-    const archived = body.archived === true || body.archived === 1 ? now : null;
+    // `archived` — три стани: `true` — в архів, `false` — назад, відсутнє —
+    // не чіпати. Інакше кожна правка назви повертала б тему з архіву.
+    const archived =
+      body.archived === true || body.archived === 1
+        ? now
+        : body.archived === false || body.archived === 0
+          ? null
+          : undefined;
+    const archiveSql = archived === undefined ? "" : ", archived_at = ?";
     const result = await env.DB.prepare(
       `UPDATE desk_threads
          SET group_key = ?, subgroup = ?, title = ?, status = ?, turn = ?, tags = ?,
-             due_at = ?, priority = ?, updated_at = ?, archived_at = COALESCE(?, archived_at)
+             due_at = ?, priority = ?, updated_at = ?${archiveSql}
        WHERE id = ?`,
     )
       .bind(
@@ -225,7 +232,7 @@ async function saveThread(request: Request, env: Env, side: DeskSide): Promise<R
         input.due_at,
         input.priority,
         now,
-        archived,
+        ...(archived === undefined ? [] : [archived]),
         id,
       )
       .run();
@@ -310,20 +317,6 @@ async function saveEntry(request: Request, env: Env, side: DeskSide): Promise<Re
   return readThread(new Request(`${new URL(request.url).origin}?id=${threadId}`), env);
 }
 
-/** Видалити запис разом із його файлами: рядки спершу, об'єкти потім. */
-async function deleteEntry(request: Request, env: Env): Promise<Response> {
-  const id = Number(new URL(request.url).searchParams.get("id"));
-  if (!Number.isInteger(id) || id <= 0) return deskJson({ ok: false, error: "bad_id" }, 400);
-
-  const keys = await fileKeysOfEntry(env, id);
-  const result = await env.DB.prepare("DELETE FROM desk_entries WHERE id = ?").bind(id).run();
-  if ((result.meta?.changes ?? 0) === 0) return deskJson({ ok: false, error: "not_found" }, 404);
-
-  await env.DB.prepare("DELETE FROM desk_files WHERE entry_id = ?").bind(id).run();
-  await dropObjects(env, keys);
-  return deskJson({ ok: true, id });
-}
-
 /** Позначити тему вичитаною: `last_seen_entry_id` тільки росте. */
 async function markRead(request: Request, env: Env, side: DeskSide): Promise<Response> {
   const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
@@ -367,6 +360,7 @@ export async function handleDesk(
       case "thread":
         if (request.method === "GET") return await readThread(request, env);
         if (request.method === "POST") return await saveThread(request, env, side);
+        if (request.method === "DELETE") return await deleteThread(request, env);
         return deskJson({ ok: false, error: "method_not_allowed" }, 405);
       case "entry":
         if (request.method === "POST") return await saveEntry(request, env, side);

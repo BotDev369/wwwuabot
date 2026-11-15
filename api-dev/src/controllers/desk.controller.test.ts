@@ -526,6 +526,79 @@ describe("файли", () => {
   });
 });
 
+describe("архів і видалення", () => {
+  it("список ховає архів, а `archived=only` показує тільки його", async () => {
+    const hidden = makeDb({ rows: [], row: { total: 0 } });
+    await handleDesk(jsonRequest("threads", undefined, "GET"), hidden.env, "threads", "serhii");
+    expect(hidden.statements.some((item) => item.sql.includes("archived_at IS NULL"))).toBe(true);
+
+    const only = makeDb({ rows: [], row: { total: 0 } });
+    await handleDesk(
+      new Request("https://api.example.com/api/admin/desk/threads?archived=only"),
+      only.env,
+      "threads",
+      "serhii",
+    );
+    expect(only.statements.some((item) => item.sql.includes("archived_at IS NOT NULL"))).toBe(true);
+  });
+
+  it("`archived: false` повертає тему з архіву, а без поля — не чіпає", async () => {
+    const back = makeDb({ row: THREAD_ROW, lastRowId: 5 });
+    await handleDesk(
+      jsonRequest("thread", { id: 5, ...buildThread({ title: "Бакет" }), archived: false }),
+      back.env,
+      "thread",
+      "serhii",
+    );
+    const update = last(back.statements, "UPDATE");
+    expect(update.sql).toContain("archived_at = ?");
+    expect(update.binds.at(-2)).toBeNull();
+
+    const quiet = makeDb({ row: THREAD_ROW, lastRowId: 5 });
+    await handleDesk(
+      jsonRequest("thread", { id: 5, ...buildThread({ title: "Бакет" }) }),
+      quiet.env,
+      "thread",
+      "serhii",
+    );
+    expect(last(quiet.statements, "UPDATE").sql).not.toContain("archived_at");
+  });
+
+  it("DELETE теми чистить записи, файли, читання й тему", async () => {
+    const db = makeDb({ row: THREAD_ROW, rows: [{ r2_key: "desk/5/a.pdf" }] });
+    const bucket = makeBucket();
+    const res = await handleDesk(
+      jsonRequest("thread?id=5", undefined, "DELETE"),
+      { ...db.env, DESK_FILES: bucket.bucket } as Env,
+      "thread",
+      "serhii",
+    );
+    expect(res.status).toBe(200);
+    const deletes = db.statements
+      .filter((item) => item.sql.trimStart().toUpperCase().startsWith("DELETE"))
+      .map((item) => item.sql.replace(/\s+/g, " "));
+    expect(deletes).toEqual([
+      "DELETE FROM desk_entries WHERE thread_id = ?",
+      "DELETE FROM desk_files WHERE thread_id = ?",
+      "DELETE FROM desk_reads WHERE thread_id = ?",
+      "DELETE FROM desk_threads WHERE id = ?",
+    ]);
+    expect(bucket.deleted).toEqual(["desk/5/a.pdf"]);
+  });
+
+  it("DELETE неіснуючої теми — 404, без чистки", async () => {
+    const db = makeDb({ row: null });
+    const res = await handleDesk(
+      jsonRequest("thread?id=99", undefined, "DELETE"),
+      db.env,
+      "thread",
+      "serhii",
+    );
+    expect(res.status).toBe(404);
+    expect(db.statements.some((item) => item.sql.includes("DELETE"))).toBe(false);
+  });
+});
+
 describe("маршрути", () => {
   it("невідомий підшлях — 404", async () => {
     const db = makeDb();
@@ -536,7 +609,7 @@ describe("маршрути", () => {
   it("чужий метод на темах — 405", async () => {
     const db = makeDb();
     const res = await handleDesk(
-      jsonRequest("thread", undefined, "DELETE"),
+      jsonRequest("thread", undefined, "PATCH"),
       db.env,
       "thread",
       "serhii",

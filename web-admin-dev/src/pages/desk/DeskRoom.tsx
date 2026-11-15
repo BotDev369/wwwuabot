@@ -1,14 +1,13 @@
 /**
- * Права колонка «Стола»: шапка теми, стрічка, композер.
- * Чернетка скидається сама через `key={thread.id}` у батька; файлів — скільки
- * завгодно, список не обрізається.
+ * Тема: шапка, стрічка, композер. Власні класи лише для розкладки столу,
+ * поля й кнопки — спільні `wb-*`.
  *
  * @module web-admin-dev/src/pages/desk/DeskRoom
  */
 
 import { useRef, useState } from "react";
 import labels from "./desk-labels.json";
-import { statusTone, turnTone, type DeskRoomView } from "./desk-view";
+import { statusTone, turnTone, type DeskEntryView, type DeskRoomView } from "./desk-view";
 
 const STATUSES = labels.statuses as Record<string, string>;
 const TURNS = labels.turns as Record<string, string>;
@@ -21,6 +20,10 @@ interface DeskRoomProps {
   onBack: () => void;
   onSend: (text: string, kind: string, files: File[]) => void;
   onPatchThread: (patch: Record<string, unknown>) => void;
+  onEditThread: () => void;
+  onArchiveThread: () => void;
+  onDeleteThread: () => void;
+  onEditEntry: (entry: DeskEntryView) => void;
   onDeleteEntry: (id: number) => void;
   onDeleteFile: (id: number) => void;
 }
@@ -31,6 +34,10 @@ export function DeskRoom({
   onBack,
   onSend,
   onPatchThread,
+  onEditThread,
+  onArchiveThread,
+  onDeleteThread,
+  onEditEntry,
   onDeleteEntry,
   onDeleteFile,
 }: DeskRoomProps) {
@@ -56,28 +63,32 @@ export function DeskRoom({
   return (
     <div className="desk-room">
       <header className="desk-room-head">
-        <button type="button" className="desk-room-back" onClick={onBack}>
-          {labels.back}
-        </button>
-        <span className="desk-room-path">{thread.subgroup || labels.allThreads}</span>
+        <div className="desk-room-bar">
+          <button type="button" className="wb-btn wb-btn-ghost wb-btn-sm" onClick={onBack}>
+            {labels.back}
+          </button>
+          <span className="desk-room-path">{thread.subgroup || labels.allThreads}</span>
+        </div>
         <h1 className="desk-room-title">{thread.title}</h1>
-        <span className="desk-room-tags">
+        <div className="desk-room-tags">
           <span className={`wb-badge ${statusTone(thread.status)}`}>
             {STATUSES[thread.status] ?? thread.status}
           </span>
           <span className={`wb-badge ${turnTone(thread.turn)}`}>
             {TURNS[thread.turn] ?? thread.turn}
           </span>
+          {thread.archived && <span className="wb-badge wb-badge-neutral">{labels.archive}</span>}
           {thread.tags.map((tag) => (
-            <span key={tag} className="desk-tag">
+            <span key={tag} className="wb-chip desk-tag">
               {tag}
             </span>
           ))}
-        </span>
-        <span className="desk-room-controls">
+        </div>
+        <div className="desk-room-actions">
           <label className="desk-control">
             <span>{labels.statusLabel}</span>
             <select
+              className="wb-select"
               value={thread.status}
               onChange={(event) => onPatchThread({ status: event.target.value })}
               aria-label={labels.statusLabel}
@@ -92,6 +103,7 @@ export function DeskRoom({
           <label className="desk-control">
             <span>{labels.turnLabel}</span>
             <select
+              className="wb-select"
               value={thread.turn}
               onChange={(event) => onPatchThread({ turn: event.target.value })}
               aria-label={labels.turnLabel}
@@ -103,7 +115,33 @@ export function DeskRoom({
               ))}
             </select>
           </label>
-        </span>
+          <span className="desk-room-buttons">
+            <button
+              type="button"
+              className="wb-btn wb-btn-ghost wb-btn-sm"
+              onClick={onEditThread}
+              aria-label={labels.editThreadAria}
+            >
+              {labels.editThread}
+            </button>
+            <button
+              type="button"
+              className="wb-btn wb-btn-ghost wb-btn-sm"
+              onClick={onArchiveThread}
+              aria-label={thread.archived ? labels.unarchiveThreadAria : labels.archiveThreadAria}
+            >
+              {thread.archived ? labels.unarchiveThread : labels.archiveThread}
+            </button>
+            <button
+              type="button"
+              className="wb-btn wb-btn-ghost wb-btn-sm desk-danger"
+              onClick={onDeleteThread}
+              aria-label={labels.deleteThreadAria}
+            >
+              {labels.deleteThread}
+            </button>
+          </span>
+        </div>
       </header>
 
       <div className="desk-feed">
@@ -112,17 +150,26 @@ export function DeskRoom({
           <article key={entry.id} className={`desk-entry desk-entry--${entry.author}`}>
             <div className="desk-entry-head">
               <b className="desk-entry-author">{AUTHORS[entry.author] ?? entry.author}</b>
-              <span className="desk-entry-kind">{KINDS[entry.kind] ?? entry.kind}</span>
+              <span className="wb-badge wb-badge-neutral">{KINDS[entry.kind] ?? entry.kind}</span>
               <span className="desk-entry-when">{entry.when}</span>
-              <button
-                type="button"
-                className="desk-entry-drop"
-                onClick={() => onDeleteEntry(entry.id)}
-                title={labels.deleteEntry}
-                aria-label={labels.deleteEntry}
-              >
-                ×
-              </button>
+              <span className="desk-entry-actions">
+                <button
+                  type="button"
+                  className="wb-btn wb-btn-ghost wb-btn-sm"
+                  onClick={() => onEditEntry(entry)}
+                  aria-label={labels.editEntryAria}
+                >
+                  {labels.editEntry}
+                </button>
+                <button
+                  type="button"
+                  className="wb-btn wb-btn-ghost wb-btn-sm desk-danger"
+                  onClick={() => onDeleteEntry(entry.id)}
+                  aria-label={labels.deleteEntryAria}
+                >
+                  {labels.delete}
+                </button>
+              </span>
             </div>
             <p className="desk-entry-body">{entry.body}</p>
             {entry.files.length > 0 && (
@@ -175,7 +222,7 @@ export function DeskRoom({
 
       <div className="desk-composer">
         <textarea
-          className="desk-composer-input"
+          className="wb-textarea desk-composer-input"
           value={text}
           onChange={(event) => setText(event.target.value)}
           onKeyDown={(event) => {
@@ -203,7 +250,7 @@ export function DeskRoom({
         <div className="desk-composer-row">
           <div className="desk-composer-tools">
             <select
-              className="desk-composer-kind"
+              className="wb-select"
               value={kind}
               onChange={(event) => setKind(event.target.value)}
               aria-label={labels.kindLabel}
@@ -228,7 +275,6 @@ export function DeskRoom({
               type="button"
               className="wb-btn wb-btn-ghost wb-btn-sm"
               onClick={() => picker.current?.click()}
-              onDragOver={(event) => event.preventDefault()}
             >
               {labels.attach}
             </button>

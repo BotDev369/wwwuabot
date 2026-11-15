@@ -1,16 +1,17 @@
 /**
- * «Стіл» — спільний простір Сергія й Buffy на живих даних: список, тема,
- * композер і файли. Фільтри питають сервер і не ховають причину порожнечі:
- * коли нічого не знайдено, видно, що саме стоїть і як його скинути.
+ * «Стіл»: живий список, тема, композер. Форми й підтвердження — спільні
+ * кирпичики (`wb-modal*`, `useDialog`), архів — окремий зріз списку.
  *
  * @module web-admin-dev/src/pages/desk/DeskPage
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { useDialog } from "@wwwuabot/ui/dialog";
 import {
   addDeskEntry,
   deleteDeskEntry,
   deleteDeskFile,
+  deleteDeskThread,
   fetchDeskThread,
   fetchDeskThreads,
   markDeskRead,
@@ -18,18 +19,22 @@ import {
   uploadDeskFile,
 } from "./desk.api";
 import labels from "./desk-labels.json";
+import { DeskEntryModal } from "./DeskEntryModal";
+import { DeskGroupRail } from "./DeskGroupRail";
 import { DeskRoom } from "./DeskRoom";
+import { DeskThreadCard } from "./DeskThreadCard";
+import { DeskTopbar } from "./DeskTopbar";
+import { DeskThreadModal, type DeskThreadPayload } from "./DeskThreadModal";
 import {
   countByGroup,
   lastEntryId,
-  statusTone,
   toRoomView,
   toThreadView,
+  type DeskEntryView,
   type DeskRoomView,
   type DeskThreadView,
 } from "./desk-view";
 
-const STATUSES = labels.statuses as Record<string, string>;
 const UNITS = labels.units;
 
 function messageOf(error: unknown): string {
@@ -37,11 +42,13 @@ function messageOf(error: unknown): string {
 }
 
 export function DeskPage() {
+  const dialog = useDialog();
   const [threads, setThreads] = useState<DeskThreadView[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [group, setGroup] = useState("all");
   const [status, setStatus] = useState("all");
   const [query, setQuery] = useState("");
+  const [archivedOnly, setArchivedOnly] = useState(false);
   const [activeId, setActiveId] = useState<number | null>(null);
   const [room, setRoom] = useState<DeskRoomView | null>(null);
   const [roomOpen, setRoomOpen] = useState(false);
@@ -49,35 +56,42 @@ export function DeskPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [reload, setReload] = useState(0);
-  const [newOpen, setNewOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
-  const [newGroup, setNewGroup] = useState("plan");
+  const [threadModal, setThreadModal] = useState<"create" | "edit" | null>(null);
+  const [editingEntry, setEditingEntry] = useState<DeskEntryView | null>(null);
 
   const refresh = useCallback(() => setReload((current) => current + 1), []);
-  const hasFilters = group !== "all" || status !== "all" || query.trim() !== "";
+  const hasFilters = group !== "all" || status !== "all" || query.trim() !== "" || archivedOnly;
 
   function resetFilters(): void {
     setGroup("all");
     setStatus("all");
     setQuery("");
+    setArchivedOnly(false);
   }
 
-  // Список: пошук із паузи, щоб набір не бив по серверу на кожну літеру.
-  // Старі теми лишаються на екрані, доки їдуть нові: інакше на повільній
-  // мережі «порожньо» показувалось би раніше за відповідь і читалось як
-  // помилка фільтра.
+  // Пошук із паузи; старі теми лишаються, доки їдуть нові — інакше на повільній
+  // мережі «порожньо» показувалось би раніше за відповідь.
   useEffect(() => {
     let alive = true;
     const timer = setTimeout(
       () => {
         setLoading(true);
-        fetchDeskThreads({ group, status, q: query.trim() })
+        fetchDeskThreads({
+          group,
+          status,
+          q: query.trim(),
+          archived: archivedOnly ? "only" : "hide",
+        })
           .then((data) => {
             if (!alive) return;
             const list = data.threads.map(toThreadView);
             setThreads(list);
             setCounts(data.counts ?? {});
-            setActiveId((current) => current ?? list[0]?.id ?? null);
+            setActiveId((current) =>
+              current !== null && list.some((thread) => thread.id === current)
+                ? current
+                : (list[0]?.id ?? null),
+            );
             setError("");
           })
           .catch((cause: unknown) => alive && setError(messageOf(cause)))
@@ -89,7 +103,7 @@ export function DeskPage() {
       alive = false;
       clearTimeout(timer);
     };
-  }, [group, status, query, reload]);
+  }, [group, status, query, archivedOnly, reload]);
 
   // Тема: свіжа стрічка, файли й позначка «вичитано до останнього запису».
   useEffect(() => {
@@ -128,7 +142,7 @@ export function DeskPage() {
         kind: text.trim() ? kind : "file",
         body,
       });
-      // Файли — по одному: так збій на одному не з'їдає решту, а ліміту на
+      // Файли — по одному: збій на одному не з'їдає решту, а ліміту на
       // кількість немає ні тут, ні на сервері.
       for (const file of files) await uploadDeskFile(threadId, lastEntryId(saved.entries), file);
       setRoom(toRoomView(saved, UNITS));
@@ -167,16 +181,15 @@ export function DeskPage() {
     }
   }
 
-  async function createThread(): Promise<void> {
-    const title = newTitle.trim();
-    if (!title) return;
+  async function saveThreadForm(payload: DeskThreadPayload): Promise<void> {
     setBusy(true);
     setError("");
     try {
-      const saved = await saveDeskThread({ title, group: newGroup });
-      setNewTitle("");
-      setNewOpen(false);
-      resetFilters();
+      const body: Record<string, unknown> = { ...payload };
+      if (threadModal === "edit" && room) body.id = room.thread.id;
+      const saved = await saveDeskThread(body);
+      setThreadModal(null);
+      setRoom(toRoomView(saved, UNITS));
       setActiveId(saved.thread.id);
       setRoomOpen(true);
       refresh();
@@ -187,7 +200,52 @@ export function DeskPage() {
     }
   }
 
-  async function dropEntry(id: number): Promise<void> {
+  async function saveEntryForm(payload: { kind: string; body: string }): Promise<void> {
+    const entry = editingEntry;
+    const threadId = room?.thread.id;
+    if (!entry || !threadId) return;
+    setBusy(true);
+    setError("");
+    try {
+      const saved = await addDeskEntry({ id: entry.id, thread_id: threadId, ...payload });
+      setEditingEntry(null);
+      setRoom(toRoomView(saved, UNITS));
+      refresh();
+    } catch (cause: unknown) {
+      setError(messageOf(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeThread(): Promise<void> {
+    if (!room) return;
+    if (
+      !(await dialog.confirm(labels.deleteThreadQuestion, {
+        tone: "danger",
+        confirmText: labels.confirmDelete,
+      }))
+    )
+      return;
+    try {
+      await deleteDeskThread(room.thread.id);
+      setRoom(null);
+      setActiveId(null);
+      setRoomOpen(false);
+      refresh();
+    } catch (cause: unknown) {
+      setError(messageOf(cause));
+    }
+  }
+
+  async function removeEntry(id: number): Promise<void> {
+    if (
+      !(await dialog.confirm(labels.deleteEntryQuestion, {
+        tone: "danger",
+        confirmText: labels.confirmDelete,
+      }))
+    )
+      return;
     try {
       await deleteDeskEntry(id);
       refresh();
@@ -196,7 +254,14 @@ export function DeskPage() {
     }
   }
 
-  async function dropFile(id: number): Promise<void> {
+  async function removeFile(id: number): Promise<void> {
+    if (
+      !(await dialog.confirm(labels.deleteFileQuestion, {
+        tone: "danger",
+        confirmText: labels.confirmDelete,
+      }))
+    )
+      return;
     try {
       await deleteDeskFile(id);
       refresh();
@@ -206,159 +271,118 @@ export function DeskPage() {
   }
 
   return (
-    <section className={`desk${roomOpen ? " desk--room" : ""}`}>
-      <aside className="desk-groups">
-        <div className="desk-brand">
-          <b>{labels.title}</b>
-          <span>{labels.subtitle}</span>
-        </div>
-        {labels.groups.map((item) => (
-          <button
-            key={item.key}
-            type="button"
-            className={`desk-group${item.key === group ? " desk-group--active" : ""}`}
-            aria-pressed={item.key === group}
-            onClick={() => setGroup(item.key)}
-          >
-            <span>{item.label}</span>
-            <b>{item.key === "all" ? countByGroup(counts) : (counts[item.key] ?? 0)}</b>
-          </button>
-        ))}
-        {error && <p className="desk-note desk-note--error">{error}</p>}
-      </aside>
+    <>
+      <DeskTopbar
+        total={countByGroup(counts)}
+        query={query}
+        onQuery={setQuery}
+        onCreate={() => setThreadModal("create")}
+      />
 
-      <div className="desk-list">
-        <div className="desk-list-head">
-          <div className="desk-search-row">
-            <input
-              className="desk-search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={labels.search}
-              aria-label={labels.search}
+      <div className="wb-page-body">
+        <section className={`desk${roomOpen ? " desk--room" : ""}`}>
+          <DeskGroupRail
+            counts={counts}
+            group={group}
+            archivedOnly={archivedOnly}
+            error={error}
+            onPickGroup={(key) => {
+              setArchivedOnly(false);
+              setGroup(key);
+            }}
+            onToggleArchive={() => {
+              setArchivedOnly((current) => !current);
+              setGroup("all");
+            }}
+          />
+
+          <div className="desk-list">
+            <div className="desk-list-head">
+              <div className="desk-chips">
+                {labels.statusFilters.map((filter) => (
+                  <button
+                    key={filter.key}
+                    type="button"
+                    className={`wb-chip desk-chip${filter.key === status ? " desk-chip--on" : ""}`}
+                    aria-pressed={filter.key === status}
+                    onClick={() => setStatus(filter.key)}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+                {hasFilters && (
+                  <button
+                    type="button"
+                    className="wb-chip desk-chip desk-chip--reset"
+                    onClick={resetFilters}
+                  >
+                    {labels.resetFilters}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="desk-threads" aria-busy={loading}>
+              {loading && threads.length === 0 && <p className="desk-empty">{labels.loading}</p>}
+              {!loading && threads.length === 0 && (
+                <p className="desk-empty">{archivedOnly ? labels.emptyArchive : labels.empty}</p>
+              )}
+              {threads.map((thread) => (
+                <DeskThreadCard
+                  key={thread.id}
+                  thread={thread}
+                  active={thread.id === activeId}
+                  onOpen={() => {
+                    setActiveId(thread.id);
+                    setRoomOpen(true);
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {room && activeId !== null ? (
+            <DeskRoom
+              key={room.thread.id}
+              room={room}
+              busy={busy}
+              onBack={() => setRoomOpen(false)}
+              onSend={(text, kind, files) => void send(text, kind, files)}
+              onPatchThread={(patch) => void patchThread(patch)}
+              onEditThread={() => setThreadModal("edit")}
+              onArchiveThread={() => void patchThread({ archived: !room.thread.archived })}
+              onDeleteThread={() => void removeThread()}
+              onEditEntry={setEditingEntry}
+              onDeleteEntry={(id) => void removeEntry(id)}
+              onDeleteFile={(id) => void removeFile(id)}
             />
-            <button
-              type="button"
-              className="wb-btn wb-btn-ghost wb-btn-sm desk-newbtn"
-              aria-pressed={newOpen}
-              onClick={() => setNewOpen((current) => !current)}
-            >
-              {labels.newThread}
-            </button>
-          </div>
-          <div className="desk-chips">
-            {labels.statusFilters.map((filter) => (
-              <button
-                key={filter.key}
-                type="button"
-                className={`wb-chip desk-chip${filter.key === status ? " desk-chip--on" : ""}`}
-                aria-pressed={filter.key === status}
-                onClick={() => setStatus(filter.key)}
-              >
-                {filter.label}
-              </button>
-            ))}
-            {hasFilters && (
-              <button
-                type="button"
-                className="wb-chip desk-chip desk-chip--reset"
-                onClick={resetFilters}
-              >
-                {labels.resetFilters}
-              </button>
-            )}
-          </div>
-          {newOpen && (
-            <div className="desk-newform">
-              <input
-                className="desk-search"
-                value={newTitle}
-                onChange={(event) => setNewTitle(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") void createThread();
-                }}
-                placeholder={labels.newTitle}
-                aria-label={labels.newTitle}
-              />
-              <select
-                value={newGroup}
-                onChange={(event) => setNewGroup(event.target.value)}
-                aria-label={labels.groupLabel}
-              >
-                {labels.groups
-                  .filter((item) => item.key !== "all")
-                  .map((item) => (
-                    <option key={item.key} value={item.key}>
-                      {item.label}
-                    </option>
-                  ))}
-              </select>
-              <button
-                type="button"
-                className="wb-btn wb-btn-primary wb-btn-sm"
-                onClick={() => void createThread()}
-                disabled={busy || !newTitle.trim()}
-              >
-                {labels.create}
-              </button>
+          ) : (
+            <div className="desk-room desk-room--empty">
+              <p className="desk-empty">{labels.pickThread}</p>
             </div>
           )}
-        </div>
-
-        <div className="desk-threads" aria-busy={loading}>
-          {loading && threads.length === 0 && <p className="desk-empty">{labels.loading}</p>}
-          {!loading && threads.length === 0 && <p className="desk-empty">{labels.empty}</p>}
-          {threads.map((thread) => (
-            <button
-              key={thread.id}
-              type="button"
-              className={`desk-thread${thread.id === activeId ? " desk-thread--active" : ""}`}
-              onClick={() => {
-                setActiveId(thread.id);
-                setRoomOpen(true);
-              }}
-            >
-              <span className="desk-thread-top">
-                <span className={`wb-badge ${statusTone(thread.status)}`}>
-                  {STATUSES[thread.status] ?? thread.status}
-                </span>
-                {thread.unread > 0 && (
-                  <span className="wb-badge wb-badge-accent">{labels.unread}</span>
-                )}
-                <span className="desk-thread-when">{thread.updated}</span>
-              </span>
-              <span className="desk-thread-title">{thread.title}</span>
-              <span className="desk-thread-meta">
-                {thread.subgroup || labels.allThreads} · {thread.entries}
-              </span>
-              <span className="desk-thread-tags">
-                {thread.tags.map((tag) => (
-                  <span key={tag} className="desk-tag">
-                    {tag}
-                  </span>
-                ))}
-              </span>
-            </button>
-          ))}
-        </div>
+        </section>
       </div>
 
-      {room && activeId !== null ? (
-        <DeskRoom
-          key={room.thread.id}
-          room={room}
+      {threadModal && (
+        <DeskThreadModal
+          thread={threadModal === "edit" ? (room?.thread ?? null) : null}
           busy={busy}
-          onBack={() => setRoomOpen(false)}
-          onSend={(text, kind, files) => void send(text, kind, files)}
-          onPatchThread={(patch) => void patchThread(patch)}
-          onDeleteEntry={(id) => void dropEntry(id)}
-          onDeleteFile={(id) => void dropFile(id)}
+          error={error}
+          onClose={() => setThreadModal(null)}
+          onSave={(payload) => void saveThreadForm(payload)}
         />
-      ) : (
-        <div className="desk-room desk-room--empty">
-          <p className="desk-empty">{labels.empty}</p>
-        </div>
       )}
-    </section>
+
+      {editingEntry && (
+        <DeskEntryModal
+          entry={editingEntry}
+          busy={busy}
+          error={error}
+          onClose={() => setEditingEntry(null)}
+          onSave={(payload) => void saveEntryForm(payload)}
+        />
+      )}
+    </>
   );
 }

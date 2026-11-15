@@ -10,7 +10,8 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render as renderRaw, screen, waitFor } from "@testing-library/react";
+import { DialogProvider } from "@wwwuabot/ui/dialog";
 import type { DeskEntry, DeskFile, DeskSide, DeskThread } from "@wwwuabot/shared/desk/model";
 
 const state = vi.hoisted(() => ({
@@ -31,8 +32,12 @@ vi.mock("./desk.api", async () => {
 
   return {
     deskFileUrl: (id: number) => `/api/admin/desk/file?id=${id}`,
-    fetchDeskThreads: async (query: { group?: string; status?: string; q?: string } = {}) => {
+    fetchDeskThreads: async (
+      query: { group?: string; status?: string; q?: string; archived?: string } = {},
+    ) => {
       const list = state.threads.filter((thread) => {
+        const only = query.archived === "only";
+        if (only ? !thread.archived : thread.archived) return false;
         if (query.group && query.group !== "all" && thread.group !== query.group) return false;
         if (query.status && query.status !== "all" && thread.status !== query.status) return false;
         if (query.q && !thread.title.toLowerCase().includes(query.q.toLowerCase())) return false;
@@ -61,10 +66,19 @@ vi.mock("./desk.api", async () => {
         return readRoom(99);
       }
       Object.assign(existing, input);
+      if (input.archived === true) existing.archived = true;
+      if (input.archived === false) existing.archived = false;
       return readRoom(existing.id);
     },
     addDeskEntry: async (input: Record<string, unknown>) => {
       const threadId = Number(input.thread_id);
+      // Правка приходить з `id` — тоді запис не додається, а переписується.
+      const editing = state.entries.find((entry) => entry.id === Number(input.id));
+      if (editing) {
+        editing.kind = String(input.kind);
+        editing.body = String(input.body);
+        return readRoom(threadId);
+      }
       state.entries.push({
         id: (last(state.entries)?.id ?? 100) + 1,
         thread_id: threadId,
@@ -77,6 +91,12 @@ vi.mock("./desk.api", async () => {
         edited_at: null,
       });
       return readRoom(threadId);
+    },
+    deleteDeskThread: async (id: number) => {
+      state.threads = state.threads.filter((thread) => thread.id !== id);
+      state.entries = state.entries.filter((entry) => entry.thread_id !== id);
+      state.files = state.files.filter((file) => file.thread_id !== id);
+      return { ok: true };
     },
     deleteDeskEntry: async (id: number) => {
       state.entries = state.entries.filter((entry) => entry.id !== id);
@@ -195,6 +215,10 @@ function threadTitles(): string[] {
   return [...document.querySelectorAll(".desk-thread-title")].map((el) => el.textContent ?? "");
 }
 
+function render(ui: React.ReactElement) {
+  return renderRaw(<DialogProvider>{ui}</DialogProvider>);
+}
+
 describe("DeskPage на живих даних", () => {
   beforeEach(() => seed());
 
@@ -311,6 +335,7 @@ describe("DeskPage на живих даних", () => {
     await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(2));
 
     fireEvent.click(screen.getAllByLabelText("Видалити запис")[1]);
+    fireEvent.click(await screen.findByRole("button", { name: "Видалити" }));
     await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(1));
     expect(state.entries.map((entry) => entry.id)).toEqual([10]);
   });
@@ -320,6 +345,7 @@ describe("DeskPage на живих даних", () => {
     await waitFor(() => expect(screen.getByText("bucket-plan.md")).toBeTruthy());
 
     fireEvent.click(screen.getByLabelText("Видалити файл: bucket-plan.md"));
+    fireEvent.click(await screen.findByRole("button", { name: "Видалити" }));
     await waitFor(() => expect(screen.queryByText("bucket-plan.md")).toBeNull());
   });
 
@@ -349,15 +375,73 @@ describe("DeskPage на живих даних", () => {
     expect(threadTitles()).toEqual(["R2-бакет для обміну файлами"]);
   });
 
+  it("тему можна відредагувати з шапки", async () => {
+    const { container } = render(<DeskPage />);
+    await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(2));
+
+    fireEvent.click(screen.getByRole("button", { name: "Редагувати тему" }));
+    const title = screen.getByLabelText("Назва") as HTMLInputElement;
+    expect(title.value).toBe("R2-бакет для обміну файлами");
+    fireEvent.change(title, { target: { value: "R2-бакет: оновлено" } });
+    fireEvent.change(screen.getByLabelText("Теги"), { target: { value: "r2, files" } });
+    fireEvent.click(screen.getByRole("button", { name: "Зберегти" }));
+
+    await waitFor(() =>
+      expect(container.querySelector(".desk-room-title")?.textContent).toBe("R2-бакет: оновлено"),
+    );
+    expect(state.threads[0]).toMatchObject({ tags: ["r2", "files"] });
+  });
+
+  it("тему можна відправити в архів і повернути звідти", async () => {
+    render(<DeskPage />);
+    await waitFor(() => expect(threadTitles()).toHaveLength(2));
+
+    fireEvent.click(screen.getByRole("button", { name: "Архівувати тему" }));
+    await waitFor(() => expect(threadTitles()).toEqual(["Темна тема: контраст кнопок"]));
+
+    fireEvent.click(screen.getByRole("button", { name: "Архів" }));
+    await waitFor(() => expect(threadTitles()).toEqual(["R2-бакет для обміну файлами"]));
+    fireEvent.click(screen.getByRole("button", { name: /R2-бакет/ }));
+    expect(await screen.findByRole("button", { name: "Повернути тему з архіву" })).toBeTruthy();
+  });
+
+  it("тему можна видалити — з підтвердженням", async () => {
+    render(<DeskPage />);
+    await waitFor(() => expect(threadTitles()).toHaveLength(2));
+
+    fireEvent.click(await screen.findByRole("button", { name: "Видалити тему" }));
+    const confirm = await screen.findByText(
+      "Видалити тему разом із записами й файлами? Це безповоротно.",
+    );
+    expect(confirm).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Видалити" }));
+
+    await waitFor(() => expect(state.threads.map((thread) => thread.id)).toEqual([2]));
+  });
+
+  it("запис можна відредагувати — правка не створює нового", async () => {
+    const { container } = render(<DeskPage />);
+    await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(2));
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Редагувати запис" })[0]);
+    const body = screen.getByLabelText("Текст") as HTMLTextAreaElement;
+    fireEvent.change(body, { target: { value: "Виправлений текст" } });
+    fireEvent.click(screen.getByRole("button", { name: "Зберегти" }));
+
+    await waitFor(() => expect(screen.getByText("Виправлений текст")).toBeTruthy());
+    expect(state.entries).toHaveLength(2);
+    expect(state.entries[0].body).toBe("Виправлений текст");
+  });
+
   it("нова тема створюється й стає активною", async () => {
     render(<DeskPage />);
     await waitFor(() => expect(threadTitles()).toHaveLength(2));
 
-    fireEvent.click(screen.getByText("Нова тема"));
-    fireEvent.change(screen.getByLabelText("Назва теми"), {
+    fireEvent.click(screen.getByRole("button", { name: "Нова тема" }));
+    fireEvent.change(screen.getByLabelText("Назва"), {
       target: { value: "Борг за жовтень" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Створити" }));
+    fireEvent.click(screen.getByRole("button", { name: "Зберегти" }));
 
     await waitFor(() => expect(threadTitles()).toContain("Борг за жовтень"));
   });
