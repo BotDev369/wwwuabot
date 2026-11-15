@@ -1,5 +1,5 @@
 {
-  "version": "958204e",
+  "version": "717a46f",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -24,7 +24,7 @@
     {
       "file": "admin/desk.css",
       "tokens": 0,
-      "classes": 57
+      "classes": 62
     },
     {
       "file": "admin/index.css",
@@ -2928,23 +2928,21 @@
           "desk-thread-title",
           "desk-thread-top",
           "desk-thread-when",
-          "desk-threads"
+          "desk-threads",
+          "wb-badge"
         ]
       },
       {
         "section": "Тема",
         "names": [
-          "desk-control",
           "desk-danger",
           "desk-room",
           "desk-room--empty",
           "desk-room-actions",
           "desk-room-bar",
-          "desk-room-buttons",
           "desk-room-head",
           "desk-room-path",
-          "desk-room-title",
-          "wb-select"
+          "desk-room-title"
         ]
       },
       {
@@ -2965,7 +2963,8 @@
           "desk-file-size",
           "desk-files",
           "desk-loose",
-          "desk-loose-title"
+          "desk-loose-title",
+          "wb-btn"
         ]
       },
       {
@@ -2973,6 +2972,8 @@
         "names": [
           "desk",
           "desk--room",
+          "desk-attach-icon",
+          "desk-attach-text",
           "desk-chip",
           "desk-chips",
           "desk-composer",
@@ -2986,14 +2987,20 @@
           "desk-file-drop",
           "desk-group",
           "desk-groups",
-          "desk-hint",
           "desk-list",
+          "desk-loose",
           "desk-room",
-          "desk-room-buttons",
+          "desk-room-actions",
           "desk-room-head",
+          "desk-room-tags",
           "desk-room-title",
           "desk-threads",
-          "wb-select"
+          "desk-topbar",
+          "desk-topbar--hidden",
+          "wb-btn",
+          "wb-search",
+          "wb-select",
+          "wb-topbar-right"
         ]
       }
     ],

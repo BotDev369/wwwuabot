@@ -6,6 +6,7 @@
  */
 
 import { useRef, useState } from "react";
+import { icons } from "@wwwuabot/shared";
 import labels from "./desk-labels.json";
 import { statusTone, turnTone, type DeskEntryView, type DeskRoomView } from "./desk-view";
 
@@ -19,7 +20,6 @@ interface DeskRoomProps {
   busy: boolean;
   onBack: () => void;
   onSend: (text: string, kind: string, files: File[]) => void;
-  onPatchThread: (patch: Record<string, unknown>) => void;
   onEditThread: () => void;
   onArchiveThread: () => void;
   onDeleteThread: () => void;
@@ -33,7 +33,6 @@ export function DeskRoom({
   busy,
   onBack,
   onSend,
-  onPatchThread,
   onEditThread,
   onArchiveThread,
   onDeleteThread,
@@ -85,62 +84,30 @@ export function DeskRoom({
           ))}
         </div>
         <div className="desk-room-actions">
-          <label className="desk-control">
-            <span>{labels.statusLabel}</span>
-            <select
-              className="wb-select"
-              value={thread.status}
-              onChange={(event) => onPatchThread({ status: event.target.value })}
-              aria-label={labels.statusLabel}
-            >
-              {Object.entries(STATUSES).map(([key, value]) => (
-                <option key={key} value={key}>
-                  {value}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="desk-control">
-            <span>{labels.turnLabel}</span>
-            <select
-              className="wb-select"
-              value={thread.turn}
-              onChange={(event) => onPatchThread({ turn: event.target.value })}
-              aria-label={labels.turnLabel}
-            >
-              {Object.entries(TURNS).map(([key, value]) => (
-                <option key={key} value={key}>
-                  {value}
-                </option>
-              ))}
-            </select>
-          </label>
-          <span className="desk-room-buttons">
-            <button
-              type="button"
-              className="wb-btn wb-btn-ghost wb-btn-sm"
-              onClick={onEditThread}
-              aria-label={labels.editThreadAria}
-            >
-              {labels.editThread}
-            </button>
-            <button
-              type="button"
-              className="wb-btn wb-btn-ghost wb-btn-sm"
-              onClick={onArchiveThread}
-              aria-label={thread.archived ? labels.unarchiveThreadAria : labels.archiveThreadAria}
-            >
-              {thread.archived ? labels.unarchiveThread : labels.archiveThread}
-            </button>
-            <button
-              type="button"
-              className="wb-btn wb-btn-ghost wb-btn-sm desk-danger"
-              onClick={onDeleteThread}
-              aria-label={labels.deleteThreadAria}
-            >
-              {labels.deleteThread}
-            </button>
-          </span>
+          <button
+            type="button"
+            className="wb-btn wb-btn-ghost wb-btn-sm"
+            onClick={onEditThread}
+            aria-label={labels.editThreadAria}
+          >
+            {labels.editThread}
+          </button>
+          <button
+            type="button"
+            className="wb-btn wb-btn-ghost wb-btn-sm"
+            onClick={onArchiveThread}
+            aria-label={thread.archived ? labels.unarchiveThreadAria : labels.archiveThreadAria}
+          >
+            {thread.archived ? labels.unarchiveThread : labels.archiveThread}
+          </button>
+          <button
+            type="button"
+            className="wb-btn wb-btn-ghost wb-btn-sm desk-danger"
+            onClick={onDeleteThread}
+            aria-label={labels.deleteThreadAria}
+          >
+            {labels.deleteThread}
+          </button>
         </div>
       </header>
 
@@ -275,10 +242,11 @@ export function DeskRoom({
               type="button"
               className="wb-btn wb-btn-ghost wb-btn-sm"
               onClick={() => picker.current?.click()}
+              aria-label={labels.attach}
             >
-              {labels.attach}
+              <span className="desk-attach-icon">{icons["paper"]}</span>
+              <span className="desk-attach-text">{labels.attach}</span>
             </button>
-            <span className="desk-hint">{busy ? labels.uploading : labels.composerHint}</span>
           </div>
           <button type="button" className="wb-btn wb-btn-primary" onClick={send} disabled={busy}>
             {labels.send}

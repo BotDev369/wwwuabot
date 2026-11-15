@@ -258,21 +258,25 @@ describe("DeskPage на живих даних", () => {
     await waitFor(() => expect(screen.getByText("Немає тем за цим фільтром")).toBeTruthy());
   });
 
-  it("тема показує стрічку, автора, файл-посилання й керування чергою", async () => {
+  it("тема показує стрічку, автора, файл-посилання й стан теми", async () => {
     const { container } = render(<DeskPage />);
 
     await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(2));
     expect(container.querySelector(".desk-entry--buffy")).toBeTruthy();
     const link = screen.getByText("bucket-plan.md") as HTMLAnchorElement;
     expect(link.getAttribute("href")).toBe("/api/admin/desk/file?id=20");
-    expect(screen.getByLabelText("Чия черга")).toBeTruthy();
+    // Стан і черга — бейджі в шапці; зміна йде через «Редагувати тему».
+    expect(container.querySelector(".desk-room-tags")?.textContent).toContain("Чекає на Buffy");
   });
 
-  it("зміна черги зберігається через API й перемальовує шапку", async () => {
+  it("черга змінюється через форму теми й перемальовує шапку", async () => {
     const { container } = render(<DeskPage />);
     await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(2));
 
-    fireEvent.change(screen.getByLabelText("Чия черга"), { target: { value: "serhii" } });
+    fireEvent.click(await screen.findByRole("button", { name: "Редагувати тему" }));
+    fireEvent.change(await screen.findByLabelText("Чия черга"), { target: { value: "serhii" } });
+    fireEvent.click(screen.getByRole("button", { name: "Зберегти" }));
+
     await waitFor(() => expect(state.threads[0].turn).toBe("serhii"));
     expect(container.querySelector(".desk-room-tags")?.textContent).toContain("Чекає на Сергія");
   });

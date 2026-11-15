@@ -277,6 +277,7 @@ export function DeskPage() {
         query={query}
         onQuery={setQuery}
         onCreate={() => setThreadModal("create")}
+        hidden={roomOpen}
       />
 
       <div className="wb-page-body">
@@ -348,7 +349,6 @@ export function DeskPage() {
               busy={busy}
               onBack={() => setRoomOpen(false)}
               onSend={(text, kind, files) => void send(text, kind, files)}
-              onPatchThread={(patch) => void patchThread(patch)}
               onEditThread={() => setThreadModal("edit")}
               onArchiveThread={() => void patchThread({ archived: !room.thread.archived })}
               onDeleteThread={() => void removeThread()}

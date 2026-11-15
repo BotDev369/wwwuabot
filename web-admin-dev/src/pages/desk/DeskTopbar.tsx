@@ -13,11 +13,13 @@ interface DeskTopbarProps {
   query: string;
   onQuery: (value: string) => void;
   onCreate: () => void;
+  /** На телефоні відкрита тема ховає шапку: екран належить їй. */
+  hidden: boolean;
 }
 
-export function DeskTopbar({ total, query, onQuery, onCreate }: DeskTopbarProps) {
+export function DeskTopbar({ total, query, onQuery, onCreate, hidden }: DeskTopbarProps) {
   return (
-    <PageTopbar>
+    <PageTopbar className={`desk-topbar${hidden ? " desk-topbar--hidden" : ""}`}>
       <div className="wb-topbar-left">
         <h1 className="wb-topbar-title">{labels.title}</h1>
         <span className="wb-count">{total}</span>

@@ -9,6 +9,7 @@
   gap: var(--sp-3);
   flex: 1;
   min-height: 0;
+  overflow: hidden;
   padding: var(--sp-4) var(--sp-5);
 }
 
@@ -16,6 +17,7 @@
 
 .desk-groups {
   display: flex;
+  flex: 0 0 auto;
   flex-direction: column;
   gap: 2px;
   min-height: 0;
@@ -164,6 +166,12 @@
   gap: 6px;
 }
 
+/* Бейдж не переноситься: «Чекає на Buffy» у два рядки — це вже не бейдж */
+.desk-room-tags .wb-badge,
+.desk-thread-top .wb-badge {
+  white-space: nowrap;
+}
+
 .desk-tag {
   font-size: var(--text-xs);
 }
@@ -193,6 +201,7 @@
 }
 
 .desk-room-head {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -202,8 +211,10 @@
 
 .desk-room-bar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--sp-2);
+  min-width: 0;
 }
 
 .desk-room-path {
@@ -223,28 +234,7 @@
 .desk-room-actions {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
-}
-
-.desk-room-buttons {
-  display: flex;
-  flex-wrap: wrap;
   gap: 6px;
-  margin-left: auto;
-}
-
-.desk-control {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-
-.desk-control .wb-select {
-  min-height: 32px;
-  font-size: var(--text-xs);
 }
 
 /* Видалення — тим самим розміром кнопки, але кольором окремо: дія незворотна */
@@ -300,8 +290,16 @@
 
 .desk-entry-actions {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   margin-left: auto;
+}
+
+/* Дії запису — найдрібніший рядок у стрічці: вони потрібні рідко, але місце
+   займають завжди. */
+.desk-entry-actions .wb-btn {
+  min-height: 24px;
+  padding: 0 6px;
+  font-size: var(--text-xs);
 }
 
 .desk-entry-body {
@@ -385,6 +383,7 @@
 /* ── Композер ── */
 
 .desk-composer {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
@@ -406,22 +405,37 @@
 
 .desk-composer-tools {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
   gap: var(--sp-2);
   min-width: 0;
 }
 
+.desk-composer-tools .wb-btn {
+  flex: 0 0 auto;
+  padding: 0 var(--sp-2);
+  white-space: nowrap;
+}
+
+.desk-composer-row > .wb-btn {
+  flex: 0 0 auto;
+}
+
 .desk-composer-tools .wb-select {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 132px;
   min-height: 32px;
   font-size: var(--text-xs);
 }
 
-.desk-hint {
-  overflow: hidden;
-  color: var(--text-muted);
-  font-size: var(--text-xs);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.desk-attach-icon {
+  display: none;
+}
+
+.desk-attach-icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .desk-composer-files {
@@ -460,30 +474,56 @@
   }
 }
 
-/* Телефон: одна колонка й дві панелі на одній площі — список тем і тема.
-   Групи стають смугою чипів, що скролиться вбік; «назад» повертає до списку.
-   Рядки сітки явні: з `auto` порожній список розтягував смугу груп на пів
-   екрана. Поле вводу 16px, інакше iOS зумить екран на фокусі. */
+/* Телефон: одна панель на екрані. Список — групи, фільтри й стрічка тем, що
+   скролиться сама; відкрита тема ховає шапку сторінки й займає весь екран.
+   Чипи переносяться, а не обрізаються: обрізаний край читався як зламана смуга.
+   Поле вводу 16px, інакше iOS зумить екран на фокусі. */
 @media (max-width: 768px) {
+  .desk-topbar--hidden {
+    display: none;
+  }
+
   .desk {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
-    align-content: start;
     gap: var(--sp-2);
-    padding: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3) 0;
   }
 
+  /* Один рядок, що скролиться, з м'яким краєм: обрізаний посередині чип
+     читався як зламана смуга, а перенос на три ряди з'їдав пів екрана. */
   .desk-groups {
     display: flex;
-    flex: 0 0 auto;
     flex-direction: row;
+    flex-wrap: nowrap;
     align-items: center;
     align-self: start;
     gap: 6px;
     overflow-x: auto;
     overflow-y: hidden;
-    padding-bottom: var(--sp-1);
     scrollbar-width: none;
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
+
+  .desk-groups::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Шапка сторінки на телефоні: пошук і «Нова тема» в одному рядку, інакше
+     три ряди шапки з'їдали чверть екрана над списком. */
+  .desk-topbar .wb-topbar-right {
+    flex-wrap: nowrap;
+    width: 100%;
+  }
+
+  .desk-topbar .wb-search {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .desk-topbar .wb-btn {
+    flex: 0 0 auto;
   }
 
   .desk-group {
@@ -500,26 +540,30 @@
     min-height: 0;
   }
 
-  .desk-threads {
-    padding-right: 0;
-  }
-
   .desk-chips {
-    flex-wrap: nowrap;
-    align-items: center;
-    overflow-x: auto;
-    padding-bottom: var(--sp-1);
-    scrollbar-width: none;
+    flex-wrap: wrap;
+    overflow: visible;
   }
 
-  /* Чип не стискається: інакше «В роботі» ламається на два рядки */
   .desk-chip {
     flex: 0 0 auto;
     white-space: nowrap;
   }
 
+  .desk-threads {
+    padding-right: 0;
+  }
+
   .desk-room {
     display: none;
+  }
+
+  /* Тема в списку не бере місця; відкрита — єдина панель, без рамки: рамка
+     всередині рамки екрана виглядала як обрізана картка. */
+  .desk--room {
+    grid-template-rows: minmax(0, 1fr);
+    gap: 0;
+    padding: 0;
   }
 
   .desk--room .desk-groups,
@@ -527,45 +571,74 @@
     display: none;
   }
 
-  /* Тема — єдина видима панель, тож займає обидва рядки: в `auto`-рядку вона
-     б стиснулась до вмісту й композер поїхав би вгору. */
   .desk--room .desk-room {
     display: flex;
-    grid-row: 1 / -1;
-    min-height: 0;
+    border: none;
+    border-radius: 0;
   }
 
   .desk-room-head {
+    gap: 6px;
     padding: var(--sp-2) var(--sp-3);
+    border-bottom: 1px solid var(--border-subtle);
   }
 
   .desk-room-title {
     font-size: var(--text-md);
   }
 
-  .desk-room-buttons {
-    margin-left: 0;
+  .desk-room-actions {
+    gap: 6px;
+  }
+
+  /* Статус і теги — один рядок, що скролиться: у шапці теми кожен рядок
+     коштує рядка стрічки. */
+  .desk-room-tags {
+    flex: 1 1 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+  }
+
+  .desk-room-tags::-webkit-scrollbar {
+    display: none;
   }
 
   .desk-feed {
-    padding: var(--sp-3);
+    padding: var(--sp-2) var(--sp-3);
   }
 
   .desk-entry {
     max-width: 100%;
   }
 
+  .desk-loose {
+    padding: var(--sp-2) var(--sp-3);
+  }
+
   .desk-composer {
     padding: var(--sp-2) var(--sp-3) var(--sp-3);
+    border-top: 1px solid var(--border-subtle);
   }
 
   .desk-composer-input {
-    min-height: 56px;
+    min-height: 48px;
     font-size: var(--text-md);
   }
 
-  .desk-hint {
-    display: none;
+  /* «Прикріпити файли» поруч із «Надіслати» не влазить: лишається значок,
+     підпис — для читача з екрана. */
+  .desk-attach-icon {
+    display: inline-flex;
+  }
+
+  .desk-attach-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
 
   /* Хрестики на телефоні більші: 24px — це менше за палець */
