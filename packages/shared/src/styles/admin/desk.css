@@ -370,14 +370,138 @@
   white-space: nowrap;
 }
 
-/* Вузький екран: групи ховаємо, лишаються теми й тема — розмова головніша
-   за дерево, яке й так дублюється тегами. */
+/* Кнопка «назад» існує лише на телефоні: там панелі перемикаються */
+.desk-room-back {
+  display: none;
+}
+
+/* Планшет: дві колонки, дерево груп згортається в смугу зверху */
 @media (max-width: 1180px) {
   .desk {
     grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
   }
 
   .desk-groups {
+    display: none;
+  }
+}
+
+/* Телефон: одна колонка й дві панелі на одній площі — список тем і тема.
+   Групи стають смугою чипів, що скролиться вбік; «назад» повертає до списку.
+   Жодних дрібних шрифтів: поле вводу 16px, інакше iOS зумить екран на фокусі. */
+@media (max-width: 768px) {
+  .desk {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-2);
+    padding: var(--sp-2);
+  }
+
+  .desk-groups {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: var(--sp-1);
+    scrollbar-width: none;
+  }
+
+  .desk-brand,
+  .desk-note {
+    display: none;
+  }
+
+  .desk-group {
+    flex: 0 0 auto;
+    min-height: 32px;
+    padding: 0 var(--sp-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    white-space: nowrap;
+  }
+
+  .desk-list {
+    min-height: 0;
+  }
+
+  .desk-threads {
+    padding-right: 0;
+  }
+
+  .desk-search {
+    min-height: 44px;
+    font-size: var(--text-md);
+  }
+
+  .desk-chips {
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow-x: auto;
+    padding-bottom: var(--sp-1);
+    scrollbar-width: none;
+  }
+
+  /* Чип не стискається: інакше «Чекає на Buffy» ламається на три рядки */
+  .desk-chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .desk-room {
+    display: none;
+  }
+
+  .desk--room .desk-groups,
+  .desk--room .desk-list {
+    display: none;
+  }
+
+  .desk--room .desk-room {
+    display: flex;
+    min-height: 0;
+  }
+
+  .desk-room-back {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    min-height: 32px;
+    padding: 0 var(--sp-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--text-sm);
+    cursor: pointer;
+  }
+
+  .desk-room-head {
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .desk-room-title {
+    font-size: var(--text-md);
+  }
+
+  .desk-feed {
+    padding: var(--sp-3);
+  }
+
+  .desk-entry {
+    max-width: 100%;
+  }
+
+  .desk-composer {
+    padding: var(--sp-2) var(--sp-3) var(--sp-3);
+  }
+
+  .desk-composer-input {
+    min-height: 56px;
+    font-size: var(--text-md);
+  }
+
+  .desk-hint {
     display: none;
   }
 }

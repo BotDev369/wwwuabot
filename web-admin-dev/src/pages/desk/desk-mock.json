@@ -14,7 +14,8 @@
     "kindLabel": "Вид",
     "empty": "Немає тем за цим фільтром",
     "queue": "Черга",
-    "now": "зараз"
+    "now": "зараз",
+    "back": "До тем"
   },
   "statuses": {
     "open": "Відкрите",
@@ -37,19 +38,58 @@
     "buffy": "Buffy"
   },
   "groups": [
-    { "key": "all", "label": "Усі теми", "count": 7 },
-    { "key": "plan", "label": "Плани", "count": 3 },
-    { "key": "task", "label": "Задачі", "count": 2 },
-    { "key": "debt", "label": "Борги", "count": 1 },
-    { "key": "question", "label": "Питання", "count": 1 },
-    { "key": "file", "label": "Файли", "count": 1 }
+    {
+      "key": "all",
+      "label": "Усі теми",
+      "count": 7
+    },
+    {
+      "key": "plan",
+      "label": "Плани",
+      "count": 3
+    },
+    {
+      "key": "task",
+      "label": "Задачі",
+      "count": 2
+    },
+    {
+      "key": "debt",
+      "label": "Борги",
+      "count": 1
+    },
+    {
+      "key": "question",
+      "label": "Питання",
+      "count": 1
+    },
+    {
+      "key": "file",
+      "label": "Файли",
+      "count": 1
+    }
   ],
   "filters": [
-    { "key": "all", "label": "Усі" },
-    { "key": "waitingBuffy", "label": "Чекає на Buffy" },
-    { "key": "waitingSerhii", "label": "Чекає на Сергія" },
-    { "key": "doing", "label": "У роботі" },
-    { "key": "done", "label": "Зроблено" }
+    {
+      "key": "all",
+      "label": "Усі"
+    },
+    {
+      "key": "waitingBuffy",
+      "label": "Чекає на Buffy"
+    },
+    {
+      "key": "waitingSerhii",
+      "label": "Чекає на Сергія"
+    },
+    {
+      "key": "doing",
+      "label": "У роботі"
+    },
+    {
+      "key": "done",
+      "label": "Зроблено"
+    }
   ],
   "threads": [
     {
@@ -98,7 +138,12 @@
           "when": "14.11 09:12",
           "kind": "question",
           "body": "Хочу окремий бакет: документи, «від Сергія», «від Buffy», архів. Питання — як це краще скласти, щоб не вийшло звалище.",
-          "files": [{ "name": "schema-draft.png", "size": "84 КБ" }]
+          "files": [
+            {
+              "name": "schema-draft.png",
+              "size": "84 КБ"
+            }
+          ]
         },
         {
           "author": "buffy",
@@ -106,8 +151,14 @@
           "kind": "answer",
           "body": "Папки в R2 — це префікси, тому потрібен індекс у D1: без нього не видно ні розмірів, ні того, хто що поклав. Пропоную desk/<тема>/<id> і таблицю з описом.",
           "files": [
-            { "name": "bucket-plan.md", "size": "12 КБ" },
-            { "name": "keys.csv", "size": "3 КБ" }
+            {
+              "name": "bucket-plan.md",
+              "size": "12 КБ"
+            },
+            {
+              "name": "keys.csv",
+              "size": "3 КБ"
+            }
           ]
         }
       ]
@@ -170,8 +221,14 @@
           "kind": "file",
           "body": "Склав усе, що назбиралось за жовтень. Треба розібрати й лишити тільки те, що справді потрібне.",
           "files": [
-            { "name": "october-photos.zip", "size": "48 МБ" },
-            { "name": "index.txt", "size": "1 КБ" }
+            {
+              "name": "october-photos.zip",
+              "size": "48 МБ"
+            },
+            {
+              "name": "index.txt",
+              "size": "1 КБ"
+            }
           ]
         }
       ]
@@ -190,7 +247,12 @@
           "when": "12.11 14:15",
           "kind": "note",
           "body": "На темній темі другорядна кнопка майже зливається з поверхнею. Перевірю контраст на трьох сторінках і запропоную значення токена.",
-          "files": [{ "name": "contrast-check.png", "size": "156 КБ" }]
+          "files": [
+            {
+              "name": "contrast-check.png",
+              "size": "156 КБ"
+            }
+          ]
         }
       ]
     },

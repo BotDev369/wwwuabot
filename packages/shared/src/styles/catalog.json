@@ -1,5 +1,5 @@
 {
-  "version": "5b8b980",
+  "version": "c57ffb0",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -24,7 +24,7 @@
     {
       "file": "admin/desk.css",
       "tokens": 0,
-      "classes": 44
+      "classes": 47
     },
     {
       "file": "admin/index.css",
@@ -2935,6 +2935,10 @@
         "section": "Тема",
         "names": [
           "desk",
+          "desk--room",
+          "desk-brand",
+          "desk-chip",
+          "desk-chips",
           "desk-composer",
           "desk-composer-input",
           "desk-composer-kind",
@@ -2952,12 +2956,18 @@
           "desk-file-name",
           "desk-file-size",
           "desk-files",
+          "desk-group",
           "desk-groups",
           "desk-hint",
+          "desk-list",
+          "desk-note",
           "desk-room",
+          "desk-room-back",
           "desk-room-head",
           "desk-room-path",
-          "desk-room-title"
+          "desk-room-title",
+          "desk-search",
+          "desk-threads"
         ]
       }
     ],

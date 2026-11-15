@@ -32,6 +32,9 @@ export function DeskPage() {
   const [status, setStatus] = useState("all");
   const [query, setQuery] = useState("");
   const [activeId, setActiveId] = useState(THREADS[0].id);
+  // На телефоні колонки не вміщаються: список і тема — дві панелі однієї
+  // площі. На широкому екрані клас нічого не робить, обидві видно разом.
+  const [roomOpen, setRoomOpen] = useState(false);
   const [draftText, setDraftText] = useState("");
   const [draftKind, setDraftKind] = useState("note");
   const [sent, setSent] = useState<Draft[]>([]);
@@ -65,7 +68,7 @@ export function DeskPage() {
   }
 
   return (
-    <section className="desk">
+    <section className={`desk${roomOpen ? " desk--room" : ""}`}>
       <aside className="desk-groups">
         <div className="desk-brand">
           <b>{LABELS.title}</b>
@@ -118,7 +121,10 @@ export function DeskPage() {
               key={thread.id}
               type="button"
               className={`desk-thread${thread.id === active.id ? " desk-thread--active" : ""}`}
-              onClick={() => setActiveId(thread.id)}
+              onClick={() => {
+                setActiveId(thread.id);
+                setRoomOpen(true);
+              }}
             >
               <span className="desk-thread-top">
                 <span className={`wb-badge ${statusTone(thread.status)}`}>
@@ -144,6 +150,9 @@ export function DeskPage() {
 
       <div className="desk-room">
         <header className="desk-room-head">
+          <button type="button" className="desk-room-back" onClick={() => setRoomOpen(false)}>
+            {LABELS.back}
+          </button>
           <span className="desk-room-path">{active.subgroup}</span>
           <h1 className="desk-room-title">{active.title}</h1>
           <span className="desk-room-tags">
