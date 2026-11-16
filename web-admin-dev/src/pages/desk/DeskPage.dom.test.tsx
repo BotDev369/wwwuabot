@@ -114,7 +114,6 @@ vi.mock("./desk.api", async () => {
         bytes: file.size,
         mime: "application/octet-stream",
         author: "serhii" as DeskSide,
-        r2_key: `desk/${threadId}/${file.name}`,
         created_at: "2026-11-15 11:00:00",
       } as DeskFile);
       return readRoom(threadId);
@@ -326,7 +325,6 @@ describe("Стіл: файли", () => {
         name: "стеля.txt",
         bytes: 2048,
         mime: "text/plain",
-        r2_key: "desk/1/стеля.txt",
         created_at: "2026-11-15 10:00:00",
       },
     ];
