@@ -1,5 +1,5 @@
 /**
- * Запис у формі: текст і вид. Правка не рухає тему вгору списку.
+ * Запис у формі: тільки текст. Правка не рухає справу вгору списку.
  *
  * @module web-admin-dev/src/pages/desk/DeskEntryModal
  */
@@ -9,51 +9,29 @@ import { icons } from "@wwwuabot/shared";
 import labels from "./desk-labels.json";
 import type { DeskEntryView } from "./desk-view";
 
-const KINDS = Object.entries(labels.kinds as Record<string, string>);
-
 interface DeskEntryModalProps {
-  entry: DeskEntryView | null;
+  entry: DeskEntryView;
   busy: boolean;
   error: string;
   onClose: () => void;
-  onSave: (payload: { kind: string; body: string }) => void;
+  onSave: (body: string) => void;
 }
 
 export function DeskEntryModal({ entry, busy, error, onClose, onSave }: DeskEntryModalProps) {
-  const [body, setBody] = useState(entry?.body ?? "");
-  const [kind, setKind] = useState(entry?.kind ?? "note");
+  const [body, setBody] = useState(entry.body);
   const clean = body.trim();
 
   return (
     <div className="wb-modal-overlay" onClick={onClose}>
-      <div className="wb-modal desk-modal" onClick={(event) => event.stopPropagation()}>
+      <div className="wb-modal" onClick={(event) => event.stopPropagation()}>
         <div className="wb-modal-header">
-          <h3 className="wb-modal-title">{labels.editEntryTitle}</h3>
-          <button className="wb-modal-close" onClick={onClose} disabled={busy}>
+          <h3 className="wb-modal-title">{labels.editEntry}</h3>
+          <button className="wb-modal-close" onClick={onClose} aria-label={labels.close}>
             {icons["close"]}
           </button>
         </div>
 
         <div className="wb-modal-body">
-          <div className="wb-field">
-            <label className="wb-label" htmlFor="desk-entry-kind">
-              {labels.kindLabel}
-            </label>
-            <select
-              id="desk-entry-kind"
-              className="wb-select"
-              value={kind}
-              onChange={(event) => setKind(event.target.value)}
-              disabled={busy}
-            >
-              {KINDS.map(([key, value]) => (
-                <option key={key} value={key}>
-                  {value}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="wb-field">
             <label className="wb-label" htmlFor="desk-entry-body">
               {labels.bodyLabel}
@@ -67,17 +45,16 @@ export function DeskEntryModal({ entry, busy, error, onClose, onSave }: DeskEntr
               disabled={busy}
             />
           </div>
-
-          {error && <div className="wb-modal-error">{error}</div>}
+          {error && <p className="desk-error">{error}</p>}
         </div>
 
         <div className="wb-modal-footer">
           <button className="wb-btn wb-btn-secondary" onClick={onClose} disabled={busy}>
-            {labels.close}
+            {labels.cancel}
           </button>
           <button
             className="wb-btn wb-btn-primary"
-            onClick={() => clean && onSave({ kind, body: clean })}
+            onClick={() => clean && onSave(clean)}
             disabled={busy || !clean}
           >
             {busy ? labels.saving : labels.save}

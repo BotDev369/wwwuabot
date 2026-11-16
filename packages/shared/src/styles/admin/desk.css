@@ -1,286 +1,74 @@
 /* ─── Стіл: спільний простір Сергія й Buffy ──────────────────────────────────
-   Три колонки: групи, теми, тема зі стрічкою. Кнопки, поля, чипи й модалки —
-   спільні кирпичики (`wb-*`); власні класи тут лише для розкладки столу:
-   смуги груп, списку тем, стрічки й композера. Кольори — тільки токени. */
+   Розкладку, таблицю й модалки дають спільні кирпичики (`DataTable`,
+   `CollectionToolbar`, `wb-modal*`). Тут лишається тільки те, чого в продукті
+   ще немає: стрічка записів усередині справи та її композер. */
 
-.desk {
-  display: grid;
-  grid-template-columns: 208px minmax(260px, 340px) minmax(0, 1fr);
-  gap: var(--sp-3);
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  padding: var(--sp-4) var(--sp-5);
-}
+/* ── Вибори над списком ──
+   Два поля в одному ряду: чия черга і активні/архів. Той самий `wb-input`,
+   що й у формах адмінки, — своїх контролів стіл не заводить. */
 
-/* ── Групи ── */
-
-.desk-groups {
+.desk-filters {
   display: flex;
-  flex: 0 0 auto;
-  flex-direction: column;
-  gap: 2px;
-  min-height: 0;
-  overflow: auto;
-}
-
-.desk-group {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: var(--sp-2);
-  min-height: 36px;
-  padding: 0 var(--sp-2);
-  border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: var(--text-sm);
-  text-align: left;
-  cursor: pointer;
+  margin-bottom: var(--sp-3);
 }
 
-.desk-group:hover {
-  background: var(--bg-2);
-  color: var(--text-primary);
+.desk-filters .wb-input {
+  flex: 0 1 240px;
+  min-width: 0;
 }
 
-.desk-group--active {
-  background: var(--accent-soft);
-  color: var(--text-primary);
-  font-weight: 600;
+/* ── Справа в модалці ── */
+
+.desk-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--sp-3);
 }
 
-.desk-group b {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--text-muted);
+.desk-item-tags .wb-badge {
+  white-space: nowrap;
 }
 
-.desk-note {
-  margin: var(--sp-2);
-  font-size: var(--text-xs);
-  line-height: 1.4;
-  color: var(--text-muted);
+.desk-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: var(--sp-4);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-.desk-note--error {
+/* Видалення — тим самим розміром, але кольором окремо: дія незворотна */
+.desk-danger {
   color: var(--danger, var(--red, #ef4444));
 }
 
-/* ── Список тем ── */
-
-.desk-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-  min-height: 0;
-  overflow: hidden;
-}
-
-.desk-list-head {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
-
-.desk-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.desk-chip {
-  flex: 0 0 auto;
-  font-size: var(--text-xs);
-  white-space: nowrap;
-}
-
-/* «Скинути фільтри» — не окремий фільтр, а дія: без рамки чипа */
-.desk-chip--reset {
-  border-color: transparent;
-  background: transparent;
-  color: var(--text-muted);
-}
-
-.desk-chip--on {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  color: var(--text-primary);
-}
-
-.desk-threads {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-  min-height: 0;
-  overflow: auto;
-  padding-right: var(--sp-1);
-}
-
-.desk-thread {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 100%;
-  padding: var(--sp-3);
-  border: 1px solid var(--card-border);
-  border-radius: var(--card-radius);
-  background: var(--card-bg);
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.desk-thread:hover {
-  border-color: var(--accent);
-}
-
-.desk-thread--active {
-  border-color: var(--accent);
-  box-shadow: inset 3px 0 0 var(--accent);
-}
-
-.desk-thread-top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-}
-
-.desk-thread-when {
-  margin-left: auto;
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-
-.desk-thread-title {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  line-height: 1.35;
-  color: var(--text-primary);
-}
-
-.desk-thread-meta {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-
-.desk-thread-tags,
-.desk-room-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-/* Бейдж не переноситься: «Чекає на Buffy» у два рядки — це вже не бейдж */
-.desk-room-tags .wb-badge,
-.desk-thread-top .wb-badge {
-  white-space: nowrap;
-}
-
-.desk-tag {
-  font-size: var(--text-xs);
-}
-
-/* Вхід в архів на телефоні — рядок у кінці списку, не смуга над ним */
-.desk-archive-toggle {
-  display: none;
-}
-
 .desk-empty {
-  padding: var(--sp-4);
+  padding: var(--sp-6) var(--sp-3);
   color: var(--text-muted);
   font-size: var(--text-sm);
   text-align: center;
 }
 
-/* ── Тема ── */
-
-.desk-room {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  border: 1px solid var(--card-border);
-  border-radius: var(--card-radius);
-  background: var(--card-bg);
-  overflow: hidden;
-}
-
-.desk-room--empty {
-  align-items: center;
-  justify-content: center;
-}
-
-.desk-room-head {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: var(--sp-3) var(--sp-4);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.desk-room-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
-  min-width: 0;
-}
-
-.desk-room-path {
+.desk-error {
+  margin: var(--sp-2) 0 0;
   font-size: var(--text-xs);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.desk-room-title {
-  margin: 0;
-  font-size: var(--text-lg);
-  line-height: 1.25;
-  color: var(--text-primary);
-}
-
-.desk-room-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-/* Видалення — тим самим розміром кнопки, але кольором окремо: дія незворотна */
-.desk-danger {
   color: var(--danger, var(--red, #ef4444));
 }
 
-/* ── Стрічка ── */
-
-.desk-feed {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  padding: var(--sp-4);
-}
+/* ── Записи ── */
 
 .desk-entry {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-width: 92%;
   padding: var(--sp-3);
+  border: 1px solid var(--card-border);
   border-radius: var(--card-radius);
-  background: var(--bg-2);
+  background: var(--card-bg);
 }
 
-.desk-entry--buffy {
-  align-self: flex-end;
-  background: var(--accent-soft);
+.desk-entry + .desk-entry {
+  margin-top: var(--sp-2);
 }
 
 .desk-entry-head {
@@ -298,7 +86,6 @@
 }
 
 .desk-entry-when {
-  font-size: var(--text-xs);
   color: var(--text-muted);
 }
 
@@ -308,26 +95,31 @@
   margin-left: auto;
 }
 
-/* Дії запису — найдрібніший рядок у стрічці: вони потрібні рідко, але місце
-   займають завжди. */
 .desk-entry-actions .wb-btn {
-  min-height: 24px;
+  min-height: 28px;
   padding: 0 6px;
-  font-size: var(--text-xs);
+}
+
+.desk-entry-actions svg {
+  width: 16px;
+  height: 16px;
 }
 
 .desk-entry-body {
-  margin: 0;
+  margin: 6px 0 0;
   font-size: var(--text-sm);
   line-height: 1.5;
   color: var(--text-primary);
   white-space: pre-wrap;
 }
 
+/* ── Файли ── */
+
 .desk-files {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  margin-top: var(--sp-2);
 }
 
 .desk-file {
@@ -354,8 +146,7 @@
   color: var(--text-muted);
 }
 
-.desk-file-drop,
-.desk-file-chip button {
+.desk-file-drop {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -366,48 +157,31 @@
   border-radius: var(--radius-full);
   background: transparent;
   color: var(--text-muted);
-  font: inherit;
-  line-height: 1;
   cursor: pointer;
 }
 
-.desk-file-drop:hover,
-.desk-file-chip button:hover {
+.desk-file-drop svg {
+  width: 14px;
+  height: 14px;
+}
+
+.desk-file-drop:hover {
   background: var(--bg-3);
   color: var(--text-primary);
 }
 
-/* Файли, прикріплені до теми без запису, — окремою полицею над композером */
-.desk-loose {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-4);
-  border-top: 1px solid var(--border-subtle);
-}
-
-.desk-loose-title {
-  font-size: var(--text-xs);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-/* ── Композер ── */
+/* ── Композер у підвалі модалки ── */
 
 .desk-composer {
-  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: var(--sp-2);
-  padding: var(--sp-3) var(--sp-4) var(--sp-4);
-  border-top: 1px solid var(--border-subtle);
 }
 
-.desk-composer-input {
-  min-height: 72px;
-  resize: vertical;
+.desk-composer .wb-textarea {
+  min-height: 64px;
+  font-size: var(--text-md);
 }
 
 .desk-composer-row {
@@ -417,236 +191,26 @@
   gap: var(--sp-2);
 }
 
-.desk-composer-tools {
-  display: flex;
-  flex: 1 1 auto;
-  align-items: center;
-  gap: var(--sp-2);
-  min-width: 0;
-}
-
-.desk-composer-tools .wb-btn {
-  flex: 0 0 auto;
-  padding: 0 var(--sp-2);
-  white-space: nowrap;
-}
-
-.desk-composer-row > .wb-btn {
+.desk-composer-row .wb-btn {
   flex: 0 0 auto;
 }
 
-.desk-composer-tools .wb-select {
-  flex: 0 1 auto;
-  width: auto;
-  max-width: 132px;
-  min-height: 32px;
-  font-size: var(--text-xs);
-}
-
-.desk-attach-icon {
-  display: none;
-}
-
-.desk-attach-icon svg {
+.desk-composer-row .wb-btn svg {
   width: 18px;
   height: 18px;
 }
 
-.desk-composer-files {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.desk-file-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  max-width: 100%;
-  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  background: var(--bg-1);
-  color: var(--text-primary);
-  font-size: var(--text-xs);
-}
-
-.desk-file-chip span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Планшет: дві колонки, дерево груп згортається в смугу зверху */
-@media (max-width: 1180px) {
-  .desk {
-    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
-  }
-
-  .desk-groups {
-    display: none;
-  }
-}
-
-/* Телефон: одна панель на екрані. Список — групи, фільтри й стрічка тем, що
-   скролиться сама; відкрита тема ховає шапку сторінки й займає весь екран.
-   Чипи переносяться, а не обрізаються: обрізаний край читався як зламана смуга.
-   Поле вводу 16px, інакше iOS зумить екран на фокусі. */
 @media (max-width: 768px) {
-  .desk-topbar--hidden {
-    display: none;
+  .desk-filters .wb-input {
+    flex: 1 1 0;
   }
 
-  .desk {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
-    gap: var(--sp-2);
-    padding: var(--sp-2) var(--sp-3) 0;
+  .desk-entry-actions .wb-btn {
+    min-height: 32px;
+    min-width: 32px;
   }
 
-  /* Один рядок, що скролиться, з м'яким краєм: обрізаний посередині чип
-     читався як зламана смуга, а перенос на три ряди з'їдав пів екрана. */
-  /* Телефон: без бічної смуги груп і без рядка фільтрів — список і пошук.
-     Фільтрує пошук, а не набір чипів над списком. */
-  .desk-groups,
-  .desk-list-head {
-    display: none;
-  }
-
-  /* Останнє поле форми має прокручуватись вище за кнопки, а не ховатись під
-     ними: без цього «Теги» виглядали обрізаними. */
-  .desk-modal .wb-modal-body {
-    padding: var(--sp-4) var(--sp-4) calc(var(--sp-5) + var(--sp-4));
-  }
-
-  .desk-archive-toggle {
-    display: block;
-    width: 100%;
-    padding: var(--sp-3);
-    border: none;
-    border-top: 1px solid var(--border-subtle);
-    background: transparent;
-    color: var(--text-muted);
-    font: inherit;
-    font-size: var(--text-xs);
-    cursor: pointer;
-  }
-
-  /* Шапка сторінки на телефоні: пошук і «Нова тема» в одному рядку, інакше
-     три ряди шапки з'їдали чверть екрана над списком. */
-  .desk-topbar .wb-topbar-right {
-    flex-wrap: nowrap;
-    width: 100%;
-  }
-
-  .desk-topbar .wb-search {
-    flex: 1 1 auto;
-    width: auto;
-    min-width: 0;
-  }
-
-  .desk-topbar .wb-btn {
-    flex: 0 0 auto;
-  }
-
-  .desk-list {
-    min-height: 0;
-  }
-
-  .desk-threads {
-    padding-right: 0;
-  }
-
-  .desk-room {
-    display: none;
-  }
-
-  /* Тема в списку не бере місця; відкрита — єдина панель, без рамки: рамка
-     всередині рамки екрана виглядала як обрізана картка. */
-  .desk--room {
-    grid-template-rows: minmax(0, 1fr);
-    gap: 0;
-    padding: 0;
-  }
-
-  .desk--room .desk-groups,
-  .desk--room .desk-list {
-    display: none;
-  }
-
-  .desk--room .desk-room {
-    display: flex;
-    border: none;
-    border-radius: 0;
-  }
-
-  .desk-room-head {
-    gap: 6px;
-    padding: var(--sp-2) var(--sp-3);
-    border-bottom: 1px solid var(--border-subtle);
-  }
-
-  .desk-room-title {
-    font-size: var(--text-md);
-  }
-
-  .desk-room-actions {
-    gap: 6px;
-  }
-
-  /* Статус і теги — один рядок, що скролиться: у шапці теми кожен рядок
-     коштує рядка стрічки. */
-  .desk-room-tags {
-    flex: 1 1 100%;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
-  }
-
-  .desk-room-tags::-webkit-scrollbar {
-    display: none;
-  }
-
-  .desk-feed {
-    padding: var(--sp-2) var(--sp-3);
-  }
-
-  .desk-entry {
-    max-width: 100%;
-  }
-
-  .desk-loose {
-    padding: var(--sp-2) var(--sp-3);
-  }
-
-  .desk-composer {
-    padding: var(--sp-2) var(--sp-3) var(--sp-3);
-    border-top: 1px solid var(--border-subtle);
-  }
-
-  .desk-composer-input {
-    min-height: 48px;
-    font-size: var(--text-md);
-  }
-
-  /* «Прикріпити файли» поруч із «Надіслати» не влазить: лишається значок,
-     підпис — для читача з екрана. */
-  .desk-attach-icon {
-    display: inline-flex;
-  }
-
-  .desk-attach-text {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
-
-  /* Хрестики на телефоні більші: 24px — це менше за палець */
-  .desk-file-drop,
-  .desk-file-chip button {
+  .desk-file-drop {
     min-width: 32px;
     min-height: 32px;
   }

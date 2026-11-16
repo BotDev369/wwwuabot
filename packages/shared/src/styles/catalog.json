@@ -1,5 +1,5 @@
 {
-  "version": "256ae78",
+  "version": "9ba3e84",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -24,7 +24,7 @@
     {
       "file": "admin/desk.css",
       "tokens": 0,
-      "classes": 65
+      "classes": 23
     },
     {
       "file": "admin/index.css",
@@ -2895,115 +2895,56 @@
     ],
     "admin/desk.css": [
       {
-        "section": "",
+        "section": "Вибори над списком",
         "names": [
-          "desk"
+          "desk-filters",
+          "wb-input"
         ]
       },
       {
-        "section": "Групи",
+        "section": "Справа в модалці",
         "names": [
-          "desk-group",
-          "desk-group--active",
-          "desk-groups",
-          "desk-note",
-          "desk-note--error"
-        ]
-      },
-      {
-        "section": "Список тем",
-        "names": [
-          "desk-archive-toggle",
-          "desk-chip",
-          "desk-chip--on",
-          "desk-chip--reset",
-          "desk-chips",
+          "desk-danger",
           "desk-empty",
-          "desk-list",
-          "desk-list-head",
-          "desk-room-tags",
-          "desk-tag",
-          "desk-thread",
-          "desk-thread--active",
-          "desk-thread-meta",
-          "desk-thread-tags",
-          "desk-thread-title",
-          "desk-thread-top",
-          "desk-thread-when",
-          "desk-threads",
+          "desk-error",
+          "desk-item-actions",
+          "desk-item-tags",
           "wb-badge"
         ]
       },
       {
-        "section": "Тема",
-        "names": [
-          "desk-danger",
-          "desk-room",
-          "desk-room--empty",
-          "desk-room-actions",
-          "desk-room-bar",
-          "desk-room-head",
-          "desk-room-path",
-          "desk-room-title"
-        ]
-      },
-      {
-        "section": "Стрічка",
+        "section": "Записи",
         "names": [
           "desk-entry",
-          "desk-entry--buffy",
           "desk-entry-actions",
           "desk-entry-author",
           "desk-entry-body",
           "desk-entry-head",
           "desk-entry-when",
-          "desk-feed",
-          "desk-file",
-          "desk-file-chip",
-          "desk-file-drop",
-          "desk-file-name",
-          "desk-file-size",
-          "desk-files",
-          "desk-loose",
-          "desk-loose-title",
           "wb-btn"
         ]
       },
       {
-        "section": "Композер",
+        "section": "Файли",
         "names": [
-          "desk",
-          "desk--room",
-          "desk-archive-toggle",
-          "desk-attach-icon",
-          "desk-attach-text",
-          "desk-composer",
-          "desk-composer-files",
-          "desk-composer-input",
-          "desk-composer-row",
-          "desk-composer-tools",
-          "desk-entry",
-          "desk-feed",
-          "desk-file-chip",
+          "desk-file",
           "desk-file-drop",
-          "desk-groups",
-          "desk-list",
-          "desk-list-head",
-          "desk-loose",
-          "desk-modal",
-          "desk-room",
-          "desk-room-actions",
-          "desk-room-head",
-          "desk-room-tags",
-          "desk-room-title",
-          "desk-threads",
-          "desk-topbar",
-          "desk-topbar--hidden",
+          "desk-file-name",
+          "desk-file-size",
+          "desk-files"
+        ]
+      },
+      {
+        "section": "Композер у підвалі модалки",
+        "names": [
+          "desk-composer",
+          "desk-composer-row",
+          "desk-entry-actions",
+          "desk-file-drop",
+          "desk-filters",
           "wb-btn",
-          "wb-modal-body",
-          "wb-search",
-          "wb-select",
-          "wb-topbar-right"
+          "wb-input",
+          "wb-textarea"
         ]
       }
     ],

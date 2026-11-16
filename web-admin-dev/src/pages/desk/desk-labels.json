@@ -1,34 +1,47 @@
 {
   "title": "Стіл",
-  "subtitle": "спільний простір — Сергій і Buffy",
-  "search": "Пошук теми або тега",
-  "allThreads": "Усі теми",
-  "composerPlaceholder": "Написати в тему…",
-  "composerHint": "Cmd+Enter — надіслати; файлів можна додати скільки завгодно",
+  "newItem": "Нова справа",
+  "itemTitle": "Справа",
+  "empty": "Справ поки немає",
+  "archiveEmpty": "В архіві порожньо",
+  "loading": "Завантаження…",
+  "failed": "Не вдалося зберегти",
+  "titleColumn": "Назва",
+  "queueColumn": "Черга",
+  "whenColumn": "Коли",
+  "queueLabel": "Чия черга",
+  "queueAll": "Усі",
+  "archiveLabel": "Справи",
+  "queueFilter": "Фільтр черги",
+  "archiveFilter": "Фільтр архіву",
+  "archiveActive": "Активні",
+  "archiveOnly": "Архів",
+  "statusLabel": "Статус",
+  "titleLabel": "Назва",
+  "bodyLabel": "Текст",
+  "save": "Зберегти",
+  "saving": "Зберігається…",
+  "close": "Закрити",
+  "cancel": "Скасувати",
+  "editItem": "Редагувати",
+  "archiveItem": "В архів",
+  "unarchiveItem": "Повернути",
+  "deleteItem": "Видалити",
+  "deleteItemQuestion": "Видалити справу разом із записами й файлами? Це безповоротно.",
+  "confirmDelete": "Видалити",
+  "editEntry": "Редагувати запис",
+  "deleteEntry": "Видалити запис",
+  "deleteEntryQuestion": "Видалити запис разом із його файлами?",
+  "deleteFile": "Видалити файл",
+  "deleteFileQuestion": "Видалити файл?",
+  "feedEmpty": "Тут ще немає записів",
+  "composerLabel": "Написати в справу",
+  "composerHint": "Cmd+Enter — надіслати",
   "send": "Надіслати",
   "attach": "Прикріпити файли",
-  "kindLabel": "Вид",
-  "empty": "Немає тем за цим фільтром",
-  "feedEmpty": "Тут ще немає записів",
-  "back": "До тем",
-  "loading": "Завантаження…",
-  "newThread": "Нова тема",
-  "newTitle": "Назва теми",
-  "newSubgroup": "Підгрупа",
-  "create": "Створити",
-  "cancel": "Скасувати",
-  "groupLabel": "Група",
-  "statusLabel": "Статус",
-  "turnLabel": "Чия черга",
   "removeFile": "Прибрати",
-  "deleteEntry": "Видалити запис",
-  "deleteFile": "Видалити файл",
   "uploading": "Завантажую файли…",
-  "sending": "Надсилаю…",
-  "failed": "Не вдалося зберегти",
-  "filesTitle": "Файли теми",
   "unread": "нове",
-  "turnsTitle": "черга",
   "statuses": {
     "open": "Відкрите",
     "doing": "В роботі",
@@ -36,9 +49,9 @@
     "dropped": "Знято"
   },
   "turns": {
-    "serhii": "Чекає на Сергія",
-    "buffy": "Чекає на Buffy",
-    "none": "Черга вільна"
+    "serhii": "Сергій",
+    "buffy": "Фрібаф",
+    "none": "Вільна"
   },
   "kinds": {
     "note": "Нотатка",
@@ -57,78 +70,5 @@
     "b": "Б",
     "kb": "КБ",
     "mb": "МБ"
-  },
-  "groups": [
-    {
-      "key": "all",
-      "label": "Усі теми"
-    },
-    {
-      "key": "plan",
-      "label": "Плани"
-    },
-    {
-      "key": "task",
-      "label": "Задачі"
-    },
-    {
-      "key": "debt",
-      "label": "Борги"
-    },
-    {
-      "key": "question",
-      "label": "Питання"
-    },
-    {
-      "key": "file",
-      "label": "Файли"
-    }
-  ],
-  "statusFilters": [
-    {
-      "key": "all",
-      "label": "Усі"
-    },
-    {
-      "key": "doing",
-      "label": "В роботі"
-    },
-    {
-      "key": "done",
-      "label": "Зроблено"
-    }
-  ],
-  "resetFilters": "Скинути фільтри",
-  "editThread": "Редагувати",
-  "deleteThread": "Видалити",
-  "archiveThread": "В архів",
-  "unarchiveThread": "Повернути",
-  "editEntry": "Редагувати",
-  "delete": "Видалити",
-  "save": "Зберегти",
-  "saving": "Зберігається…",
-  "close": "Закрити",
-  "titleLabel": "Назва",
-  "tagsLabel": "Теги",
-  "tagsHint": "через кому, напр.: бот, борги",
-  "subgroupLabel": "Підгрупа",
-  "archive": "Архів",
-  "emptyArchive": "Архів порожній",
-  "editThreadTitle": "Тема",
-  "editEntryTitle": "Запис",
-  "newEntryTitle": "Новий запис",
-  "deleteThreadQuestion": "Видалити тему разом із записами й файлами? Це безповоротно.",
-  "deleteEntryQuestion": "Видалити запис разом із його файлами?",
-  "deleteFileQuestion": "Видалити файл?",
-  "bodyLabel": "Текст",
-  "confirmDelete": "Видалити",
-  "editThreadAria": "Редагувати тему",
-  "deleteThreadAria": "Видалити тему",
-  "archiveThreadAria": "Архівувати тему",
-  "unarchiveThreadAria": "Повернути тему з архіву",
-  "editEntryAria": "Редагувати запис",
-  "deleteEntryAria": "Видалити запис",
-  "pickThread": "Обери тему зі списку",
-  "showArchive": "Архів",
-  "toActive": "До активних тем"
+  }
 }
