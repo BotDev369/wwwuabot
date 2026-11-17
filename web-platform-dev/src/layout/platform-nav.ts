@@ -26,7 +26,7 @@ const MAIN: readonly SideBarItem[] = [
   { key: "day", label: "Мій день", icon: "home", href: "/" },
   { key: "bazar", label: "Базар", icon: "cart", href: PAGES_PATH },
   { key: "hurt", label: "Гурт", icon: "users", href: USERS_PATH },
-  { key: "me", label: "Я", icon: "user", href: ACCOUNT_PATH },
+  { key: "me", label: "Я", icon: "user-solid", href: ACCOUNT_PATH },
 ];
 
 /** «Ще»: усе інше одним списком. */
