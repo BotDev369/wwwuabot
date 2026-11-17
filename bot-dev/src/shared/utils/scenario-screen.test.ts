@@ -147,9 +147,13 @@ describe("renderScenario", () => {
       .rich_message?.html;
     expect(html).toContain('type="web_app"');
     expect(html).not.toContain('type="url"');
-    for (const path of ["/trackers", "/services", "/assessments", "/favorites", "/contacts"]) {
+    // Головне меню платформи: вхід у застосунок починається з «Мого дня».
+    expect(html).toContain('url="https://platform.test/"');
+    for (const path of ["/pages", "/users", "/account", "/contacts"]) {
       expect(html).toContain(`https://platform.test${path}`);
     }
+    expect(html).toContain("Мій день");
+    expect(html).not.toContain("/trackers");
   });
 
   it("⛔ без chat немає рендера", async () => {

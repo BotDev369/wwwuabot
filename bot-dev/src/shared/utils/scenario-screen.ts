@@ -10,7 +10,6 @@ import type { AppContext } from "../types/env";
 import type { BotScenario } from "../types/scenario";
 import { appChatData, type AppView } from "../config/app-views";
 import { BRAND } from "../config/texts";
-import { screenLabel } from "@wwwuabot/shared/events";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
 import { editRichMessage, getChat, getMe, sendRichMessage, sendWidget } from "../telegram/widgets";
 import { applyPlatformUrl } from "./widget-html";
@@ -157,21 +156,22 @@ async function sendRichFallback(
 }
 
 /**
- * Стартовий екран без віджета: шапка бренду, лінія, сітка 2×2 у розділи
- * платформи й «Контакти» окремо. Палітру rich несе `style` кнопок: зелений
- * бренду на розділах, синій на контактах. Кнопки — `web_app`, не `url`:
- * людина вже в Telegram, розділ відкривається екраном, а не браузером.
+ * Стартовий екран без віджета: шапка бренду й ті самі входи, що в меню
+ * платформи — «Мій день», «Базар», «Гурт», «Я» — плюс «Контакти».
+ *
+ * Саме головне меню, а не старі розділи: трекери, сервіси, оцінки й обране
+ * тепер живуть під «Ще», і кнопка в боті вела б повз те, з чого людина
+ * починає день. Кнопки — `web_app`, не `url`: розділ відкривається екраном.
  */
 function startScreenHtml(platformUrl: string | undefined): string {
   const platform = platformUrl?.replace(/\/+$/, "");
-  const button = (key: string, path: string, style: string): string =>
-    `<tg-button type="web_app" style="${style}" url="${platform}${path}">` +
-    `${screenLabel(key)}</tg-button>`;
+  const button = (label: string, path: string, style: string): string =>
+    `<tg-button type="web_app" style="${style}" url="${platform}${path}">` + `${label}</tg-button>`;
   const sections: [string, string][] = [
-    ["trackers", "/trackers"],
-    ["services", "/services"],
-    ["assessments", "/assessments"],
-    ["favorites", "/favorites"],
+    ["Мій день", "/"],
+    ["Базар", "/pages"],
+    ["Гурт", "/users"],
+    ["Я", "/account"],
   ];
 
   const head = `<h1>${BRAND.name}</h1>` + `<p><i>${BRAND.tagline}</i></p>` + `<hr/>`;
@@ -193,7 +193,7 @@ function startScreenHtml(platformUrl: string | undefined): string {
     head +
     grid +
     `<hr/>` +
-    `<tg-button-row align="center">${button("contacts", "/contacts", "primary")}</tg-button-row>`
+    `<tg-button-row align="center">${button("Контакти", "/contacts", "primary")}</tg-button-row>`
   );
 }
 
