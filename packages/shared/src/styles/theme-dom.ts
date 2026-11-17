@@ -18,13 +18,26 @@ import { DEFAULT_THEME, isThemeId, THEME_KEY, type Scheme } from "./registry";
 /** Сміття від попередніх моделей вигляду: більше не читаємо, лише прибираємо. */
 const DEAD_KEYS = ["wwwuabot-colors", "wwwuabot-font"] as const;
 
-/** Вибір із памʼяті пристрою. Сміття й чуже значення — типова тема. */
+/**
+ * Тема, яку просить система: світла на «світлому» пристрої, інакше ніч.
+ *
+ * Це **не** другий перемикач: `prefers-color-scheme` читається лише тоді,
+ * коли людина ще не вибрала тему сама, і далі вибір людини старший.
+ */
+export function systemTheme(): Scheme {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return DEFAULT_THEME;
+  }
+  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+
+/** Вибір із памʼяті пристрою. Сміття, чуже значення й порожнеча — тема системи. */
 export function readStoredTheme(): Scheme {
   try {
     const stored = localStorage.getItem(THEME_KEY);
-    return isThemeId(stored) ? stored : DEFAULT_THEME;
+    return isThemeId(stored) ? stored : systemTheme();
   } catch {
-    return DEFAULT_THEME;
+    return systemTheme();
   }
 }
 

@@ -40,6 +40,12 @@ import { LikeToast } from "../favorites/LikeToast";
 export interface AppBarActions {
   /** Повернутися на екран, з якого прийшли. */
   onBack: () => void;
+  /**
+   * Відкрити меню продукту (сайдбар). На телефоні сайдбар — поверхня, тож
+   * єдина кнопка, яка його відкриває, стоїть у хедері поруч із «Назад».
+   * Немає — хедера без меню: у адмінки свій сайдбар у потоці.
+   */
+  onMenu?: () => void;
   /** Відкрити меню вигляду (теми). */
   onTheme: () => void;
   /** Ім'я бота для діплінка «Поділитись»; `null` — діплінка не буде. */
@@ -48,12 +54,21 @@ export interface AppBarActions {
 
 export function AppBar({
   onBack,
+  onMenu,
   onTheme,
   botUsername = null,
 }: AppBarActions): ReactElement | null {
   const chrome = useContext(ScreenChromeContext)?.chrome;
   if (!chrome) return null;
-  return <AppBarView chrome={chrome} onBack={onBack} onTheme={onTheme} botUsername={botUsername} />;
+  return (
+    <AppBarView
+      chrome={chrome}
+      onBack={onBack}
+      onMenu={onMenu}
+      onTheme={onTheme}
+      botUsername={botUsername}
+    />
+  );
 }
 
 /**
@@ -63,6 +78,7 @@ export function AppBar({
 export function AppBarView({
   chrome,
   onBack,
+  onMenu,
   onTheme,
   botUsername = null,
 }: { chrome: ScreenChrome } & AppBarActions): ReactElement {
@@ -77,6 +93,7 @@ export function AppBarView({
           поверх екрана: місце йому — не в смузі й не в шапці. */}
       <LikeToast />
       <div className="wb-appbar__lead">
+        {onMenu && <BarButton icon="menu" label="Меню платформи" onClick={onMenu} />}
         <BarButton icon="arrow-left" label="Назад" onClick={onBack} />
         {menu && <BarButton icon="menu" label="Меню сторінки" onClick={menu} />}
         <h1 className="wb-appbar__title">{title}</h1>

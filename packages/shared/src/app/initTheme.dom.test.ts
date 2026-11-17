@@ -22,11 +22,11 @@ beforeEach(() => {
 
 describe("initTheme", () => {
   it("ставить збережену тему", () => {
-    localStorage.setItem(THEME_KEY, "ocean");
+    localStorage.setItem(THEME_KEY, "light");
 
     initTheme();
 
-    expect(document.documentElement.getAttribute("data-theme")).toBe("ocean");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
   });
 
   it("без вибору відкриває ніч", () => {

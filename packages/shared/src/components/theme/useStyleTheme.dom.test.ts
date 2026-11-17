@@ -30,22 +30,22 @@ describe("useStyleTheme", () => {
   });
 
   it("ставит збережену тему на екран", () => {
-    localStorage.setItem(THEME_KEY, "forest");
+    localStorage.setItem(THEME_KEY, "light");
 
     const { result } = renderHook(() => useStyleTheme());
 
-    expect(result.current.scheme).toBe("forest");
-    expect(theme()).toBe("forest");
+    expect(result.current.scheme).toBe("light");
+    expect(theme()).toBe("light");
   });
 
   it("вибір застосовується й запамʼятовується одразу", () => {
     const { result } = renderHook(() => useStyleTheme());
 
-    act(() => result.current.setScheme("plum"));
+    act(() => result.current.setScheme("dark"));
 
-    expect(result.current.scheme).toBe("plum");
-    expect(theme()).toBe("plum");
-    expect(localStorage.getItem(THEME_KEY)).toBe("plum");
+    expect(result.current.scheme).toBe("dark");
+    expect(theme()).toBe("dark");
+    expect(localStorage.getItem(THEME_KEY)).toBe("dark");
   });
 
   it("перемикач веде між днем і ніччю", () => {
@@ -63,7 +63,7 @@ describe("useStyleTheme", () => {
     document.documentElement.setAttribute("data-colors-mode", "light");
 
     const { result } = renderHook(() => useStyleTheme());
-    act(() => result.current.setScheme("paper"));
+    act(() => result.current.setScheme("light"));
 
     expect(document.documentElement.hasAttribute("data-colors")).toBe(false);
     expect(document.documentElement.hasAttribute("data-colors-mode")).toBe(false);

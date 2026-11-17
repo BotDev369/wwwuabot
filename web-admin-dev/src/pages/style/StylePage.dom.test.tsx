@@ -83,9 +83,9 @@ describe("сторінка «Візуал»", () => {
   it("перемикач тем змінює тему продукту", async () => {
     await renderPage();
 
-    fireEvent.click(screen.getByRole("tab", { name: "Океан" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Світанок · ніч" }));
 
-    expect(document.documentElement.getAttribute("data-theme")).toBe("ocean");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
   it("каже про помилку, якщо каталог не прийшов", async () => {

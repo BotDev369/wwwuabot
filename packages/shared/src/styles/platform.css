@@ -385,3 +385,71 @@
     padding: var(--sp-5) var(--sp-3);
   }
 }
+
+/* ═══ Каркас платформи: сайдбар замість футера ═══════════════════════════════
+   П'ять слотів унизу змушували кожну нову річ тіснитись у «Сервіси». Тепер
+   навігація — та сама, що в адмінці: колонка на десктопі й поверхня на
+   телефоні. Мірки пункту не повторюються тут: їх тримає `.wb-nav*`. */
+
+.wb-platform {
+  display: flex;
+  min-height: 100dvh;
+  background: var(--bg-page);
+}
+
+.wb-platform-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Колонка в потоці: на десктопі меню не їде за сторінкою, а стоїть на місці —
+   інакше довгий список прокручувався б разом із контентом і зникав. */
+.wb-platform-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  flex: 0 0 auto;
+}
+
+.wb-platform-sidebar .wb-nav-menu {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sidebar-pad);
+}
+
+.wb-platform-scrim {
+  display: none;
+}
+
+@media (width <= 1023px) {
+  .wb-platform-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1000;
+    width: var(--sidebar-w-vw);
+    min-width: var(--sidebar-w-vw);
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+    transform: translateX(-100%);
+    transition: transform var(--duration-slow) var(--ease);
+  }
+
+  .wb-platform-sidebar--open {
+    transform: none;
+    box-shadow: 4px 0 24px rgb(0 0 0 / 30%);
+  }
+
+  /* Скрим — кнопка, а не div: дотик повз меню мусить закривати його й бути
+     доступним із клавіатури, як у модалки. */
+  .wb-platform-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    border: 0;
+    background: var(--scrim);
+    backdrop-filter: blur(2px);
+  }
+}

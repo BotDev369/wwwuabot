@@ -98,7 +98,7 @@ splash і екран входу). Градієнт `--bg-home` — тло **по
 src/
 ├── app/          AuthGate.tsx, router.tsx, routes.ts
 ├── layout/       хром оболонки: AppShell.tsx + Sidebar/ (адмінка) або
-│                 PlatformShell.tsx + PlatformTabBar.tsx (платформа)
+│                 PlatformShell.tsx + PlatformSidebar.tsx (платформа)
 ├── pages/
 ├── shared/       api/
 └── features/     лише в адмінці
@@ -106,8 +106,9 @@ src/
 
 Каркас — **спільні кирпичики** (`app-chrome.css`), оболонка лише складає їх і додає своє: у адмінці —
 `layout/AppShell.tsx` + `layout/Sidebar/*` (`adminNav.store` — склад і порядок меню), у платформи —
-`layout/PlatformShell.tsx` + `layout/PlatformTabBar.tsx` (замість власного меню — зони спільного
-`PageRenderer`); auth у кожної свій — `app/AuthGate.tsx`.
+`layout/PlatformShell.tsx` + `layout/PlatformSidebar.tsx` (сайдбар на спільних `SideBar` + `SideBarMenu`,
+склад пунктів — `layout/platform-nav.ts`: головні й «Ще»; на телефоні меню виїжджає поверхнею зі
+скримом, кнопку дає `AppBar.onMenu`); auth у кожної свій — `app/AuthGate.tsx`.
 
 `web-platform-dev` — auth через TWA SDK (підписаний `initData`), API через service binding;
 **власного `src/stores/` немає**: стан живе в хуках сторінок і фіч, а спільний Zustand-стор — у

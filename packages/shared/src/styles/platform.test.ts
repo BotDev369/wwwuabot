@@ -92,10 +92,21 @@ describe("поведінка під пристрій", () => {
 
   it("нативні контроли знають, яка схема ввімкнена", () => {
     // Без цього `<select>`, календар і смуги прокрутки малює ОС у своїй схемі.
-    expect(read("packages/shared/src/styles/tokens.css")).toContain("color-scheme: light");
-    expect(read("packages/shared/src/styles/themes.css")).toContain("color-scheme: dark");
-    // Світлі теми (їх дві) теж мусять сказати ОС свою світлоту.
-    expect(read("packages/shared/src/styles/themes.css")).toContain("color-scheme: light");
+    // Тем дві: світла «Світанок» живе в `tokens.css`, ніч — у `themes.css`,
+    // і кожен блок мусить сказати ОС свою світлоту.
+    const blocks = ["tokens.css", "themes.css"].flatMap((file) =>
+      [
+        ...read(`packages/shared/src/styles/${file}`).matchAll(
+          /\[data-theme="([a-z-]+)"\]\s*\{([\s\S]*?)\n\}/g,
+        ),
+      ].map((match) => ({ file, id: match[1], body: match[2] })),
+    );
+    expect(blocks.map((block) => block.id)).toEqual(["light", "dark"]);
+    for (const block of blocks) {
+      expect(block.body, `${block.file}: «${block.id}» без color-scheme`).toMatch(
+        /color-scheme:\s*(?:light|dark)/,
+      );
+    }
   });
 
   it("поле, автозаповнення й дотик — однакові в iOS, Android і на десктопі", () => {

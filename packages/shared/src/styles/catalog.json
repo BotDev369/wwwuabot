@@ -1,5 +1,5 @@
 {
-  "version": "9ba3e84",
+  "version": "c576ff2",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -218,7 +218,7 @@
     },
     {
       "file": "themes.css",
-      "tokens": 265,
+      "tokens": 53,
       "classes": 0
     },
     {
@@ -236,32 +236,32 @@
     {
       "name": "--accent",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#a0330f",
-      "dark": "#f0a97c",
+      "light": "#4f3ac9",
+      "dark": "#b0a2ff",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--accent-dim",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "rgba(160, 51, 15, 0.08)",
-      "dark": "rgba(240, 169, 124, 0.14)",
+      "light": "rgba(79, 58, 201, 0.1)",
+      "dark": "rgba(176, 162, 255, 0.14)",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--accent-hover",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#852a0c",
-      "dark": "#f7c3a2",
+      "light": "#3f2cb2",
+      "dark": "#c6bbff",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--accent-soft",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "rgba(160, 51, 15, 0.1)",
-      "dark": "rgba(240, 169, 124, 0.16)",
+      "light": "rgba(79, 58, 201, 0.14)",
+      "dark": "rgba(176, 162, 255, 0.16)",
       "palette": "",
       "paletteDark": ""
     },
@@ -276,40 +276,40 @@
     {
       "name": "--bg-0",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#f6f6f7",
-      "dark": "#120c14",
+      "light": "#fff8f2",
+      "dark": "#1b1928",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--bg-1",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "var(--bg-home, #f6f6f7)",
-      "dark": "#191220",
+      "light": "var(--bg-home, #fff8f2)",
+      "dark": "#221e36",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--bg-2",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#f1f1f3",
-      "dark": "#211828",
+      "light": "#f8f4fc",
+      "dark": "#221e36",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--bg-3",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#e9e9ec",
-      "dark": "#291e33",
+      "light": "#f1edf8",
+      "dark": "#272242",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--bg-4",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#e2e2e6",
-      "dark": "#32253e",
+      "light": "#e8e4f1",
+      "dark": "#2e2848",
       "palette": "",
       "paletteDark": ""
     },
@@ -332,24 +332,24 @@
     {
       "name": "--border",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#d6d6dd",
-      "dark": "#463451",
+      "light": "#dbd4e8",
+      "dark": "#3b3454",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--border-hover",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#b4b4bf",
-      "dark": "#5f4870",
+      "light": "#b9aed2",
+      "dark": "#554a78",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--border-subtle",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#e7e7eb",
-      "dark": "#362a44",
+      "light": "#ede8f6",
+      "dark": "#2c2642",
       "palette": "",
       "paletteDark": ""
     },
@@ -381,15 +381,15 @@
       "name": "--card-bg",
       "section": "Картка",
       "light": "#ffffff",
-      "dark": "#1d1524",
+      "dark": "#2a2640",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--card-border",
       "section": "Глибина поверхонь",
-      "light": "rgba(21, 21, 26, 0.05)",
-      "dark": "rgba(240, 232, 243, 0.07)",
+      "light": "rgba(69, 62, 92, 0.06)",
+      "dark": "rgba(220, 214, 238, 0.08)",
       "palette": "",
       "paletteDark": ""
     },
@@ -428,16 +428,16 @@
     {
       "name": "--chrome-bottom-bg",
       "section": "Нативний хром Telegram",
-      "light": "#f0f0f4",
-      "dark": "#191220",
+      "light": "#fff8f2",
+      "dark": "#1b1928",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--chrome-header-bg",
       "section": "Нативний хром Telegram",
-      "light": "#f0f0f4",
-      "dark": "#191220",
+      "light": "#fff8f2",
+      "dark": "#1b1928",
       "palette": "",
       "paletteDark": ""
     },
@@ -452,48 +452,48 @@
     {
       "name": "--data-1",
       "section": "Спектр",
-      "light": "#a0330f",
-      "dark": "#f0a97c",
+      "light": "#be4230",
+      "dark": "#ff9e86",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--data-2",
       "section": "Спектр",
-      "light": "#1d6b53",
-      "dark": "#8ee0a4",
+      "light": "#12756d",
+      "dark": "#7fd8cb",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--data-3",
       "section": "Спектр",
-      "light": "#8a6100",
-      "dark": "#f0cf80",
+      "light": "#8f5314",
+      "dark": "#f3c08a",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--data-4",
       "section": "Спектр",
-      "light": "#3d4c96",
-      "dark": "#b6a4ff",
+      "light": "#3358c9",
+      "dark": "#8fc7ff",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--data-5",
       "section": "Спектр",
-      "light": "#8a2a56",
-      "dark": "#ff9fc4",
+      "light": "#b3306b",
+      "dark": "#f79bc0",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--data-6",
       "section": "Спектр",
-      "light": "#1c6b83",
-      "dark": "#8fd0e8",
+      "light": "#1b6e45",
+      "dark": "#86e0ae",
       "palette": "",
       "paletteDark": ""
     },
@@ -588,8 +588,8 @@
     {
       "name": "--field-bg",
       "section": "Поле вводу",
-      "light": "#eeeef2",
-      "dark": "#251a2e",
+      "light": "#f2ecfa",
+      "dark": "#322c4c",
       "palette": "",
       "paletteDark": ""
     },
@@ -597,7 +597,7 @@
       "name": "--field-bg-raised",
       "section": "Поле вводу",
       "light": "#ffffff",
-      "dark": "#30223c",
+      "dark": "#3a3358",
       "palette": "",
       "paletteDark": ""
     },
@@ -620,8 +620,8 @@
     {
       "name": "--field-ring",
       "section": "Поле вводу",
-      "light": "0 0 0 1px rgba(21, 21, 26, 0.07)",
-      "dark": "0 0 0 1px rgba(240, 232, 243, 0.1)",
+      "light": "0 0 0 1px rgba(69, 62, 92, 0.1)",
+      "dark": "0 0 0 1px rgba(220, 214, 238, 0.1)",
       "palette": "",
       "paletteDark": ""
     },
@@ -692,16 +692,16 @@
     {
       "name": "--green",
       "section": "Спектр",
-      "light": "#0a6e2a",
-      "dark": "#8ee0a4",
+      "light": "#1b6e45",
+      "dark": "#86e0ae",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--green-dim",
       "section": "Спектр",
-      "light": "#e2eee5",
-      "dark": "rgba(142, 224, 164, 0.14)",
+      "light": "#e3f0e8",
+      "dark": "rgba(134, 224, 174, 0.14)",
       "palette": "",
       "paletteDark": ""
     },
@@ -756,8 +756,8 @@
     {
       "name": "--hairline",
       "section": "Глибина поверхонь",
-      "light": "rgba(21, 21, 26, 0.08)",
-      "dark": "rgba(240, 232, 243, 0.08)",
+      "light": "rgba(69, 62, 92, 0.08)",
+      "dark": "rgba(220, 214, 238, 0.08)",
       "palette": "",
       "paletteDark": ""
     },
@@ -852,7 +852,7 @@
     {
       "name": "--modal-scrim",
       "section": "Глибина поверхонь",
-      "light": "rgba(0, 0, 0, 0.5)",
+      "light": "rgba(40, 30, 90, 0.45)",
       "dark": "rgba(0, 0, 0, 0.5)",
       "palette": "",
       "paletteDark": ""
@@ -924,16 +924,16 @@
     {
       "name": "--red",
       "section": "Спектр",
-      "light": "#ba1a1a",
-      "dark": "#ffb1ae",
+      "light": "#ac3323",
+      "dark": "#ffb0a0",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--red-dim",
       "section": "Спектр",
-      "light": "#f7e4e4",
-      "dark": "rgba(255, 177, 174, 0.14)",
+      "light": "#fbe7e2",
+      "dark": "rgba(255, 176, 160, 0.14)",
       "palette": "",
       "paletteDark": ""
     },
@@ -1060,15 +1060,15 @@
     {
       "name": "--selection-bg",
       "section": "Глибина поверхонь",
-      "light": "rgba(28, 27, 31, 0.14)",
-      "dark": "rgba(240, 232, 243, 0.22)",
+      "light": "rgba(69, 62, 92, 0.14)",
+      "dark": "rgba(220, 214, 238, 0.2)",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--shadow-card",
       "section": "Глибина поверхонь",
-      "light": "0 1px 2px rgba(21, 21, 26, 0.04), 0 8px 24px -16px rgba(21, 21, 26, 0.24)",
+      "light": "0 1px 2px rgba(69, 62, 92, 0.05), 0 8px 24px -16px rgba(69, 62, 92, 0.22)",
       "dark": "0 1px 1px rgba(0, 0, 0, 0.4), 0 14px 34px -22px rgba(0, 0, 0, 0.85)",
       "palette": "",
       "paletteDark": ""
@@ -1116,8 +1116,8 @@
     {
       "name": "--sidebar-bg",
       "section": "Сайдбар: крок пункту й берег",
-      "light": "#fcfcfd",
-      "dark": "#150f1b",
+      "light": "#fcf8ff",
+      "dark": "#221e33",
       "palette": "",
       "paletteDark": ""
     },
@@ -1140,8 +1140,8 @@
     {
       "name": "--sidebar-shadow",
       "section": "Сайдбар: крок пункту й берег",
-      "light": "1px 0 0 var(--hairline), 8px 0 24px -20px rgba(21, 21, 26, 0.25)",
-      "dark": "1px 0 0 var(--hairline), 8px 0 24px -18px rgba(0, 0, 0, 0.65)",
+      "light": "1px 0 0 var(--hairline), 8px 0 24px -20px rgba(69, 62, 92, 0.22)",
+      "dark": "1px 0 0 var(--hairline), 8px 0 24px -18px rgba(0, 0, 0, 0.6)",
       "palette": "",
       "paletteDark": ""
     },
@@ -1268,24 +1268,24 @@
     {
       "name": "--surface",
       "section": "Спектр",
-      "light": "var(--bg-home, #f6f6f7)",
-      "dark": "#191220",
+      "light": "var(--bg-home, #fff8f2)",
+      "dark": "var(--bg-home, #1b1928)",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--surface-active",
       "section": "Спектр",
-      "light": "#e4e4e8",
-      "dark": "#32253e",
+      "light": "#ebe5f6",
+      "dark": "#322c4c",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--surface-hover",
       "section": "Спектр",
-      "light": "#ededf0",
-      "dark": "#291e33",
+      "light": "#f4effb",
+      "dark": "#2a2640",
       "palette": "",
       "paletteDark": ""
     },
@@ -1300,7 +1300,7 @@
     {
       "name": "--surface-overlay",
       "section": "Глибина поверхонь",
-      "light": "rgba(0, 0, 0, 0.4)",
+      "light": "rgba(40, 30, 90, 0.35)",
       "dark": "rgba(0, 0, 0, 0.6)",
       "palette": "",
       "paletteDark": ""
@@ -1309,7 +1309,7 @@
       "name": "--switch-knob",
       "section": "Поле вводу",
       "light": "#ffffff",
-      "dark": "#e2d6e8",
+      "dark": "#dcd6ee",
       "palette": "",
       "paletteDark": ""
     },
@@ -1373,7 +1373,7 @@
       "name": "--text-inverse",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#ffffff",
-      "dark": "#1a0f16",
+      "dark": "#1b1230",
       "palette": "",
       "paletteDark": ""
     },
@@ -1396,8 +1396,8 @@
     {
       "name": "--text-muted",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#5c5c67",
-      "dark": "#b9a8c2",
+      "light": "#635b80",
+      "dark": "#a79fc0",
       "palette": "",
       "paletteDark": ""
     },
@@ -1412,16 +1412,16 @@
     {
       "name": "--text-primary",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#15151a",
-      "dark": "#f0e8f3",
+      "light": "#453e5c",
+      "dark": "#dcd6ee",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--text-secondary",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#45454f",
-      "dark": "#d1c2d8",
+      "light": "#5b5375",
+      "dark": "#b0a8c6",
       "palette": "",
       "paletteDark": ""
     },
@@ -1452,24 +1452,24 @@
     {
       "name": "--tint-1",
       "section": "Спектр",
-      "light": "#fdf2ec",
-      "dark": "#261a1c",
+      "light": "#fdf1ea",
+      "dark": "#33241f",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--tint-2",
       "section": "Спектр",
-      "light": "#edf4f0",
-      "dark": "#172420",
+      "light": "#eaf6f1",
+      "dark": "#1d2e2a",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--tint-3",
       "section": "Спектр",
-      "light": "#eef1f9",
-      "dark": "#221a2e",
+      "light": "#eef0fb",
+      "dark": "#252a3a",
       "palette": "",
       "paletteDark": ""
     },
@@ -1532,16 +1532,16 @@
     {
       "name": "--yellow",
       "section": "Спектр",
-      "light": "#6d5700",
-      "dark": "#f0cf80",
+      "light": "#8f5314",
+      "dark": "#f3c08a",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--yellow-dim",
       "section": "Спектр",
-      "light": "#edebe0",
-      "dark": "rgba(240, 207, 128, 0.14)",
+      "light": "#f6ebdd",
+      "dark": "rgba(243, 192, 138, 0.14)",
       "palette": "",
       "paletteDark": ""
     },

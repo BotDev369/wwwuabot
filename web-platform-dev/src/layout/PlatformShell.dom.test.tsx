@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * Каркас платформи: хедер і футер стоять **поза** сторінкою, тож вони є на
+ * Каркас платформи: хедер і сайдбар стоять **поза** сторінкою, тож вони є на
  * кожному екрані тим самим кодом, а не копією в кожній сторінці.
  *
  * Журнал при цьому отримує один рядок «відкрив екран» — з каркаса, бо саме він
@@ -46,14 +46,22 @@ beforeEach(() => {
 });
 
 describe("каркас", () => {
-  it("тримає хедер і футер навколо сторінки", async () => {
+  it("тримає хедер і навігацію навколо сторінки", async () => {
     renderShell();
 
     expect(screen.getByText("екран трекерів")).toBeTruthy();
     expect(screen.getByLabelText("Навігація платформи")).toBeTruthy();
     // Хедер малюється каркасом; без `useScreenChrome` він порожній, і сторінка
     // все одно на місці — саме тому він стоїть тут, а не в кожному екрані.
-    expect(document.querySelector(".wb-tabbar-layout")).not.toBeNull();
+    expect(document.querySelector(".wb-platform")).not.toBeNull();
+  });
+
+  it("підсвічує пункт, у якому людина стоїть", async () => {
+    renderShell();
+
+    // `/trackers` — це «Ще»: пункт мусить бути поточним, а не просто існувати.
+    const current = await screen.findByRole("link", { name: /Трекери/ });
+    expect(current.getAttribute("aria-current")).toBe("page");
   });
 
   it("каже журналу, що людина відкрила екран", async () => {

@@ -26,7 +26,7 @@ const styles = (file: string): string =>
 const panel = styles("theme-panel.css");
 const css = [styles("tokens.css"), styles("themes.css")].join("\n");
 
-const paper = themeById("paper");
+const svitanok = themeById("light");
 const ROLES = palette.roles as readonly string[];
 
 /** Оголошення блока теми: ім'я без `--` → значення. */
@@ -64,24 +64,24 @@ for (const match of css.matchAll(
 
 describe("ThemeCard", () => {
   it("ставить палітру своєї теми на картку", () => {
-    const { container } = render(<ThemeCard theme={paper} onApply={() => {}} />);
+    const { container } = render(<ThemeCard theme={svitanok} onApply={() => {}} />);
 
-    expect(container.querySelector(".wb-theme-card")?.getAttribute("data-theme")).toBe("paper");
+    expect(container.querySelector(".wb-theme-card")?.getAttribute("data-theme")).toBe("light");
   });
 
   it("не показує ні назви, ні опису — вигляд і є доказом", () => {
-    render(<ThemeCard theme={paper} onApply={() => {}} />);
+    render(<ThemeCard theme={svitanok} onApply={() => {}} />);
 
-    expect(screen.queryByText("Папір")).toBeNull();
-    expect(screen.queryByText(paper.hint)).toBeNull();
+    expect(screen.queryByText("Світанок")).toBeNull();
+    expect(screen.queryByText(svitanok.hint)).toBeNull();
   });
 
   it("показує зразки своєї теми, а не спільний список", () => {
-    const { container } = render(<ThemeCard theme={paper} onApply={() => {}} />);
+    const { container } = render(<ThemeCard theme={svitanok} onApply={() => {}} />);
     const chips = [...container.querySelectorAll(".wb-theme-card-chip")];
 
     expect(chips.map((chip) => chip.className)).toEqual(
-      themeSwatches("paper").map((token) => `wb-theme-card-chip wb-theme-card-chip--${token}`),
+      themeSwatches("light").map((token) => `wb-theme-card-chip wb-theme-card-chip--${token}`),
     );
   });
 
@@ -121,7 +121,7 @@ describe("ThemeCard", () => {
   });
 
   it("не малює макета екрана: ні рядків, ні діаграми, ні дій", () => {
-    const { container } = render(<ThemeCard theme={paper} onApply={() => {}} />);
+    const { container } = render(<ThemeCard theme={svitanok} onApply={() => {}} />);
 
     for (const dead of ["line", "sheet", "scene", "action", "dot", "bar", "swatch"]) {
       expect(
@@ -132,26 +132,26 @@ describe("ThemeCard", () => {
   });
 
   it("називає тему для читача екрана й каже, чи вона обрана", () => {
-    render(<ThemeCard theme={paper} applied onApply={() => {}} />);
+    render(<ThemeCard theme={svitanok} applied onApply={() => {}} />);
 
-    const button = screen.getByRole("button", { name: "Тема «Папір»" });
+    const button = screen.getByRole("button", { name: "Тема «Світанок»" });
     expect(button.getAttribute("aria-pressed")).toBe("true");
     expect(button.querySelector(".wb-theme-card-on")).not.toBeNull();
   });
 
   it("необрана картка не має позначки", () => {
-    render(<ThemeCard theme={paper} onApply={() => {}} />);
+    render(<ThemeCard theme={svitanok} onApply={() => {}} />);
 
-    const button = screen.getByRole("button", { name: "Тема «Папір»" });
+    const button = screen.getByRole("button", { name: "Тема «Світанок»" });
     expect(button.getAttribute("aria-pressed")).toBe("false");
     expect(button.querySelector(".wb-theme-card-on")).toBeNull();
   });
 
   it("дотик застосовує тему", () => {
     const onApply = vi.fn();
-    render(<ThemeCard theme={paper} onApply={onApply} />);
+    render(<ThemeCard theme={svitanok} onApply={onApply} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Тема «Папір»" }));
+    fireEvent.click(screen.getByRole("button", { name: "Тема «Світанок»" }));
 
     expect(onApply).toHaveBeenCalledTimes(1);
   });

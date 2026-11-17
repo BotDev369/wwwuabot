@@ -44,8 +44,10 @@ const FORM_SCREENS = [
 describe("вхід у продукт", () => {
   const router = readFileSync(join(REPO_ROOT, "web-platform-dev/src/app/router.tsx"), "utf8");
 
-  it("корінь веде на акаунт без запису в історії", () => {
-    expect(router).toContain("{ index: true, element: <Navigate to={ACCOUNT_PATH} replace /> }");
+  it("корінь — «Мій день», а не стрибок на акаунт", () => {
+    expect(router).toContain("{ index: true, element: <MyDayPage /> }");
+    // Редирект з кореня з'їдав історію: «Назад» із першого екрана не мав куди йти.
+    expect(router).not.toContain("<Navigate to={ACCOUNT_PATH}");
   });
 
   it("акаунт і замовлення — власні маршрути, а не рядок контенту", () => {

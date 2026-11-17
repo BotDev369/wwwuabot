@@ -133,7 +133,7 @@ describe("другого шару стилів немає", () => {
 
     const css = readFileSync(join(REPO_ROOT, "packages/shared/src/styles/themes.css"), "utf8");
     const blocks = [...css.matchAll(/\[data-theme="([a-z]+)"\]\s*\{([\s\S]*?)\n\}/g)];
-    expect(blocks.map((block) => block[1])).toEqual(["dark", "paper", "ocean", "forest", "plum"]);
+    expect(blocks.map((block) => block[1])).toEqual(["dark"]);
 
     for (const [, id, body] of blocks) {
       const declared = new Set(

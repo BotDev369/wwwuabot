@@ -1,9 +1,14 @@
 /**
- * Каркас платформи: хедер + сторінка + глобальний нижній футер. Хедер і футер
- * стоять ПОЗА сторінкою, тож є на кожному екрані (`ScreenChromeProvider` тут,
- * бо хедер малює каркас, а знає про себе той екран, який відкрито). «Назад»
- * знає тільки оболонка — вона одна володіє роутером; меню теми теж поверхня
- * каркаса, тож закривається тим самим дотиком, яким відкрилося.
+ * Каркас платформи: хедер, сайдбар і сторінка.
+ *
+ * **Навігація — сайдбар, а не футер.** П'ять слотів унизу змушували кожну нову
+ * річ або тіснитись у «Сервіси», або не потрапляти нікуди. Сайдбар має головні
+ * пункти й «Ще» одним списком, росте без перекроювання й на телефоні виїжджає
+ * поверх сторінки — тим самим рухом, що в адмінці.
+ *
+ * **Меню — стан каркаса, а не екрана.** Хедер, сайдбар і скрим живуть тут, бо
+ * лише каркас знає, що меню відкрите; сторінка про це не здогадується й не
+ * тримає в собі кнопку.
  *
  * @module web-platform-dev/src/layout/PlatformShell
  */
@@ -14,7 +19,7 @@ import { AppBar, ScreenChromeProvider } from "@wwwuabot/ui/nav";
 import { ThemeMenu } from "@/pages/themes/ThemeMenu";
 import { apiFetch } from "@/shared/api/client";
 import { JournalBridge } from "./JournalBridge";
-import { PlatformTabBar } from "./PlatformTabBar";
+import { PlatformSidebar } from "./PlatformSidebar";
 
 /**
  * Ім'я бота для діплінків; `null`, поки не відомо.
@@ -44,17 +49,47 @@ export function PlatformShell(): ReactElement {
   const navigate = useNavigate();
   const goBack = useCallback(() => void navigate(-1), [navigate]);
   const [themeOpen, setThemeOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const closeTheme = useCallback(() => setThemeOpen(false), []);
+  const closeNav = useCallback(() => setNavOpen(false), []);
+  const toggleNav = useCallback(() => setNavOpen((current) => !current), []);
   const botUsername = useBotUsername();
+
+  // Escape закриває меню, як модалку: на телефоні це єдиний спосіб вийти з
+  // нього, не цілячись у хрестик.
+  useEffect(() => {
+    if (!navOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setNavOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [navOpen]);
+
   return (
     <ScreenChromeProvider>
       {/* Журнал бачить «відкрив сторінку», «відкрив модалку» й дії в них — а не
           запити, які екран зробив сам. */}
       <JournalBridge />
-      <div className="wb-tabbar-layout">
-        <AppBar onBack={goBack} onTheme={() => setThemeOpen(true)} botUsername={botUsername} />
-        <Outlet />
-        <PlatformTabBar />
+      <div className="wb-platform">
+        <PlatformSidebar open={navOpen} onClose={closeNav} />
+        {navOpen && (
+          <button
+            type="button"
+            className="wb-platform-scrim"
+            aria-label="Закрити меню"
+            onClick={closeNav}
+          />
+        )}
+        <div className="wb-platform-main">
+          <AppBar
+            onBack={goBack}
+            onMenu={toggleNav}
+            onTheme={() => setThemeOpen(true)}
+            botUsername={botUsername}
+          />
+          <Outlet />
+        </div>
       </div>
       {themeOpen && <ThemeMenu onClose={closeTheme} />}
     </ScreenChromeProvider>

@@ -8,12 +8,12 @@
  * Usage in any worker:
  *   import "@wwwuabot/shared/styles/index.css";
  *
- * Стиль продукту — ОДИН, а тем шість: `tokens.css` (світла тема «День» і
- * мірки), `themes.css` (решта авторських тем), `reset.css` + `components.css`
+ * Стиль продукту — ОДИН, а тем дві: `tokens.css` (світла тема «Світанок» і
+ * мірки), `themes.css` (ніч), `reset.css` + `components.css`
  * (кирпичики). Другого шару стилів немає — тому й атрибута вибору стилю немає.
  *
  * Apply via HTML attribute:
- *   <html data-theme="light|paper|dark|ocean|forest|plum"> — тема
+ *   <html data-theme="light|dark"> — тема
  *   (ставить `shared/app/initTheme.ts`)
  */
 
@@ -134,6 +134,7 @@
    Імпортується після `components.css`: `.wb-tracker-card` перекриває базову
    поверхню картки своїм кліком і рамкою. */
 @import "./trackers.css";
+@import "./day.css";
 
 /* Аналіз дат: таблиця параметрів із акордеонами. Окремим файлом,
    як `games.css`: цілісна деталь зі своїми класами, а `dates.css` уже тримає

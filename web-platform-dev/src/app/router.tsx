@@ -22,13 +22,12 @@
  * мусить збігтися першим, інакше `/games` з'їв би його хвіст.
  */
 
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import { PlatformShell } from "@/layout/PlatformShell";
 import {
   ADS_ROUTE,
   CONTACTS_ROUTE,
   FAVORITES_ROUTE,
-  ACCOUNT_PATH,
   ACCOUNT_ROUTE,
   ASSESSMENTS_ROUTE,
   GAMES_ROUTE,
@@ -52,6 +51,7 @@ import { AssessmentsScreen } from "@/pages/assessments/AssessmentsScreen";
 import { MessagesPage } from "@/pages/MessagesPage";
 import { NotesPage } from "@/pages/NotesPage";
 import { ProfileAccountPage } from "@/pages/ProfileAccountPage";
+import { MyDayPage } from "@/pages/day/MyDayPage";
 import { ProfileOrdersPage } from "@/pages/ProfileOrdersPage";
 import { ServicesPage } from "@/pages/ServicesPage";
 import { ResearchPage } from "@/pages/research/ResearchPage";
@@ -71,7 +71,10 @@ export const router = createBrowserRouter([
   {
     element: <PlatformShell />,
     children: [
-      { index: true, element: <Navigate to={ACCOUNT_PATH} replace /> },
+      // «Мій день» — корінь продукту: людина відкриває застосунок і бачить свій
+      // день, а не форму акаунта. Адреса не стрибає: це справжній екран, а не
+      // перехід на інший.
+      { index: true, element: <MyDayPage /> },
       // Сервіси — хаб платформи: список екранів, які вже працюють.
       { path: SERVICES_ROUTE, element: <ServicesPage /> },
       { path: FAVORITES_ROUTE, element: <FavoritesPage /> },
