@@ -922,32 +922,52 @@
 }
 
 /* ── Перелік єдиного UI (`/style`) ─────────────────────────────────────────
-   Сторінка показує кирпичики, а не власний вигляд: тут лише сітка рядка й
-   рамка, у яку зразок стає, щоб модалка не займала весь екран. */
+   Сторінка показує кирпичики, а не власний вигляд: тут лише щільний список —
+   одна поверхня, розділи-рядки з волосяною межею й рамка, у яку зразок стає,
+   щоб модалка не займала весь екран. */
 
 .ui-page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
-}
-
-.ui-intro {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
 }
 
-/* Розділ переліку — розкривний заголовок: сам перелік довгий, і розділ
-   відкривають тоді, коли він потрібен, а не гортанням усього списку. */
-.ui-group-toggle {
+.ui-intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.ui-intro p {
+  margin: 0;
+}
+
+/* Розділи живуть в одній картці: дев'ять окремих карток із самим підписом
+   читались як купа порожніх коробок, а не як перелік. */
+.ui-usage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.ui-catalog {
+  overflow: hidden;
+}
+
+.ui-section + .ui-section {
+  border-top: 1px solid var(--border);
+}
+
+.ui-section-head {
   display: flex;
   align-items: center;
-  gap: var(--card-gap);
+  gap: var(--sp-2);
   width: 100%;
-  min-height: 44px;
-  padding: var(--card-pad);
+  min-height: 48px;
+  padding: var(--sp-3) var(--sp-4);
   border: 0;
-  border-radius: var(--card-radius) var(--card-radius) 0 0;
+  border-radius: 0;
   background: none;
   color: inherit;
   font: inherit;
@@ -955,49 +975,64 @@
   cursor: pointer;
 }
 
-.ui-group-caret {
+@media (hover: hover) {
+  .ui-section-head:hover {
+    background: var(--surface-hover);
+  }
+}
+
+.ui-section-title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.ui-caret {
   display: inline-flex;
   margin-left: auto;
   color: var(--text-muted);
 }
 
-@media (hover: hover) {
-  .ui-group-toggle:hover {
-    background: var(--surface-hover);
-  }
+.ui-section-body {
+  padding: 0 var(--sp-4) var(--sp-4);
 }
 
-.ui-intro p {
-  margin: 0;
+.ui-section-note {
+  margin: 0 0 var(--sp-1);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
 }
 
 .ui-row {
   display: grid;
-  gap: var(--sp-3);
-  padding-block: var(--sp-4);
-  border-top: 1px solid var(--border);
+  gap: var(--sp-2);
+  padding-block: var(--sp-3);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .ui-row:first-of-type {
   border-top: 0;
 }
 
-/* Зразок не тягне рядок убік: довга таблиця чи модалка гортаються всередині
+/* Зразок завширшки вмісту: плита на всю ширину з однією кнопкою всередині
+   читалась як порожня коробка. Довга таблиця чи модалка гортаються всередині
    власної рамки, а не розпирають картку. */
 .ui-sample {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
+  width: fit-content;
+  max-width: 100%;
   min-width: 0;
-  padding: var(--sp-3);
+  padding: var(--sp-2);
   overflow: hidden;
   background: var(--bg-2);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
 }
 
 .ui-skeleton-sample {
   width: 60%;
-  height: 16px;
+  height: 12px;
 }
 
 .ui-sample-stage {
@@ -1008,14 +1043,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 160px;
-  padding: var(--sp-3);
+  width: 100%;
+  min-height: 120px;
+  padding: var(--sp-2);
 }
 
 .ui-sample-stage .wb-modal-overlay {
   position: absolute;
   inset: 0;
-  padding: var(--sp-3);
+  padding: var(--sp-2);
   animation: none;
 }
 
@@ -1029,7 +1065,7 @@
 }
 
 .ui-sample-stage .wb-table-scroll {
-  max-height: 180px;
+  max-height: 140px;
 }
 
 .ui-meta {
@@ -1039,7 +1075,15 @@
   min-width: 0;
 }
 
+.ui-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
 .ui-name {
+  font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
 }
 
@@ -1050,10 +1094,14 @@
   overflow-wrap: anywhere;
 }
 
-.ui-usage {
+.ui-note {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.ui-counts {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: var(--sp-2);
 }
 
@@ -1066,8 +1114,12 @@
 
 @media (min-width: 720px) {
   .ui-row {
-    grid-template-columns: minmax(0, 260px) minmax(0, 1fr) auto;
-    align-items: center;
-    gap: var(--sp-4);
+    grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--sp-2);
+  }
+
+  .ui-meta {
+    padding-top: 2px;
   }
 }

@@ -39,18 +39,17 @@ type Inventory = {
 
 const data = inventory as Inventory;
 
-function usageChips(element: InventoryElement, copy: InventoryCopy): ReactElement {
+function usageCounts(element: InventoryElement, copy: InventoryCopy): ReactElement | null {
   const chips = [
     { key: "platform", label: copy.platform, count: element.usage.platform },
     { key: "admin", label: copy.admin, count: element.usage.admin },
     { key: "ui", label: copy.sharedCode, count: element.usage.ui + element.usage.shared },
   ].filter((chip) => chip.count > 0);
 
+  if (chips.length === 0) return null;
+
   return (
-    <div className="ui-usage">
-      <span className={`wb-badge ${data.verdicts[element.verdict].tone}`}>
-        {data.verdicts[element.verdict].label}
-      </span>
+    <div className="ui-counts">
       {chips.map((chip) => (
         <span key={chip.key} className="ui-count">
           {chip.label} {chip.count}
@@ -119,45 +118,52 @@ export function StylePage(): ReactElement {
           </div>
         </div>
 
-        {groups.map((group) => {
-          const isOpen = open.includes(group.id);
-          return (
-            <div className="wb-card" key={group.id}>
-              <button
-                type="button"
-                className="ui-group-toggle"
-                aria-expanded={isOpen}
-                onClick={() => toggleGroup(group.id)}
-              >
-                <span className="wb-card-title">{group.label}</span>
-                <span className="wb-badge wb-badge-neutral">{group.elements.length}</span>
-                <span className="ui-group-caret">
-                  <Icon name={isOpen ? "chevron-up" : "chevron-down"} size={18} />
-                </span>
-              </button>
-              {isOpen ? (
-                <div className="wb-card-body">
-                  <p className="wb-text-sm wb-text-muted">{group.note}</p>
-                  {group.elements.map((element) => (
-                    <div className="ui-row" key={element.id}>
-                      <UiSample element={element} copy={page} />
-                      <div className="ui-meta">
-                        <span className="ui-name">{element.name}</span>
-                        <code className="ui-class">
-                          {element.sample === "icon" ? element.className : `.${element.className}`}
-                        </code>
-                        {element.note ? (
-                          <span className="wb-text-sm wb-text-muted">{element.note}</span>
-                        ) : null}
+        <div className="wb-card ui-catalog">
+          {groups.map((group) => {
+            const isOpen = open.includes(group.id);
+            return (
+              <div className="ui-section" key={group.id}>
+                <button
+                  type="button"
+                  className="ui-section-head"
+                  aria-expanded={isOpen}
+                  onClick={() => toggleGroup(group.id)}
+                >
+                  <span className="ui-section-title">{group.label}</span>
+                  <span className="ui-count">{group.elements.length}</span>
+                  <span className="ui-caret">
+                    <Icon name={isOpen ? "chevron-up" : "chevron-down"} size={18} />
+                  </span>
+                </button>
+                {isOpen ? (
+                  <div className="ui-section-body">
+                    <p className="ui-section-note">{group.note}</p>
+                    {group.elements.map((element) => (
+                      <div className="ui-row" key={element.id}>
+                        <UiSample element={element} copy={page} />
+                        <div className="ui-meta">
+                          <div className="ui-line">
+                            <span className="ui-name">{element.name}</span>
+                            <span className={`wb-badge ${verdicts[element.verdict].tone}`}>
+                              {verdicts[element.verdict].label}
+                            </span>
+                          </div>
+                          <code className="ui-class">
+                            {element.sample === "icon"
+                              ? element.className
+                              : `.${element.className}`}
+                          </code>
+                          {element.note ? <span className="ui-note">{element.note}</span> : null}
+                          {usageCounts(element, page)}
+                        </div>
                       </div>
-                      {usageChips(element, page)}
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
       </section>
     </>
   );
