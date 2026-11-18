@@ -31,25 +31,17 @@
 
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { peerLabel, type MessagePeer } from "@wwwuabot/shared/messages";
-import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import {
   DEFAULT_PAGE_TEMPLATE,
-  adminIdsJson,
-  buildPageConfig,
   isPageManager,
   isPageTemplateKey,
   pageAdminIds,
-  pageRole,
-  pageTemplate,
-  pageTitle,
-  type PageDraftInput,
   type PageTemplateKey,
   type PublicPage,
   type UserPage,
 } from "@wwwuabot/shared/pages";
 import type { Env } from "../shared/types";
 import { PAGE_COLUMNS, ownerOf, pageStaffIdList, toManagedPage, type PageRow } from "./pages-rows";
-import { moveAliases, rememberAlias } from "./aliases.service";
 
 /** Стеля списку: сторінок у людини не буває тисяча. */
 const MANAGED_LIMIT = 100;
@@ -74,10 +66,6 @@ interface UserRow {
   username: string | null;
   platform_username: string | null;
 }
-
-/** Що сталося зі збереженням: контролер перекладає це в код відповіді. */
-export type PageSaveOutcome =
-  { kind: "saved"; page: UserPage } | { kind: "not_found" } | { kind: "address_taken" };
 
 /** Скільки віддавати за запитом: сміття й перебір дають межі, а не помилку. */
 export function clampPublicPagesLimit(raw: unknown): number {
@@ -128,100 +116,6 @@ export class PagesService {
       .filter((page): page is UserPage => page !== null);
   }
 
-  /** Одна сторінка, яку веде людина; чужий номер поводиться як неіснуючий. */
-  async readManaged(id: number, userId: number): Promise<UserPage | null> {
-    await this.ensureSchema();
-
-    const row = await this.rowById(id);
-    if (!row) return null;
-
-    const names = await this.staffNames([row]);
-    return toManagedPage(row, userId, names);
-  }
-
-  /**
-   * Правка наявної сторінки; `id` обов'язковий.
-   *
-   * **Нових рядків тут немає.** Сторінку створює платформа (адмінка й
-   * міграції), тож спроба записати без номера — це відмова в контролері, а не
-   * «нова сторінка»: інакше кнопка в інтерфейсі була б єдиною перепоною.
-   *
-   * **Адресу не підмінюємо мовчки.** Якщо людина змінила адресу на зайняту,
-   * це відмова (`address_taken`), а не «…-2»: посилання, яке вона запам'ятала,
-   * повело б в інше місце.
-   *
-   * **Склад адмінів міняє лише власник.** Адмін веде сторінку й магазин, але
-   * доступ роздає той, кому вона належить: інакше запрошений міг би звузити
-   * чужий доступ, лишивши власника осторонь. Чернетка без поля `admins`
-   * (`PageDraftInput.admins === null`) склад не чіпає взагалі — нею ходять
-   * перемикач публічності й редактор тексту.
-   */
-  async save(userId: number, input: PageDraftInput, id: number): Promise<PageSaveOutcome> {
-    await this.ensureSchema();
-
-    const template = pageTemplate(input.template);
-    const now = formatSqliteDatetime();
-    const title = pageTitle(template, input.values);
-    const pageData = JSON.stringify(buildPageConfig(template, input.values));
-    const isPublic = input.isPublic ? 1 : 0;
-
-    {
-      const current = await this.rowById(id);
-      const role = current
-        ? pageRole(ownerOf(current), pageAdminIds(current.admin_ids), userId)
-        : null;
-      if (!current || role === null) return { kind: "not_found" };
-
-      if (current.slug !== input.address) {
-        const taken = await this.addressOwner(input.address, id);
-        if (taken) return { kind: "address_taken" };
-      }
-
-      const admins =
-        input.admins !== null && role === "owner"
-          ? adminIdsJson(input.admins)
-          : adminIdsJson(pageAdminIds(current.admin_ids));
-
-      await this.env.DB.prepare(
-        `UPDATE platform_pages
-            SET slug = ?, title = ?, page_data = ?, template_key = ?, is_public = ?,
-                admin_ids = ?, updated_at = ?
-          WHERE id = ?`,
-      )
-        .bind(input.address, title, pageData, template.key, isPublic, admins, now, id)
-        .run();
-
-      // Адреса — контракт: стара лишається рядком у `slug_aliases`, і за нею
-      // веде редирект, а не 404 (`docs/URL.md`). Спершу переносимо цілі, потім
-      // додаємо саму стару адресу — інакше ланцюжок `a → b → c` обірвався б.
-      if (current.slug !== input.address) {
-        await moveAliases(this.env.DB, current.slug, input.address);
-        await rememberAlias(this.env.DB, current.slug, input.address);
-      }
-
-      const page = await this.readManaged(id, userId);
-      return page ? { kind: "saved", page } : { kind: "not_found" };
-    }
-  }
-
-  /**
-   * Видалення; `false` — рядка не було, він чужий або людина тут не власник.
-   *
-   * Прибирає **тільки власник**: адмін веде сторінку, але не розпоряджається
-   * нею — разом із рядком зникають його адреса, товари й історія замовлень.
-   */
-  async remove(id: number, userId: number): Promise<boolean> {
-    await this.ensureSchema();
-
-    const result = await this.env.DB.prepare(
-      "DELETE FROM platform_pages WHERE id = ? AND owner_id = ?",
-    )
-      .bind(id, userId)
-      .run();
-
-    return (result.meta?.changes ?? 0) > 0;
-  }
-
   /**
    * Відкритий список: сторінки, які автори відкрили.
    *
@@ -266,12 +160,6 @@ export class PagesService {
     }));
   }
 
-  private async rowById(id: number): Promise<PageRow | null> {
-    return await this.env.DB.prepare(`SELECT ${PAGE_COLUMNS} FROM platform_pages WHERE id = ?`)
-      .bind(id)
-      .first<PageRow>();
-  }
-
   /**
    * Імена тих, хто веде ці сторінки, — **пачками** й лише за потрібними id.
    *
@@ -303,18 +191,5 @@ export class PagesService {
     // імені, але id лишається: картка покаже номер, а не порожній рядок.
     for (const id of ids) if (!names.has(id)) names.set(id, null);
     return names;
-  }
-
-  /** Номер рядка, який уже зайняв адресу; `exceptId` — «крім цього рядка». */
-  private async addressOwner(slug: string, exceptId?: number): Promise<number | null> {
-    const row = await this.env.DB.prepare(
-      exceptId === undefined
-        ? "SELECT id FROM platform_pages WHERE slug = ? LIMIT 1"
-        : "SELECT id FROM platform_pages WHERE slug = ? AND id <> ? LIMIT 1",
-    )
-      .bind(...(exceptId === undefined ? [slug] : [slug, exceptId]))
-      .first<{ id: number }>();
-
-    return row ? Number(row.id) : null;
   }
 }

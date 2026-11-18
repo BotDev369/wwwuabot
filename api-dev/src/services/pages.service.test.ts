@@ -194,24 +194,6 @@ function sqlOf(statements: Captured[], verb: RegExp): Captured | undefined {
 }
 
 describe("читання сторінок, які веде людина", () => {
-  it("⛔ чужий номер поводиться як неіснуючий, а не як відмова", async () => {
-    const { env, statements } = makeEnv({ rows: [page({ id: 5, owner_id: OWNER })] });
-    const service = new PagesService(env);
-
-    expect(await service.readManaged(5, STRANGER)).toBeNull();
-    expect(await service.readManaged(999, OWNER)).toBeNull();
-    expect(wrotePages(statements)).toBe(false);
-  });
-
-  it("власник і адмін бачать ту саму сторінку, чужий — ні", async () => {
-    const { env } = makeEnv({ rows: [page()] });
-    const service = new PagesService(env);
-
-    expect(await service.readManaged(5, OWNER)).not.toBeNull();
-    expect(await service.readManaged(5, ADMIN)).not.toBeNull();
-    expect(await service.readManaged(5, STRANGER)).toBeNull();
-  });
-
   it("список відбирається грубо, а рішення ухвалює роль", async () => {
     const { env, statements } = makeEnv({
       // `LIKE %200%` збігається і з чужим довшим id — фільтр ролі мусить прибрати такий рядок.
@@ -226,68 +208,6 @@ describe("читання сторінок, які веде людина", () => 
 
     expect(list.map((one) => one.slug)).toEqual(["olena"]);
     expect(sqlOf(statements, /^SELECT/)).toBeDefined();
-  });
-});
-
-describe("право на зміну", () => {
-  it("⛔ видаляє тільки власник: адмін веде сторінку, але не розпоряджається нею", async () => {
-    const own = makeEnv({ rows: [page()] });
-    expect(await new PagesService(own.env).remove(5, OWNER)).toBe(true);
-
-    const admin = makeEnv({ rows: [page()], deleteChanges: 0 });
-    expect(await new PagesService(admin.env).remove(5, ADMIN)).toBe(false);
-
-    // Умова лишається в самому `DELETE`: перевіряти до нього — значить забути.
-    expect(
-      own.statements.some((s) =>
-        /DELETE FROM platform_pages WHERE id = \? AND owner_id = \?/i.test(s.sql),
-      ),
-    ).toBe(true);
-  });
-
-  it("⛔ склад адмінів змінює лише власник, адмін — ні", async () => {
-    const byOwner = makeEnv({ rows: [page()] });
-    await new PagesService(byOwner.env).save(OWNER, draft({ admins: [ADMIN, 55] }), 5);
-    expect(new Set(JSON.parse(String(sqlOf(byOwner.statements, /^UPDATE/)?.binds[5])))).toEqual(
-      new Set([ADMIN, 55]),
-    );
-
-    const byAdmin = makeEnv({ rows: [page()] });
-    await new PagesService(byAdmin.env).save(ADMIN, draft({ admins: [STRANGER] }), 5);
-    expect(JSON.parse(String(sqlOf(byAdmin.statements, /^UPDATE/)?.binds[5]))).toEqual([ADMIN]);
-  });
-
-  it("чернетка без поля адмінів не змінює склад взагалі", async () => {
-    const { env, statements } = makeEnv({ rows: [page()] });
-    await new PagesService(env).save(OWNER, draft({ admins: null }), 5);
-    expect(JSON.parse(String(sqlOf(statements, /^UPDATE/)?.binds[5]))).toEqual([ADMIN]);
-  });
-
-  it("права на правку немає — і тоді не пишемо нічого", async () => {
-    const { env, statements } = makeEnv({ rows: [page()] });
-    const result = await new PagesService(env).save(STRANGER, draft(), 5);
-
-    expect(result).toEqual({ kind: "not_found" });
-    expect(wrotePages(statements)).toBe(false);
-  });
-});
-
-describe("адреса сторінки", () => {
-  it("⛔ зайнята адреса при правці — відмова, а не «…-2»", async () => {
-    const { env, statements } = makeEnv({
-      rows: [page({ slug: "стара" }), page({ id: 6, slug: "taken", owner_id: OWNER })],
-    });
-
-    const result = await new PagesService(env).save(OWNER, draft({ address: "taken" }), 5);
-
-    expect(result).toEqual({ kind: "address_taken" });
-    expect(wrotePages(statements)).toBe(false);
-  });
-
-  it("не змінили адресу — не питаємо нікого про зайнятість", async () => {
-    const { env, statements } = makeEnv({ rows: [page({ slug: "olena" })] });
-    await new PagesService(env).save(OWNER, draft({ address: "olena" }), 5);
-    expect(statements.some((s) => /FROM platform_pages WHERE slug = \?/i.test(s.sql))).toBe(false);
   });
 });
 
