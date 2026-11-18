@@ -67,7 +67,8 @@
     "./security/headers": "./src/security/headers.ts",
     "./styles/admin/index.css": "./src/styles/admin/index.css",
     "./styles/platform.css": "./src/styles/platform.css",
-    "./styles/catalog.json": "./src/styles/catalog.json"
+    "./styles/catalog.json": "./src/styles/catalog.json",
+    "./ui/role-catalog": "./src/ui/role-catalog.ts"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

@@ -1,101 +1,58 @@
 // @vitest-environment jsdom
 /**
- * Сторінка «Візуал»: продукт на одному екрані, теми й признак оновлення.
+ * Сторінка «Стиль»: демо-лендінг, таблиця на 60 рядків, перемикач теми.
  *
- * Перевіряємо те, чого не видно з CSS: що сторінка показує справжні блоки, що
- * нова версія вигляду дає банер і що перемикач тем справді міняє тему.
  * @module web-admin-dev/src/pages/style/StylePage.dom.test
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import catalog from "@wwwuabot/shared/styles/catalog.json";
 import { StylePage } from "./StylePage";
 
-const CATALOG = catalog as typeof catalog & { version?: string };
-const VERSION = CATALOG.version ?? "abc1234";
-const SEEN_KEY = "wwwuabot-style-seen";
-
-function serve(version: string): void {
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async () => new Response(JSON.stringify({ ...CATALOG, version }), { status: 200 })),
-  );
-}
-
-async function renderPage(): Promise<void> {
-  render(<StylePage />);
-  await screen.findByText(VERSION);
-}
-
-describe("сторінка «Візуал»", () => {
+describe("сторінка «Стиль»", () => {
   beforeEach(() => {
     localStorage.clear();
-    serve(VERSION);
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
     document.documentElement.removeAttribute("data-theme");
     localStorage.clear();
   });
 
-  it("показує демосторінку продукту, а не перелік токенів", async () => {
-    await renderPage();
-
-    expect(screen.getByText("Числа")).toBeTruthy();
-    expect(screen.getByText("Дані й графіки")).toBeTruthy();
-    expect(screen.getByText("Люди без релігії, млн")).toBeTruthy();
-    // Значення є і в показнику, і в таблиці — обидва справжні блоки.
-    expect(screen.getAllByText("28,8%").length).toBeGreaterThan(0);
-    expect(screen.queryByRole("tab", { name: "Токени" })).toBeNull();
-  });
-
-  it("каже, що вигляд оновився, коли версія інша", async () => {
-    localStorage.setItem(
-      SEEN_KEY,
-      JSON.stringify({ version: "old0000", at: "2026-10-01T10:00:00.000Z" }),
-    );
-    serve("new1111");
-
+  it("показує гасло продукту і каталог ролей", () => {
     render(<StylePage />);
 
-    expect(await screen.findByText("Вигляд оновився")).toBeTruthy();
-    expect(screen.getByText(/Було old0000, стало new1111/)).toBeTruthy();
+    expect(screen.getByText("ПАЛЯНИЦЯ")).toBeTruthy();
+    expect(screen.getByText("Каталог ролей")).toBeTruthy();
+    expect(screen.getAllByText("Палітра").length).toBeGreaterThan(0);
   });
 
-  it("позначення переглянутим прибирає банер і запамʼятовує версію", async () => {
-    localStorage.setItem(
-      SEEN_KEY,
-      JSON.stringify({ version: "old0000", at: "2026-10-01T10:00:00.000Z" }),
-    );
-    serve("new1111");
-    render(<StylePage />);
-    await screen.findByText("Вигляд оновився");
+  it("рендерить таблицю на 14 стовпців і 60 рядків", () => {
+    const { container } = render(<StylePage />);
+    const table = container.querySelector(".sc-table");
 
-    fireEvent.click(screen.getByRole("button", { name: "Бачу" }));
-
-    expect(screen.queryByText("Вигляд оновився")).toBeNull();
-    const stored = JSON.parse(localStorage.getItem(SEEN_KEY) ?? "{}") as { version?: string };
-    expect(stored.version).toBe("new1111");
+    expect(table).toBeTruthy();
+    expect(table?.querySelectorAll("thead th")).toHaveLength(14);
+    expect(table?.querySelectorAll("tbody tr")).toHaveLength(60);
+    expect(table?.querySelector("thead th.sc-table-pin")).toBeTruthy();
   });
 
-  it("перемикач тем змінює тему продукту", async () => {
-    await renderPage();
-
-    fireEvent.click(screen.getByRole("tab", { name: "Світанок · ніч" }));
-
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
-  });
-
-  it("каже про помилку, якщо каталог не прийшов", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response("", { status: 500 })),
-    );
-
+  it("перемикач теми міняє світлу на темну", () => {
     render(<StylePage />);
 
-    expect(await screen.findByText(/не завантажився/)).toBeTruthy();
+    const toggle = screen.getAllByRole("switch", { name: "Тема" })[0];
+    fireEvent.click(toggle);
+
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+  });
+
+  it("модалка відкривається і закривається", () => {
+    render(<StylePage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Відкрити" }));
+    expect(screen.getByRole("dialog", { name: "Демо модалки" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Гаразд" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 });

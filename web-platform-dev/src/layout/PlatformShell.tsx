@@ -16,7 +16,7 @@
 import { useCallback, useEffect, useState, type ReactElement } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AppBar, ScreenChromeProvider } from "@wwwuabot/ui/nav";
-import { ThemeMenu } from "@/pages/themes/ThemeMenu";
+import { useStyleTheme } from "@wwwuabot/shared";
 import { apiFetch } from "@/shared/api/client";
 import { JournalBridge } from "./JournalBridge";
 import { PlatformSidebar } from "./PlatformSidebar";
@@ -49,9 +49,8 @@ export function PlatformShell(): ReactElement {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const goBack = useCallback(() => void navigate(-1), [navigate]);
-  const [themeOpen, setThemeOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
-  const closeTheme = useCallback(() => setThemeOpen(false), []);
+  const { toggleScheme } = useStyleTheme();
   const closeNav = useCallback(() => setNavOpen(false), []);
   const toggleNav = useCallback(() => setNavOpen((current) => !current), []);
   const botUsername = useBotUsername();
@@ -97,13 +96,12 @@ export function PlatformShell(): ReactElement {
           <AppBar
             onBack={goBack}
             onMenu={toggleNav}
-            onTheme={() => setThemeOpen(true)}
+            onTheme={toggleScheme}
             botUsername={botUsername}
           />
           <Outlet />
         </div>
       </div>
-      {themeOpen && <ThemeMenu onClose={closeTheme} />}
     </ScreenChromeProvider>
   );
 }

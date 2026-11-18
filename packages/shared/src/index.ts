@@ -3,9 +3,8 @@ export { ThemeButton } from "./components/StyleToggle";
 // Legacy — deprecated
 export { StylePicker, ThemeToggle } from "./components/StyleToggle";
 
-// ── Тема: авторський набір токенів, а не три кольори людини ──────────
-export { ThemeCard, ThemeColorPanel, ThemeSheet, useStyleTheme } from "./components/theme";
-export type { ThemeCardProps } from "./components/theme";
+// ── Тема: дві — світла й темна, перемикач ────────────────────────────
+export { useStyleTheme } from "./components/theme";
 export { DEFAULT_THEME, THEMES, THEME_KEY, isThemeId, themeById } from "./styles/registry";
 export type { ThemeDefinition, ThemeMode } from "./styles/registry";
 export { applyTheme, clearStoredTheme, readStoredTheme } from "./styles/theme-dom";

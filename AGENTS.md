@@ -45,8 +45,9 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 - **Вид товару** — фізичний / цифровий / послуга: **закритий** перелік у коді (`PRODUCT_KINDS`), бо вид — це поведінка, а не слово.
 - **Замовлення** — `shop_orders` + знімок (`shop_order_items`); `status` — **ключ**, не текст. Оповіщення продавцю — розмова платформи, а не друга система.
 - **Conditional Rendering** — умовний показ блоків за role/tariff/status/permissions.
-- **Design System** — **один** стиль продукту й **шість авторських тем** (`styles/tokens.css` + `styles/themes.css`; вибору стилю немає). Тему задає `data-theme` на `<html>`: повний набір токенів, а не три кольори людини.
-- **Тема** — авторський набір (палітра, глибина, акцент) у `styles/themes.css` і `styles/registry.ts`; шрифт у неї не входить. Власних тем, публічності й `theme_schemes` у коді більше немає.
+- **Design System** — **один** стиль продукту, **дві теми**: світла (`styles/tokens.css`) і темна (`styles/themes.css`); тему задає `data-theme`, є перемикач.
+- **Тема** — `light` або `dark`; шрифт у неї не входить. Власних тем немає.
+- **Роль вигляду** — карта стилю в `ui/role-catalog.ts`; сторінка називає роль (`docs/STYLE_CATALOG.md`).
 - **Notes / Contacts** — дві колекції на **спільних** кирпичиках (`@wwwuabot/ui/collection`).
 - **Розвиток** — четвертий слот футера: самооцінка (тести, бал рахує сервер; тест може мати кілька **шкал**, рядок бази — на шкалу) і вхід в **аналіз дат**. `docs/ASSESSMENTS.md`.
 - **Повідомлення** — переписка між людьми платформи, без бота; адреса розмови `/messages?peer=<id>` — одна на бота й платформу.
@@ -78,7 +79,7 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 ## 4. Іконки та дизайн
 
 > **Емоджі в UI ЗАБОРОНЕНІ. Використовувати `<Icon />` з shared.** Виняток — тексти бота (`bot-dev/src/shared/config/texts.ts`): їх малює Telegram, `<Icon />` там немає; поза `check:quality`.
-> **Стилі — рівно в `packages/shared/src/styles/`; демосторінка візуалу — `/style`** (каталог для версії вигляду: `npm run doc:style`, свіжість: `npm run check:style`).
+> **Стилі — рівно в `packages/shared/src/styles/`; демо-лендінг стилю — `/style` в адмінці** (каталог для версії вигляду: `npm run doc:style`, свіжість: `npm run check:style`). Вигляд — з каталогу ролей (`docs/STYLE_CATALOG.md`).
 > **Меню — модалка над скримом (не дропдаун): висоту їй дає вміст, і стоїть вона по центру екрана; виняток — дропдаун дій картки («···»).**
 > **Нативні `alert` / `confirm` / `prompt` ЗАБОРОНЕНІ. Використовувати `useDialog()`.**
 
@@ -111,7 +112,8 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 | Контент сторінки: одна модель, адреса, діплінк | `packages/shared/src/content/` — `ContentPage`, `pickContentPage`, `toWebPath` / `toBotPayload` / `buildShareLinks`; правила — `docs/CONTENT_MODEL.md` |
 | Адреса: одна сутність `slug`, два подання (веб / бот) | `packages/shared/src/content/resolve.ts` (`toWebPath`, `toBotPayload`, `isValidSlug`) |
 | Сторінки з шаблону: шаблони, назва → адреса, підпис бота | `packages/shared/src/pages/`; правила — `docs/PAGES.md` |
-| Тема (авторський набір токенів) | `docs/THEMES.md`, `packages/shared/src/styles/registry.ts`, `themes.css` |
+| Тема (світла / темна) | `docs/THEMES.md`, `packages/shared/src/styles/registry.ts`, `themes.css` |
+| Роль вигляду | `docs/STYLE_CATALOG.md`, `ui/role-catalog.ts`, `styles/role-catalog.css` |
 | Авто-добір колонок; перебудова таблиці | `packages/shared/src/database/auto-migrate.ts`; `scripts/migrations/*.sql` (2 кроки: копія + заміна) |
 
 **Бот:** конвеєр апдейта, `ctx.scenario`, рендер, нотифікації, контакти — `bot-dev/README.md`. Орієнтири: HTTP — `src/api/router.ts`, потоки — `src/core/router/`, middleware — `src/core/middleware/`, домен — `src/modules/<domain>/`, тексти — `src/shared/config/texts.ts`.

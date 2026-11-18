@@ -1,0 +1,876 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ROLE CATALOG — демо-лендінг стилю (`/style` в адмінці)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Правила для ролей із `ui/role-catalog.ts` та для блоків демо-сторінки.
+ *
+ * **Колір, розмір, відступ і рух тут, а не в розмітці.** Сторінка пише роль
+ * (`.sc-tone-data-3`, `.sc-size-title`), і більше ніде не вказує вигляд.
+ *
+ * **Дані фарбуються своєю серією** (`--data-1…6`), нейтральне — сірим
+ * (`--data-0`), дії — акцентом. Акцент на даних заборонений: інакше число,
+ * смуга й кнопка читаються як одна річ.
+ */
+
+.sc-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  padding-bottom: var(--sp-6);
+}
+
+/* ── Ролі: тон ────────────────────────────────────────────────────────────
+   Кожен тон — одне значення. `sc-tone-ink` — основний текст, `sc-tone-muted`
+   — другий рівень, решта — серії даних і статуси. */
+.sc-role {
+  margin: 0;
+}
+
+.sc-tone-ink {
+  color: var(--text-primary);
+}
+
+.sc-tone-muted {
+  color: var(--text-muted);
+}
+
+.sc-tone-accent {
+  color: var(--accent);
+}
+
+.sc-tone-data-0 {
+  color: var(--data-0);
+}
+
+.sc-tone-data-1 {
+  color: var(--data-1);
+}
+
+.sc-tone-data-2 {
+  color: var(--data-2);
+}
+
+.sc-tone-data-3 {
+  color: var(--data-3);
+}
+
+.sc-tone-data-4 {
+  color: var(--data-4);
+}
+
+.sc-tone-data-5 {
+  color: var(--data-5);
+}
+
+.sc-tone-data-6 {
+  color: var(--data-6);
+}
+
+.sc-tone-green {
+  color: var(--green);
+}
+
+.sc-tone-yellow {
+  color: var(--yellow);
+}
+
+.sc-tone-red {
+  color: var(--red);
+}
+
+/* ── Ролі: розмір ──────────────────────────────────────────────────────── */
+.sc-size-display {
+  font-family: var(--font-display);
+  font-size: var(--text-5xl);
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.sc-size-title {
+  font-size: var(--text-xl);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.sc-size-head {
+  font-size: var(--text-lg);
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.sc-size-body {
+  font-size: var(--text-base);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.sc-size-label {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.sc-size-number {
+  font-size: var(--text-3xl);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.sc-size-caption {
+  font-size: var(--cap-size);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+/* ── Ролі: відступи й радіуси ──────────────────────────────────────────── */
+.sc-gap-none {
+  margin-block: 0;
+}
+
+.sc-gap-tight {
+  margin-block: 4px;
+}
+
+.sc-gap-base {
+  margin-block: 10px;
+}
+
+.sc-gap-loose {
+  margin-block: 18px 0;
+}
+
+.sc-radius-none {
+  border-radius: 0;
+}
+
+.sc-radius-sm {
+  border-radius: var(--radius-xs);
+}
+
+.sc-radius-md {
+  border-radius: var(--radius-md);
+}
+
+.sc-radius-lg {
+  border-radius: var(--radius-lg);
+}
+
+.sc-radius-full {
+  border-radius: var(--radius-full);
+}
+
+/* ── Ролі: рух ───────────────────────────────────────────────────────────
+   Анімація — частина ролі, а не прикраса сторінки: картка приходить, смуга
+   росте, скелетон дихає. Повага до `prefers-reduced-motion` стоїть нижче. */
+@keyframes sc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sc-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sc-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.sc-motion-rise {
+  animation: sc-rise 0.34s ease-out both;
+}
+
+.sc-motion-fade {
+  animation: sc-fade 0.3s ease-out both;
+}
+
+.sc-motion-pulse {
+  animation: sc-pulse 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-motion-rise,
+  .sc-motion-fade,
+  .sc-motion-pulse {
+    animation: none;
+  }
+}
+
+/* ── Гасло ───────────────────────────────────────────────────────────────
+   Герой — єдине місце, де насичений фон: далі сторінка дихає поверхнями. */
+.sc-hero {
+  position: relative;
+  overflow: hidden;
+  padding: var(--sp-6) var(--sp-5);
+  border-radius: var(--radius-2xl);
+  background: var(--gradient-hero);
+  box-shadow: var(--hero-shadow);
+  color: var(--hero-ink);
+}
+
+.sc-hero .sc-tone-ink {
+  color: #ffffff;
+}
+
+.sc-hero .sc-tone-muted {
+  color: var(--hero-note);
+}
+
+.sc-hero-cap {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--cap-size);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hero-cap);
+}
+
+.sc-hero-lead {
+  max-width: 46ch;
+}
+
+.sc-hero-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+}
+
+/* ── Секції ────────────────────────────────────────────────────────────── */
+.sc-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.sc-sect-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sc-sect-title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+.sc-sect-note {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* ── Каталог ролей ──────────────────────────────────────────────────────── */
+.sc-roles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--sp-2);
+}
+
+.sc-role-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  box-shadow: inset 0 0 0 1px var(--card-border);
+}
+
+.sc-role-name {
+  font-size: var(--text-base);
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+.sc-role-note {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.sc-role-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin-top: 2px;
+}
+
+.sc-token {
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--radius-full);
+  background: var(--surface-hover);
+  font-size: var(--cap-size);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* ── Палітра ───────────────────────────────────────────────────────────── */
+.sc-palette {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: var(--sp-2);
+}
+
+.sc-swatch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.sc-swatch-chip {
+  height: 34px;
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.sc-swatch-data-0 {
+  background: var(--data-0);
+}
+
+.sc-swatch-data-1 {
+  background: var(--data-1);
+}
+
+.sc-swatch-data-2 {
+  background: var(--data-2);
+}
+
+.sc-swatch-data-3 {
+  background: var(--data-3);
+}
+
+.sc-swatch-data-4 {
+  background: var(--data-4);
+}
+
+.sc-swatch-data-5 {
+  background: var(--data-5);
+}
+
+.sc-swatch-data-6 {
+  background: var(--data-6);
+}
+
+.sc-swatch-accent {
+  background: var(--accent);
+}
+
+.sc-swatch-green {
+  background: var(--green);
+}
+
+.sc-swatch-yellow {
+  background: var(--yellow);
+}
+
+.sc-swatch-red {
+  background: var(--red);
+}
+
+.sc-swatch-muted {
+  background: var(--text-muted);
+}
+
+.sc-swatch-name {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── Сітка карток і показники ──────────────────────────────────────────── */
+.sc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--sp-3);
+}
+
+.sc-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+  box-shadow:
+    inset 0 0 0 1px var(--card-border),
+    var(--shadow-card);
+}
+
+.sc-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.sc-card-title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+.sc-kpi-label {
+  margin: 0;
+  font-size: var(--cap-size);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ── Смуги ─────────────────────────────────────────────────────────────── */
+.sc-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.sc-bar-row {
+  display: grid;
+  grid-template-columns: minmax(88px, 34%) 1fr auto;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.sc-bar-name {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sc-bar-track {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--surface-hover);
+  overflow: hidden;
+}
+
+.sc-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: currentColor;
+}
+
+.sc-bar-value {
+  font-size: var(--text-sm);
+  font-weight: 900;
+  color: currentColor;
+  font-variant-numeric: tabular-nums;
+}
+
+.sc-series-1 {
+  color: var(--data-1);
+}
+
+.sc-series-2 {
+  color: var(--data-2);
+}
+
+.sc-series-3 {
+  color: var(--data-3);
+}
+
+.sc-series-4 {
+  color: var(--data-4);
+}
+
+.sc-series-5 {
+  color: var(--data-5);
+}
+
+.sc-series-6 {
+  color: var(--data-6);
+}
+
+.sc-series-0 {
+  color: var(--data-0);
+}
+
+/* Ширини — класами, а не інлайном: інлайн-стиль обходить токени й не
+   перевіряється гейтом. */
+.sc-fill-10 {
+  width: 10%;
+}
+
+.sc-fill-20 {
+  width: 20%;
+}
+
+.sc-fill-30 {
+  width: 30%;
+}
+
+.sc-fill-40 {
+  width: 40%;
+}
+
+.sc-fill-50 {
+  width: 50%;
+}
+
+.sc-fill-60 {
+  width: 60%;
+}
+
+.sc-fill-70 {
+  width: 70%;
+}
+
+.sc-fill-80 {
+  width: 80%;
+}
+
+.sc-fill-90 {
+  width: 90%;
+}
+
+.sc-fill-100 {
+  width: 100%;
+}
+
+/* ── Кільце ────────────────────────────────────────────────────────────── */
+.sc-rings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+}
+
+.sc-ring-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.sc-ring {
+  --sc-p: 25%;
+  position: relative;
+  width: 62px;
+  height: 62px;
+  flex: 0 0 62px;
+  border-radius: 50%;
+  background: conic-gradient(currentColor var(--sc-p), var(--surface-hover) 0);
+}
+
+.sc-ring::after {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: var(--card-bg);
+}
+
+.sc-ring-p-25 {
+  --sc-p: 25%;
+}
+
+.sc-ring-p-45 {
+  --sc-p: 45%;
+}
+
+.sc-ring-p-62 {
+  --sc-p: 62%;
+}
+
+.sc-ring-p-80 {
+  --sc-p: 80%;
+}
+
+.sc-ring-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+/* ── Легенда ───────────────────────────────────────────────────────────── */
+.sc-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.sc-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.sc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ── Таблиця: скрол у всі боки, закріплені шапка й перший стовпець ────── */
+.sc-table-wrap {
+  max-height: 420px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--radius-lg);
+  background: var(--bg-2);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+}
+
+.sc-table {
+  width: 100%;
+  min-width: 1240px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.sc-table th,
+.sc-table td {
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sc-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--surface-modal);
+  font-size: var(--cap-size);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.sc-table thead th.sc-col-1 {
+  color: var(--data-1);
+}
+
+.sc-table thead th.sc-col-2 {
+  color: var(--data-2);
+}
+
+.sc-table thead th.sc-col-3 {
+  color: var(--data-3);
+}
+
+.sc-table thead th.sc-col-4 {
+  color: var(--data-4);
+}
+
+.sc-table thead th.sc-col-5 {
+  color: var(--data-5);
+}
+
+.sc-table thead th.sc-col-6 {
+  color: var(--data-6);
+}
+
+.sc-table tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--surface-hover) 34%, transparent);
+}
+
+.sc-table-pin {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--bg-2);
+  box-shadow: 1px 0 0 var(--border-subtle);
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.sc-table tbody tr:nth-child(even) td.sc-table-pin {
+  background: color-mix(in srgb, var(--bg-2) 88%, var(--surface-hover));
+}
+
+.sc-table thead th.sc-table-pin {
+  z-index: 4;
+  background: var(--surface-modal);
+}
+
+@media (hover: hover) {
+  .sc-table tbody tr:hover td {
+    background: var(--surface-hover);
+  }
+
+  .sc-table tbody tr:hover td.sc-table-pin {
+    background: var(--surface-hover);
+  }
+}
+
+.sc-user {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.sc-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  border-radius: 50%;
+  background: var(--surface-hover);
+  box-shadow: inset 0 0 0 1px var(--card-border);
+  font-size: var(--text-xs);
+  font-weight: 900;
+  color: var(--series-ink, var(--text-primary));
+}
+
+.sc-mono {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+/* ── Форми ─────────────────────────────────────────────────────────────── */
+.sc-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--sp-3);
+}
+
+.sc-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.sc-field-label {
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.sc-field-hint {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.sc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+/* ── Статуси, навігація, порожній стан, рух ────────────────────────────── */
+.sc-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.sc-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  max-width: 300px;
+}
+
+.sc-nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.sc-nav-link-on {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.sc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-6) var(--sp-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--card-border);
+  text-align: center;
+}
+
+.sc-skeleton {
+  height: 12px;
+  border-radius: var(--radius-xs);
+  background: var(--data-0);
+}
+
+.sc-skeleton-sm {
+  width: 40%;
+}
+
+.sc-skeleton-lg {
+  width: 76%;
+}
+
+.sc-demo-note {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.sc-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+@media (max-width: 720px) {
+  .sc-hero {
+    padding: var(--sp-5) var(--sp-4);
+  }
+
+  .sc-size-display {
+    font-size: var(--text-4xl);
+  }
+
+  .sc-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,99 +1,57 @@
 /**
- * Сторінка «Стиль»: одна демосторінка візуалу.
+ * Сторінка «Стиль» — демо-лендінг продукту.
  *
- * Замість переліку токенів і класів — продукт цілком: шапка, числа, графіки,
- * картки, поля, статуси й навігація. Перемикач тем стоїть тут же, тож зміну
- * вигляду видно одразу, а відбиток CSS каже, чи є що дивитись.
+ * **Не перелік токенів і не галерея тем.** Сторінка показує сам вигляд: гасло,
+ * каталог ролей, палітру, дані, таблицю, форми, стани й рух. Тему тут
+ * перемикають одним перемикачем — світла / темна.
+ *
+ * **Вигляд не описаний на сторінці.** Кожен блок бере роль із
+ * `@wwwuabot/shared/ui/role-catalog`; тексти — у `demo-content.ts`. Тому нова
+ * сторінка продукту не пише CSS: вона пише тексти й називає категорію.
+ *
  * @module web-admin-dev/src/pages/style/StylePage
  */
 
-import { useState } from "react";
-import { applyTheme, readStoredTheme, THEMES } from "@wwwuabot/shared";
-import { Tabs, type TabOption } from "@wwwuabot/ui/tabs";
+import type { ReactElement } from "react";
+import { ThemeButton } from "@wwwuabot/shared";
 import { PageTopbar } from "../../layout/PageTopbar";
-import { DemoArticle } from "./DemoArticle";
-import { DemoUi } from "./DemoUi";
-import { useStyleVersion } from "./useStyleVersion";
+import { DataSection } from "./DataSection";
+import { FormSection } from "./FormSection";
+import { MiscSection } from "./MiscSection";
+import { PaletteSection } from "./PaletteSection";
+import { RoleCatalogSection } from "./RoleCatalogSection";
+import { StyleHero } from "./StyleHero";
+import { UsersTable } from "./UsersTable";
 
-type ThemeId = (typeof THEMES)[number]["id"];
-
-const THEME_OPTIONS: readonly TabOption<ThemeId>[] = THEMES.map((theme) => ({
-  key: theme.id,
-  label: theme.label,
-}));
-
-export function StylePage() {
-  const [theme, setTheme] = useState<ThemeId>(() => readStoredTheme());
-  const version = useStyleVersion();
-
-  const pickTheme = (next: ThemeId): void => {
-    applyTheme(next);
-    setTheme(next);
-  };
-
-  const versionLabel =
-    version.status === "ready" ? version.version : version.status === "error" ? "—" : "…";
-
+export function StylePage(): ReactElement {
   return (
     <>
       <PageTopbar>
-        <h1 className="wb-topbar-title">Візуал</h1>
+        <h1 className="wb-topbar-title">Стиль</h1>
         <div className="wb-topbar-right">
-          <span className="st-version" title="Відбиток CSS — змінюється разом із виглядом">
-            <span className="st-version-key">вигляд</span>
-            {versionLabel}
-          </span>
+          <span className="sc-demo-note">дві теми · каталог ролей · демо</span>
         </div>
       </PageTopbar>
 
-      <section className="st">
-        <div className="st-bar">
-          {/* Перемикач — спільна смуга вкладок: продукт має один контрол вибору,
-              і демосторінка не заводить другого. */}
-          <Tabs options={THEME_OPTIONS} value={theme} onChange={pickTheme} label="Тема вигляду" />
-          <span className="st-note">
-            {version.seenAt
-              ? `оновлень не було з ${version.seenAt}`
-              : "версію ще не позначено як переглянуту"}
-          </span>
-          <button
-            type="button"
-            className="wb-btn wb-btn-ghost wb-btn-sm"
-            onClick={version.markSeen}
-            disabled={!version.version}
-          >
-            Позначити переглянутим
-          </button>
-        </div>
+      <section className="sc-page">
+        <StyleHero />
 
-        {version.updated && (
-          <div className="st-banner" role="status">
-            <span className="st-banner-title">Вигляд оновився</span>
-            <p className="st-banner-text">
-              Було {version.previous}, стало {version.version}. Нижче — продукт у поточній темі.
+        <div className="sc-card sc-row">
+          <div>
+            <h3 className="sc-card-title">Тема</h3>
+            <p className="sc-demo-note">
+              Тем рівно дві. Перемикач міняє палітру й памʼятає вибір на пристрої.
             </p>
-            <button
-              type="button"
-              className="wb-btn wb-btn-primary wb-btn-sm"
-              onClick={version.markSeen}
-            >
-              Бачу
-            </button>
           </div>
-        )}
-
-        <div className="st-demo">
-          <DemoArticle />
-          <DemoUi />
+          <ThemeButton />
         </div>
 
-        <p className="st-footnote">
-          {version.status === "error" &&
-            "Каталог вигляду не завантажився — версії не видно, решта сторінки працює. "}
-          {version.seenAt
-            ? `Востаннє позначено: ${version.seenAt}.`
-            : "Позначте версію переглянутою, щоб наступного разу побачити лише справжні зміни."}
-        </p>
+        <RoleCatalogSection />
+        <PaletteSection />
+        <DataSection />
+        <UsersTable />
+        <FormSection />
+        <MiscSection />
       </section>
     </>
   );

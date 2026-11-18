@@ -138,7 +138,6 @@ export const ICON_NAMES = [
   "globe",
   "sun",
   "moon",
-  "sliders",
   "tabs",
   "accordion",
   "spacer",

@@ -1,5 +1,5 @@
 {
-  "version": "d512d4b",
+  "version": "0ef3bdb",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -75,11 +75,6 @@
       "file": "admin/spending.css",
       "tokens": 11,
       "classes": 73
-    },
-    {
-      "file": "admin/style.css",
-      "tokens": 0,
-      "classes": 19
     },
     {
       "file": "admin/telegram-preview.css",
@@ -197,6 +192,11 @@
       "classes": 0
     },
     {
+      "file": "role-catalog.css",
+      "tokens": 5,
+      "classes": 130
+    },
+    {
       "file": "shop-storefront.css",
       "tokens": 0,
       "classes": 94
@@ -222,18 +222,13 @@
       "classes": 4
     },
     {
-      "file": "theme-panel.css",
-      "tokens": 0,
-      "classes": 38
-    },
-    {
       "file": "themes.css",
-      "tokens": 77,
+      "tokens": 78,
       "classes": 0
     },
     {
       "file": "tokens.css",
-      "tokens": 206,
+      "tokens": 207,
       "classes": 0
     },
     {
@@ -520,6 +515,14 @@
       "section": "Світанок: світло екрана",
       "light": "0 20px 40px -22px rgba(255, 150, 90, 0.95)",
       "dark": "0 20px 40px -24px rgba(255, 150, 90, 0.55)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--data-0",
+      "section": "Спектр",
+      "light": "#6f6885",
+      "dark": "#a79fc0",
       "palette": "",
       "paletteDark": ""
     },
@@ -2769,6 +2772,41 @@
       "section": ""
     },
     {
+      "name": "--sc-p",
+      "file": "role-catalog.css",
+      "selector": ".sc-ring",
+      "value": "25%",
+      "section": "Кільце"
+    },
+    {
+      "name": "--sc-p",
+      "file": "role-catalog.css",
+      "selector": ".sc-ring-p-25",
+      "value": "25%",
+      "section": "Кільце"
+    },
+    {
+      "name": "--sc-p",
+      "file": "role-catalog.css",
+      "selector": ".sc-ring-p-45",
+      "value": "45%",
+      "section": "Кільце"
+    },
+    {
+      "name": "--sc-p",
+      "file": "role-catalog.css",
+      "selector": ".sc-ring-p-62",
+      "value": "62%",
+      "section": "Кільце"
+    },
+    {
+      "name": "--sc-p",
+      "file": "role-catalog.css",
+      "selector": ".sc-ring-p-80",
+      "value": "80%",
+      "section": "Кільце"
+    },
+    {
       "name": "--section-tone",
       "file": "components.css",
       "selector": ".wb-block-section--row[data-tone=\"1\"]",
@@ -3677,44 +3715,6 @@
           "spend-kpis",
           "spend-more",
           "spend-section-title"
-        ]
-      }
-    ],
-    "admin/style.css": [
-      {
-        "section": "",
-        "names": [
-          "st"
-        ]
-      },
-      {
-        "section": "Смуга керування й версія",
-        "names": [
-          "st-banner",
-          "st-banner-text",
-          "st-banner-title",
-          "st-bar",
-          "st-note",
-          "st-version",
-          "st-version-key"
-        ]
-      },
-      {
-        "section": "Полотно: одна колонка, як справжня сторінка",
-        "names": [
-          "st",
-          "st-charts",
-          "st-demo",
-          "st-footnote",
-          "st-grid",
-          "st-note",
-          "st-panel",
-          "st-row",
-          "st-section",
-          "st-section-title",
-          "st-stats",
-          "st-subbar",
-          "st-tabbar"
         ]
       }
     ],
@@ -5788,6 +5788,223 @@
       }
     ],
     "reset.css": [],
+    "role-catalog.css": [
+      {
+        "section": "",
+        "names": [
+          "sc-page"
+        ]
+      },
+      {
+        "section": "Ролі: тон",
+        "names": [
+          "sc-role",
+          "sc-tone-accent",
+          "sc-tone-data-0",
+          "sc-tone-data-1",
+          "sc-tone-data-2",
+          "sc-tone-data-3",
+          "sc-tone-data-4",
+          "sc-tone-data-5",
+          "sc-tone-data-6",
+          "sc-tone-green",
+          "sc-tone-ink",
+          "sc-tone-muted",
+          "sc-tone-red",
+          "sc-tone-yellow"
+        ]
+      },
+      {
+        "section": "Ролі: розмір",
+        "names": [
+          "sc-size-body",
+          "sc-size-caption",
+          "sc-size-display",
+          "sc-size-head",
+          "sc-size-label",
+          "sc-size-number",
+          "sc-size-title"
+        ]
+      },
+      {
+        "section": "Ролі: відступи й радіуси",
+        "names": [
+          "sc-gap-base",
+          "sc-gap-loose",
+          "sc-gap-none",
+          "sc-gap-tight",
+          "sc-radius-full",
+          "sc-radius-lg",
+          "sc-radius-md",
+          "sc-radius-none",
+          "sc-radius-sm"
+        ]
+      },
+      {
+        "section": "Ролі: рух",
+        "names": [
+          "sc-motion-fade",
+          "sc-motion-pulse",
+          "sc-motion-rise"
+        ]
+      },
+      {
+        "section": "Гасло",
+        "names": [
+          "sc-hero",
+          "sc-hero-cap",
+          "sc-hero-lead",
+          "sc-hero-row",
+          "sc-tone-ink",
+          "sc-tone-muted"
+        ]
+      },
+      {
+        "section": "Секції",
+        "names": [
+          "sc-sect-head",
+          "sc-sect-note",
+          "sc-sect-title",
+          "sc-section"
+        ]
+      },
+      {
+        "section": "Каталог ролей",
+        "names": [
+          "sc-role-card",
+          "sc-role-name",
+          "sc-role-note",
+          "sc-role-tokens",
+          "sc-roles",
+          "sc-token"
+        ]
+      },
+      {
+        "section": "Палітра",
+        "names": [
+          "sc-palette",
+          "sc-swatch",
+          "sc-swatch-accent",
+          "sc-swatch-chip",
+          "sc-swatch-data-0",
+          "sc-swatch-data-1",
+          "sc-swatch-data-2",
+          "sc-swatch-data-3",
+          "sc-swatch-data-4",
+          "sc-swatch-data-5",
+          "sc-swatch-data-6",
+          "sc-swatch-green",
+          "sc-swatch-muted",
+          "sc-swatch-name",
+          "sc-swatch-red",
+          "sc-swatch-yellow"
+        ]
+      },
+      {
+        "section": "Сітка карток і показники",
+        "names": [
+          "sc-card",
+          "sc-card-head",
+          "sc-card-title",
+          "sc-grid",
+          "sc-kpi-label"
+        ]
+      },
+      {
+        "section": "Смуги",
+        "names": [
+          "sc-bar-fill",
+          "sc-bar-name",
+          "sc-bar-row",
+          "sc-bar-track",
+          "sc-bar-value",
+          "sc-bars",
+          "sc-fill-10",
+          "sc-fill-100",
+          "sc-fill-20",
+          "sc-fill-30",
+          "sc-fill-40",
+          "sc-fill-50",
+          "sc-fill-60",
+          "sc-fill-70",
+          "sc-fill-80",
+          "sc-fill-90",
+          "sc-series-0",
+          "sc-series-1",
+          "sc-series-2",
+          "sc-series-3",
+          "sc-series-4",
+          "sc-series-5",
+          "sc-series-6"
+        ]
+      },
+      {
+        "section": "Кільце",
+        "names": [
+          "sc-ring",
+          "sc-ring-item",
+          "sc-ring-p-25",
+          "sc-ring-p-45",
+          "sc-ring-p-62",
+          "sc-ring-p-80",
+          "sc-ring-text",
+          "sc-rings"
+        ]
+      },
+      {
+        "section": "Легенда",
+        "names": [
+          "sc-dot",
+          "sc-legend",
+          "sc-legend-item"
+        ]
+      },
+      {
+        "section": "Таблиця: скрол у всі боки, закріплені шапка й перший стовпець",
+        "names": [
+          "sc-avatar",
+          "sc-col-1",
+          "sc-col-2",
+          "sc-col-3",
+          "sc-col-4",
+          "sc-col-5",
+          "sc-col-6",
+          "sc-mono",
+          "sc-table",
+          "sc-table-pin",
+          "sc-table-wrap",
+          "sc-user"
+        ]
+      },
+      {
+        "section": "Форми",
+        "names": [
+          "sc-actions",
+          "sc-field",
+          "sc-field-hint",
+          "sc-field-label",
+          "sc-form"
+        ]
+      },
+      {
+        "section": "Статуси, навігація, порожній стан, рух",
+        "names": [
+          "sc-demo-note",
+          "sc-empty",
+          "sc-grid",
+          "sc-hero",
+          "sc-inline",
+          "sc-nav",
+          "sc-nav-link",
+          "sc-nav-link-on",
+          "sc-row",
+          "sc-size-display",
+          "sc-skeleton",
+          "sc-skeleton-lg",
+          "sc-skeleton-sm"
+        ]
+      }
+    ],
     "shop-storefront.css": [
       {
         "section": "Каталог: те, що бачить покупець під вітриною",
@@ -6084,51 +6301,6 @@
           "wb-text-2xl",
           "wb-text-lg",
           "wb-text-xl"
-        ]
-      }
-    ],
-    "theme-panel.css": [
-      {
-        "section": "",
-        "names": [
-          "wb-theme-card",
-          "wb-theme-card--on",
-          "wb-theme-card-chip",
-          "wb-theme-card-chip--accent",
-          "wb-theme-card-chip--accent-hover",
-          "wb-theme-card-chip--bg-0",
-          "wb-theme-card-chip--bg-1",
-          "wb-theme-card-chip--bg-2",
-          "wb-theme-card-chip--bg-3",
-          "wb-theme-card-chip--bg-4",
-          "wb-theme-card-chip--border",
-          "wb-theme-card-chip--border-hover",
-          "wb-theme-card-chip--border-subtle",
-          "wb-theme-card-chip--card-bg",
-          "wb-theme-card-chip--data-1",
-          "wb-theme-card-chip--data-2",
-          "wb-theme-card-chip--data-3",
-          "wb-theme-card-chip--data-4",
-          "wb-theme-card-chip--data-5",
-          "wb-theme-card-chip--data-6",
-          "wb-theme-card-chip--field-bg",
-          "wb-theme-card-chip--field-bg-raised",
-          "wb-theme-card-chip--green",
-          "wb-theme-card-chip--red",
-          "wb-theme-card-chip--sidebar-bg",
-          "wb-theme-card-chip--text-inverse",
-          "wb-theme-card-chip--text-muted",
-          "wb-theme-card-chip--text-primary",
-          "wb-theme-card-chip--text-secondary",
-          "wb-theme-card-chip--tint-1",
-          "wb-theme-card-chip--tint-2",
-          "wb-theme-card-chip--tint-3",
-          "wb-theme-card-chip--yellow",
-          "wb-theme-card-hit",
-          "wb-theme-card-on",
-          "wb-theme-card-palette",
-          "wb-theme-cards",
-          "wb-theme-panel"
         ]
       }
     ],
