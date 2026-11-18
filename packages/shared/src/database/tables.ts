@@ -209,7 +209,7 @@ export const TABLES = {
     name: "platform_pages",
     owner: "api-dev",
     purpose:
-      "Сторінки платформи: адреса (`slug`), контент (`page_data`), шаблон, власник і видимість. Читають веб і бот, редагують сторінки людини (/api/user/pages).",
+      "Сторінки платформи: адреса (`slug`), контент (`page_data`), шаблон, власник і видимість. Читають веб і бот; список того, що веде людина, віддає /api/user/pages. Запису з інтерфейсу немає — рядки заводять код і міграції.",
     create: `CREATE TABLE IF NOT EXISTS "platform_pages" (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         slug TEXT NOT NULL UNIQUE,

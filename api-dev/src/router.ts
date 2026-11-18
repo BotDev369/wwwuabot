@@ -52,7 +52,7 @@ import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
 import { matchDeskRoute } from "./routes/desk";
 import { handleFavorites } from "./controllers/favorites.controller";
 import { handleAssessments } from "./controllers/assessments.controller";
-import { handlePublicPages, handleUserPages } from "./controllers/pages.controller";
+import { handleUserPages } from "./controllers/pages.controller";
 import { handlePublicRedirect } from "./controllers/redirect.controller";
 import { handlePublicResearch } from "./controllers/research.controller";
 import { matchShopRoute } from "./routes/shop";
@@ -347,11 +347,6 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // Дошка оголошень — теж публічна: показане відбирає запит до бази.
   if (pathname === "/api/public/ads" && request.method === "GET") {
     return handlePublicAds(request, env);
-  }
-  // Публічні сторінки — теж публічно: `is_public = 1` відбирає запит до бази,
-  // а приватна сторінка не дістається ні списком, ні за адресою.
-  if (pathname === "/api/public/pages" && request.method === "GET") {
-    return handlePublicPages(request, env);
   }
   // Куди веде стара адреса — питає веб-воркер, щоб віддати 301 до застосунку
   // (`web-platform-dev/src/worker.ts`). Питає без підпису: відповідь — лише

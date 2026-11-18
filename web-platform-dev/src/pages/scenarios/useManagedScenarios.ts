@@ -1,36 +1,30 @@
 /**
- * Свої сторінки — дані для списку, перегляду й редактора.
+ * Сценарії, які веде людина, — дані для магазину й екрана «Замовлення».
  *
  * Джерело — `GET /api/user/pages`: ідентичність там беруть із підписаного
  * `initData`, тож клієнт не передає жодного `user_id` і не може попросити чужі
- * сторінки. Приватні серед них є — і мусять бути: це власний список людини, а
- * не стрічка.
- *
- * **Один хук на два екрани.** Список (`/pages`) і перегляд (`/pages/:id`)
- * читають те саме джерело: екран перегляду шукає свою сторінку в цьому ж
- * списку. Другий запит «дай одну» віддавав би той самий рядок із тим самим
- * фільтром, а розійтися вони могли б лише в одному — у видимості, тобто саме
- * там, де помилка найдорожча.
+ * рядки. Приватні серед них є — і мусять бути: це власний список людини, а не
+ * стрічка.
  *
  * **Це читання, і тільки воно.** Сторінку не створюють і не правлять із
  * інтерфейсу — її заводить платформа кодом і міграціями, тож список не має ні
  * `upsert`, ні `remove`: дія, якої немає на сервері, не має бути й на клієнті.
  *
- * @module web-platform-dev/src/pages/user-pages
+ * @module web-platform-dev/src/pages/scenarios
  */
 
 import { useEffect, useState } from "react";
-import type { UserPage } from "@wwwuabot/shared/pages";
-import { pagesApi } from "@/shared/api/pages.api";
+import type { ManagedScenario } from "@wwwuabot/shared/pages";
+import { scenariosApi } from "@/shared/api/scenarios.api";
 
-export interface UserPagesState {
-  pages: UserPage[];
+export interface ManagedScenariosState {
+  pages: ManagedScenario[];
   loading: boolean;
   error: string | null;
 }
 
-export function useUserPages(): UserPagesState {
-  const [pages, setPages] = useState<UserPage[]>([]);
+export function useManagedScenarios(): ManagedScenariosState {
+  const [pages, setPages] = useState<ManagedScenario[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +33,7 @@ export function useUserPages(): UserPagesState {
     // відповідь, і без цієї перевірки стан оновлювався б у вже знятому дереві.
     let cancelled = false;
 
-    pagesApi
+    scenariosApi
       .listOwn()
       .then((list) => {
         if (cancelled) return;
@@ -48,7 +42,7 @@ export function useUserPages(): UserPagesState {
       })
       .catch((e: unknown) => {
         if (cancelled) return;
-        setError(e instanceof Error ? e.message : "Не вдалося завантажити сторінки");
+        setError(e instanceof Error ? e.message : "Не вдалося завантажити магазини");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

@@ -15,7 +15,6 @@ import {
   MESSAGES_PATH,
   NOTES_PATH,
   ORDERS_PATH,
-  PAGES_PATH,
   RESEARCH_PATH,
   USERS_PATH,
 } from "../app/routes";
@@ -53,7 +52,6 @@ export const SERVICES: readonly ServiceEntry[] = [
   { key: "users", group: "community", tone: 1, icon: "users", to: USERS_PATH },
   { key: "contacts", group: "community", tone: 2, icon: "contact", to: CONTACTS_PATH },
   { key: "messages", group: "community", tone: 3, icon: "message-square", to: MESSAGES_PATH },
-  { key: "pages", group: "content", tone: 4, icon: "page", to: PAGES_PATH },
   { key: "ads", group: "content", tone: 5, icon: "announce", to: ADS_PATH },
   { key: "research", group: "content", tone: 6, icon: "book", to: RESEARCH_PATH },
   { key: "notes", group: "personal", tone: 1, icon: "text", to: NOTES_PATH },

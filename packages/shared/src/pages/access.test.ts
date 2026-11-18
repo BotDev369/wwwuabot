@@ -27,7 +27,7 @@ import {
   pageVisibleTo,
   viewerIdsJson,
 } from "./access";
-import type { UserPage } from "./types";
+import type { ManagedScenario } from "./types";
 
 const OWNER = 372567448;
 const GALYA = 1049272067;
@@ -139,9 +139,9 @@ describe("хто отримує замовлення й повідомлення
         { id: OWNER, name: "#karas", role: "owner" },
         { id: GALYA, name: "#galyashop", role: "admin" },
       ],
-    } as Pick<UserPage, "staff">;
+    } as Pick<ManagedScenario, "staff">;
 
-    expect(pageAdminsOf(page as UserPage)).toEqual([GALYA]);
+    expect(pageAdminsOf(page as ManagedScenario)).toEqual([GALYA]);
   });
 });
 

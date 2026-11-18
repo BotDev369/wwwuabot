@@ -9,7 +9,7 @@
  * і тоді, коли номер узяли з чужої адреси або він лишився від видаленої
  * сторінки, а чуже тут справді закрите.
  *
- * @module web-platform-dev/src/pages/user-pages
+ * @module web-platform-dev/src/pages/scenarios
  */
 
 import type { ReactElement } from "react";

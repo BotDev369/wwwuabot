@@ -1,5 +1,5 @@
 /**
- * Сторінки — **лише читання**: список, відкритий список і відмова на запис.
+ * Сторінки — **лише читання**: список і відмова на запис.
  *
  * Найдорожча помилка тут — повернути можливість запису: `POST` і `DELETE`
  * мусять відповідати `405`, а не «заборонено роллю» чи, гірше, писати в базу.
@@ -11,17 +11,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Env } from "../shared/types";
 
 const identity = vi.fn();
-const service = { listManaged: vi.fn(), listPublished: vi.fn() };
+const service = { listManaged: vi.fn() };
 
 vi.mock("../shared/identity", () => ({ resolveUserId: (...args: unknown[]) => identity(...args) }));
 vi.mock("../services/pages.service", () => ({
   PagesService: class {
     listManaged = service.listManaged;
-    listPublished = service.listPublished;
   },
 }));
 
-const { handleUserPages, handlePublicPages } = await import("./pages.controller");
+const { handleUserPages } = await import("./pages.controller");
 
 const ENV = {} as Env;
 
@@ -32,7 +31,6 @@ beforeEach(() => {
   vi.clearAllMocks();
   identity.mockResolvedValue({ ok: true, userId: 42 });
   service.listManaged.mockResolvedValue([{ id: 7, title: "Моя візитка" }]);
-  service.listPublished.mockResolvedValue([{ id: 9, title: "Чужа подія" }]);
 });
 
 describe("GET /api/user/pages", () => {
@@ -88,23 +86,5 @@ describe("запису сторінок не існує", () => {
     const res = await handleUserPages(request("PUT", "/api/user/pages"), ENV);
 
     expect(res.status).toBe(405);
-  });
-});
-
-describe("GET /api/public/pages", () => {
-  it("віддає відкриті сторінки без авторизації", async () => {
-    const res = await handlePublicPages(request("GET", "/api/public/pages?limit=5"), ENV);
-
-    expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true, pages: [{ id: 9, title: "Чужа подія" }] });
-    expect(service.listPublished).toHaveBeenCalledWith("5");
-  });
-
-  it("помилка — 500 із поясненням", async () => {
-    service.listPublished.mockRejectedValue(new Error("D1 down"));
-
-    const res = await handlePublicPages(request("GET", "/api/public/pages"), ENV);
-
-    expect(res.status).toBe(500);
   });
 });

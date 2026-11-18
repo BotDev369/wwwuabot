@@ -1,8 +1,7 @@
 /**
- * Контролер сторінок — **лише читання**.
+ * Сценарії, які веде людина, — **лише читання**.
  *
- *   GET /api/user/pages    — сторінки, які людина бачить (разом із приватними)
- *   GET /api/public/pages  — сторінки, які автори відкрили
+ *   GET /api/user/pages — сценарії, які людина бачить (разом із приватними)
  *
  * **Сторінку не створює й не править ніхто з інтерфейсу.** Її заводить
  * платформа: код і міграції. Тому `POST` і `DELETE` тут не «заборонені для
@@ -10,9 +9,7 @@
  * лишає по собі запису в базі.
  *
  * Ідентичність береться **тільки** з підписаного `initData` (`resolveUserId`):
- * жоден заголовок чи параметр не називає автора (`AGENTS.md` §7). Відкритий
- * список публічний — і це безпечно саме тому, що видимість відбирає **запит до
- * бази** (`PagesService.listPublished`), а не цей файл.
+ * жоден заголовок чи параметр не називає автора (`AGENTS.md` §7).
  *
  * @module api-dev/src/controllers/pages.controller
  */
@@ -29,7 +26,7 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-/** `GET /api/user/pages` — сторінки, які людина бачить. Решта методів — `405`. */
+/** `GET /api/user/pages` — сценарії, які людина бачить. Решта методів — `405`. */
 export async function handleUserPages(request: Request, env: Env): Promise<Response> {
   if (request.method !== "GET") {
     return json({ ok: false, error: "Method not allowed" }, 405);
@@ -43,18 +40,5 @@ export async function handleUserPages(request: Request, env: Env): Promise<Respo
   } catch (e: unknown) {
     apiLog.error("Pages error", e);
     return json({ ok: false, error: "Не вдалося виконати дію" }, 500);
-  }
-}
-
-/** `GET /api/public/pages` — сторінки, які автори відкрили. Без авторизації. */
-export async function handlePublicPages(request: Request, env: Env): Promise<Response> {
-  const limit = new URL(request.url).searchParams.get("limit");
-
-  try {
-    const pages = await new PagesService(env).listPublished(limit);
-    return json({ ok: true, pages });
-  } catch (e: unknown) {
-    apiLog.error("Public pages error", e);
-    return json({ ok: false, error: "Не вдалося завантажити сторінки" }, 500);
   }
 }

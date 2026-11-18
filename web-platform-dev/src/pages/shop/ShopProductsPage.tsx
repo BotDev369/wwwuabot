@@ -29,9 +29,9 @@ import {
   type ShopProduct,
 } from "@wwwuabot/shared/shop";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { shopProductEditPath, shopProductNewPath, userPagePath } from "@/app/routes";
-import { PageState } from "@/pages/user-pages/PageState";
-import { useUserPage } from "@/pages/user-pages/useUserPage";
+import { shopProductEditPath, shopProductNewPath } from "@/app/routes";
+import { PageState } from "@/pages/scenarios/PageState";
+import { useManagedScenario } from "@/pages/scenarios/useManagedScenario";
 import { shopApi } from "@/shared/api/shop.api";
 import { productHint, productStateLabel } from "./shop-view";
 import { useShopProducts } from "./useShopProducts";
@@ -40,7 +40,7 @@ export function ShopProductsPage(): ReactElement {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dialog = useDialog();
-  const { page, loading, error } = useUserPage(id);
+  const { page, loading, error } = useManagedScenario(id);
   const shop = useShopProducts(page?.id ?? null);
 
   const isShop = page?.template === "shop";
@@ -79,7 +79,7 @@ export function ShopProductsPage(): ReactElement {
           <button
             type="button"
             className="wb-close-btn"
-            onClick={() => void navigate(userPagePath(page.id))}
+            onClick={() => void navigate(`/${page.slug}`)}
             aria-label="Назад"
           >
             <Icon name="arrow-left" size={18} />

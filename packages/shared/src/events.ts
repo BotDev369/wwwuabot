@@ -191,7 +191,6 @@ const PLATFORM_WRITE_LABELS: Record<string, string> = {
   "POST /api/user/trackers/entry": "Записав трекер",
   "DELETE /api/user/trackers/entry": "Прибрав запис трекера",
   "POST /api/user/trackers/group": "Створив групу трекерів",
-  "POST /api/user/pages": "Зберіг сторінку",
   "POST /api/user/shop/products": "Зберіг товар",
   "POST /api/user/shop/orders": "Оновив замовлення",
   "POST /api/user/shop/orders/status": "Змінив статус замовлення",

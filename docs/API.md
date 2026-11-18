@@ -19,7 +19,6 @@
 | `POST` | `/api/mydate/compare` | `handleCompare` |
 | `ANY` | `/api/mydate/systems` | `handleSystems` |
 | `GET` | `/api/public/ads` | `handlePublicAds` |
-| `GET` | `/api/public/pages` | `handlePublicPages` |
 | `GET` | `/api/public/redirect` | `handlePublicRedirect` |
 | `GET` | `/api/public/research` | `handlePublicResearch` |
 | `POST` | `/api/public/shop/orders` | `handlePublicShopOrders` |
@@ -129,4 +128,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **100**.
+Усього шляхів: **99**.

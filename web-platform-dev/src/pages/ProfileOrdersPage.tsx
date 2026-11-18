@@ -12,7 +12,7 @@
  * там магазин, щоб побачити замовлення, — це шлях навмання. Тому питання «де моя
  * робота» має власну адресу (`/orders`) і рядок у списку сервісів.
  *
- * **Магазини — з того самого списку сторінок** (`useUserPages`), і це не
+ * **Магазини — з того самого списку сторінок** (`useManagedScenarios`), і це не
  * економія: другого джерела «мої магазини» не існує, а фільтр за шаблоном
  * (`template === "shop"`) уже несе та сама відповідь.
  *
@@ -25,12 +25,12 @@ import { Icon } from "@wwwuabot/shared";
 import { MenuList, type MenuItem } from "@wwwuabot/ui/menu";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { shopOrdersPath } from "@/app/routes";
-import { useUserPages } from "@/pages/user-pages/useUserPages";
+import { useManagedScenarios } from "@/pages/scenarios/useManagedScenarios";
 
 export function ProfileOrdersPage(): ReactElement {
   useScreenChrome({ title: "Замовлення" });
   const navigate = useNavigate();
-  const { pages, loading, error } = useUserPages();
+  const { pages, loading, error } = useManagedScenarios();
   const shops = pages.filter((page) => page.template === "shop");
 
   return (

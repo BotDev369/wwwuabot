@@ -1,11 +1,10 @@
 /**
- * Клієнт сторінок — форма запиту, спільна для клієнтів обох поверхонь.
+ * Клієнт сценаріїв, які веде людина, — форма запиту, спільна для обох
+ * поверхонь.
  *
- * Два шляхи, і різниця між ними принципова: **свої** сторінки читаються з-під
- * підписаного `initData` (разом із неоприлюдненими), а **чужі** — публічні, і
- * власника в них не питають. Тримати це в одній функції означало б «залежить
- * від того, хто кличе», тобто правило, яке легко забути — а помилка тут
- * показала б чужі приватні сторінки.
+ * Один шлях: **свої** рядки читаються з-під підписаного `initData` (разом із
+ * неоприлюдненими). Публічного списку немає: чужі сторінки відкривають за
+ * адресою, а не списком.
  *
  * Транспорт передається аргументом: у кожної оболонки свої заголовки й своя
  * реакція на 401 (`AGENTS.md` §3).
@@ -13,7 +12,7 @@
  * @module @wwwuabot/shared/pages
  */
 
-import type { PageListResponse, PublicPage, PublicPageListResponse, UserPage } from "./types";
+import type { ManagedScenario, PageListResponse } from "./types";
 
 /** Мінімум, який потрібен від транспорту оболонки. */
 export interface PagesTransport {
@@ -21,21 +20,17 @@ export interface PagesTransport {
 }
 
 export interface PagesApi {
-  /** Власні сторінки — разом із приватними: їх треба бачити саме авторові. */
-  listOwn: () => Promise<UserPage[]>;
-  /** Відкриті: сторінки, які автори відкрили. */
-  published: () => Promise<PublicPage[]>;
+  /** Сценарії, які веде людина, — разом із тими, що не оприлюднені. */
+  listOwn: () => Promise<ManagedScenario[]>;
 }
 
-/** Шляхи двох поверхонь: своє й опубліковане. */
+/** Шлях своїх рядків: власника бере підписаний `initData`, не клієнт. */
 export interface PagesApiPaths {
   own: string;
-  public: string;
 }
 
 export function createPagesApi(fetchJson: PagesTransport, paths: PagesApiPaths): PagesApi {
   return {
     listOwn: async () => (await fetchJson<PageListResponse>(paths.own)).pages ?? [],
-    published: async () => (await fetchJson<PublicPageListResponse>(paths.public)).pages ?? [],
   };
 }

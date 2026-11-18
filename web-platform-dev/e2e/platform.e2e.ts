@@ -152,7 +152,7 @@ test("верстка влазить у 360px, смуга не тікає за е
 });
 
 /**
- * Публічна сторінка, на якій видно серце.
+ * Сторінка, на якій видно серце.
  *
  * Адресу беремо зі списку самої платформи, а не з константи: рядок контенту
  * живе в живій базі, і перейменована сторінка не мусить ламати перевірку. Серце
@@ -162,7 +162,7 @@ test("верстка влазить у 360px, смуга не тікає за е
 async function openPageWithHeart(page: Page): Promise<string> {
   const initData = await appInitData(page);
   const list = await page.evaluate(async (header) => {
-    const response = await fetch("/api/public/pages?limit=10", {
+    const response = await fetch("/api/user/pages", {
       headers: { "x-telegram-init-data": header },
     });
     return (await response.json()) as { pages?: { slug?: string }[] };

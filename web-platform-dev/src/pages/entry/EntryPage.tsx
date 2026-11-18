@@ -10,12 +10,12 @@
 import { useState, type FormEvent, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { ACCESS_REQUEST_MAX } from "@wwwuabot/shared/access-requests";
-import { DAY_PATH, PAGES_PATH, USERS_PATH } from "@/app/routes";
+import { DAY_PATH, ORDERS_PATH, USERS_PATH } from "@/app/routes";
 import { sendAccessRequest } from "@/shared/api/access.api";
 
 /** Три входи вітрини: кожен — екран, а не обіцянка. */
 const ENTRIES: readonly { label: string; href: string }[] = [
-  { label: "Крамниця", href: PAGES_PATH },
+  { label: "Замовлення", href: ORDERS_PATH },
   { label: "Гурт", href: USERS_PATH },
   { label: "Мій день", href: DAY_PATH },
 ];

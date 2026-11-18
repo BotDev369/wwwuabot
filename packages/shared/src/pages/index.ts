@@ -1,5 +1,5 @@
 /**
- * @wwwuabot/shared/pages — сторінки, які створює людина з готових шаблонів.
+ * @wwwuabot/shared/pages — шаблони сторінок і рядок сценарію, який веде людина.
  *
  * Один домен на клієнт і сервер:
  *
@@ -8,20 +8,20 @@
  *   людина змінює лише текст, і текст-приклад для перегляду (`preview`);
  * - `page-data.ts` — чисті `buildPageConfig` / `readPageValues` /
  *   `fieldPlacements`, що переводять значення в `page_data` і назад;
- * - `address.ts` — адреса сторінки: переклад назви латиницею
- *   (`normalizePageSlug`), зайняті платформою сегменти (`RESERVED_PAGE_SLUGS`)
- *   і перевірка поля форми (`pageAddress`);
- * - `rules.ts` — межі полів і перевірка чернетки (`validatePageDraft`):
- *   обов'язкова лише назва, `isPublic` типово `false`;
+ * - `address.ts` — зайняті платформою сегменти (`RESERVED_PAGE_SLUGS`);
  * - `bot.ts` — підпис для бота (`pageBotText`): назва й короткі поля
  *   шаблону, виведені з `page_data`;
  * - `access.ts` — **хто веде й хто бачить**: власник і адміни
  *   (`scenarios.admin_ids`), роль людини (`pageRole`), ті, кому йдуть
  *   замовлення (`pageStaffIds`), і глядачі приватної сторінки
  *   (`scenarios.viewer_ids`, `pageVisibleTo`);
- * - `types.ts` — `UserPage`, `PageDraft`, `PageStaff`, публічне подання `PublicPage`;
- * - `api.ts` — форма запиту до **двох** поверхонь: свої (`/api/user/pages`) і
- *   опубліковані (`/api/public/pages`).
+ * - `types.ts` — `ManagedScenario` і `PageStaff`: те, що клієнт **читає**;
+ * - `api.ts` — форма одного запиту: сценарії, які веде людина
+ *   (`/api/user/pages`).
+ *
+ * **Запису тут немає.** Сторінку створює й публікує платформа — кодом і
+ * міграціями, а не форма в інтерфейсі. Тому ні чернетки, ні перевірки полів, ні
+ * відповідей запису в домені не лишилось: дія, якої не існує, не має й типу.
  *
  * Сховище — той самий рядок `scenarios` (`@wwwuabot/shared/database/tables`),
  * господар `api-dev`. Чому не друга таблиця й що таке публічність —
@@ -30,15 +30,7 @@
  * @module @wwwuabot/shared/pages
  */
 
-export {
-  PAGE_SLUG_MAX,
-  RESERVED_PAGE_SLUGS,
-  isPageSlugTakenByPlatform,
-  isReservedPageSlug,
-  normalizePageSlug,
-  pageAddress,
-} from "./address";
-export type { PageAddressResult } from "./address";
+export { RESERVED_PAGE_SLUGS } from "./address";
 export { pageBotText } from "./bot";
 export {
   PAGE_ADMINS_MAX,
@@ -56,8 +48,6 @@ export {
   pageVisibleTo,
   viewerIdsJson,
 } from "./access";
-export { cleanPageValue, pageDraft, sanitizePageValues, validatePageDraft } from "./rules";
-export type { PageDraftInput, PageValidation } from "./rules";
 export {
   DEFAULT_PAGE_TEMPLATE,
   PAGE_TEMPLATES,
@@ -68,12 +58,6 @@ export {
   pageTitle,
   primaryField,
 } from "./templates";
-export {
-  PLATFORM_PAGE_KEYS,
-  PLATFORM_PAGE_TEMPLATES,
-  isPlatformPageKey,
-} from "./platform-templates";
-export type { PlatformPageTemplate } from "./platform-templates";
 export type {
   PageBlockSpec,
   PageField,
@@ -86,14 +70,4 @@ export type {
 export { buildPageConfig, fieldPlacements, readPageValues } from "./page-data";
 export { createPagesApi } from "./api";
 export type { PagesApi, PagesApiPaths, PagesTransport } from "./api";
-export type {
-  PageDeleteResponse,
-  PageDraft,
-  PageListResponse,
-  PageRole,
-  PageSaveResponse,
-  PageStaff,
-  PublicPage,
-  PublicPageListResponse,
-  UserPage,
-} from "./types";
+export type { ManagedScenario, PageListResponse, PageRole, PageStaff } from "./types";

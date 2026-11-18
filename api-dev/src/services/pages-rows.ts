@@ -28,7 +28,7 @@ import {
   type PageFieldValues,
   type PageStaff,
   type PageTemplate,
-  type UserPage,
+  type ManagedScenario,
 } from "@wwwuabot/shared/pages";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 
@@ -97,7 +97,7 @@ export function toManagedPage(
   row: PageRow,
   userId: number,
   names: ReadonlyMap<number, string | null>,
-): UserPage | null {
+): ManagedScenario | null {
   const role = pageRole(ownerOf(row), pageAdminIds(row.admin_ids), userId);
   if (role === null) return null;
 

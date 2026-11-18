@@ -59,6 +59,8 @@ vi.mock("@/pages/shop/store/ShopStore", () => ({
 vi.mock("@/pages/shop/useShopCatalog", () => ({ useShopCatalog: () => catalog }));
 vi.mock("@/shared/api/client", () => ({
   apiFetchRaw: (url: string) => apiFetchRaw(url),
+  // Картка власника магазину питає свій список; тут він порожній, і картки немає.
+  apiFetch: async () => ({ ok: true, pages: [] }),
 }));
 
 const { ScenarioPage } = await import("./ScenarioPage");

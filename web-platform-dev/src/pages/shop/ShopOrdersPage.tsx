@@ -34,9 +34,9 @@ import { messagesPeerPath } from "@wwwuabot/shared/messages";
 import type { ShopOrder } from "@wwwuabot/shared/shop";
 import { MenuModal, type MenuItem } from "@wwwuabot/ui/menu";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { shopOrderPath, userPagePath } from "@/app/routes";
-import { PageState } from "@/pages/user-pages/PageState";
-import { useUserPage } from "@/pages/user-pages/useUserPage";
+import { shopOrderPath } from "@/app/routes";
+import { PageState } from "@/pages/scenarios/PageState";
+import { useManagedScenario } from "@/pages/scenarios/useManagedScenario";
 import {
   ORDER_FILTER_ALL,
   ORDER_SORTS,
@@ -58,7 +58,7 @@ export function ShopOrdersPage(): ReactElement {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dialog = useDialog();
-  const { page, loading, error } = useUserPage(id);
+  const { page, loading, error } = useManagedScenario(id);
   const shop = useShopOrders(page?.id ?? null);
 
   // Відбір і порядок живуть **у стані екрана**, а не в адресі: адреса тут — це
@@ -127,7 +127,7 @@ export function ShopOrdersPage(): ReactElement {
           <button
             type="button"
             className="wb-close-btn"
-            onClick={() => void navigate(userPagePath(page.id))}
+            onClick={() => void navigate(`/${page.slug}`)}
             aria-label="Назад"
           >
             <Icon name="arrow-left" size={18} />

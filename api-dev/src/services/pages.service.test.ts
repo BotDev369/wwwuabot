@@ -1,21 +1,12 @@
 /**
- * Сторінки, які веде людина: ролі, адреса й публічність.
+ * Сценарії, які веде людина: ролі й імена.
  *
- * Тут рішення, які коштують чужого контенту, а не тестуються ніде:
+ * Тут рішення, яке коштує чужого контенту: **список відбирається грубо, а
+ * рішення ухвалює роль**. `admin_ids` лежить JSON-ом, тож `LIKE` звужує
+ * кандидатів і може збігтися з довшим чужим id — такий рядок мусить зникнути
+ * після перевірки ролі, а не потрапити в клієнт.
  *
- * 1. **Адмін веде сторінку, але не розпоряджається нею.** Він редагує текст і
- *    бачить замовлення, але `DELETE` мусить лишатися за власником, а склад
- *    адмінів (`admin_ids`) змінює **тільки** власник: інакше запрошений міг би
- *    звузити чужий доступ, лишивши власника осторонь.
- * 2. **Адреса зайнята — це відмова, а не «…-2».** Посилання, яке людина
- *    запамʼятала, не має повести в інше місце. При створенні вільний варіант
- *    шукається, бо сторінки ще немає й ніщо не веде на стару адресу.
- * 3. **Публічність відбирає запит, а не розмітка.** Приватна сторінка не
- *    потрапляє ні у відкритий список, ні за адресою, і заблокований автор не
- *    потрапляє взагалі — це рішення про людину.
- *
- * D1 — фейковий: перевіряються рішення сервісу (умови в SQL, склад тіла), а не
- * сервер SQLite.
+ * D1 — фейковий: перевіряються рішення сервісу, а не сервер SQLite.
  *
  * @module api-dev/src/services/pages.service.test
  */
@@ -64,101 +55,51 @@ function page(overrides: Partial<PageRow> = {}): PageRow {
   };
 }
 
-/**
- * Фейковий D1: `byId` — рядки сторінок, `people` — імена в списку «Доступ».
- *
- * `deleteChanges` імітує те, що робить D1: `DELETE … WHERE owner_id = ?`
- * зміщує нуль рядків, якщо умова не збіглася.
- */
-function makeEnv(options: {
-  rows?: PageRow[];
-  takenAddresses?: string[];
-  deleteChanges?: number;
-  blocked?: number[];
-}): { env: Env; statements: Captured[] } {
+/** Фейковий D1: `rows` — рядки сторінок, `people` — імена в картці «Доступ». */
+function makeEnv(options: { rows?: PageRow[]; people?: number[] }): {
+  env: Env;
+  statements: Captured[];
+} {
   const rows = options.rows ?? [];
-  const taken = new Set(options.takenAddresses ?? []);
-  const blocked = new Set(options.blocked ?? []);
+  const people = new Set(options.people ?? []);
   const statements: Captured[] = [];
-
-  /** Рядки, які реально віддала б база: умови `WHERE` тут виконуються, бо в цьому й суть тестів. */
-  const visible = () => {
-    let out = rows;
-    if (/COALESCE\(s\.is_public, 0\) = 1/.test(currentSql)) out = out.filter((r) => r.is_public);
-    if (/s\.owner_id IS NOT NULL/.test(currentSql)) out = out.filter((r) => r.owner_id !== null);
-    if (/is_blocked/.test(currentSql)) out = out.filter((r) => !blocked.has(r.id));
-    if (/owner_id = \? OR admin_ids LIKE/.test(currentSql)) {
-      out = out.filter((r) => r.owner_id !== null);
-    }
-    return out;
-  };
-  let currentSql = "";
 
   const db = {
     prepare(sql: string) {
-      currentSql = sql;
       const record: Captured = { sql, binds: [] };
       const statement = {
         bind: (...args: unknown[]) => {
           record.binds = args;
           return statement;
         },
-        first: async () => {
-          if (/PRAGMA/i.test(sql)) return null;
-          if (/SELECT id FROM platform_pages WHERE slug/.test(sql)) {
-            const [slug, exceptId] = record.binds;
-            const hit = rows.find((row) => row.slug === slug && row.id !== exceptId);
-            return hit ? { id: hit.id } : null;
-          }
-          const id = Number(record.binds[0]);
-          return rows.find((row) => row.id === id) ?? null;
-        },
+        // `ensureTables` питає схему й додає відсутні колонки: тут таблиця вже є,
+        // тож `first` мовчить, а `run` не змінює нічого.
+        first: async () => (/(PRAGMA|SELECT sql FROM)/i.test(sql) ? null : null),
+        run: async () => ({ meta: { changes: 0 } }),
         all: async () => {
           if (/PRAGMA/i.test(sql)) {
             return { results: SCENARIO_COLUMNS.map((name) => ({ name })) };
           }
-          if (/JOIN users u ON u\.user_id = s\.owner_id/.test(sql)) {
+          if (/FROM users/.test(sql)) {
             return {
-              results: visible().map((row) => ({
-                id: row.id,
-                slug: row.slug,
-                title: row.title,
-                template_key: row.template_key,
-                updated_at: row.updated_at,
-                author_id: row.owner_id,
-                author_name: `user_${row.owner_id}`,
-                author_photo: null,
+              results: [...people].map((id) => ({
+                user_id: id,
+                first_name: `Перший${id}`,
+                last_name: null,
+                username: null,
+                platform_username: `user${id}`,
               })),
             };
           }
-          return { results: visible() };
-        },
-        run: async () => {
-          if (/^\s*DELETE/i.test(sql)) {
-            const [id, owner] = record.binds;
-            const hit = rows.some((row) => row.id === id && row.owner_id === owner);
-            return { meta: { changes: hit ? 1 : (options.deleteChanges ?? 0) } };
-          }
-          if (/^\s*INSERT/i.test(sql)) {
-            if (taken.has(String(record.binds[0]))) {
-              throw new Error("UNIQUE constraint failed: platform_pages.slug");
-            }
-            // Запис справді з'явився: сервіс одразу читає його назад.
-            const [slug, title, pageData, templateKey, isPublic, ownerId, adminIds] = record.binds;
-            rows.push(
-              page({
-                id: 9,
-                slug: String(slug),
-                title: String(title),
-                page_data: String(pageData),
-                template_key: String(templateKey),
-                is_public: Number(isPublic),
-                owner_id: Number(ownerId),
-                admin_ids: String(adminIds),
-              }),
-            );
-          }
-          return { meta: { changes: 1, last_row_id: 9 } };
+          // `owner_id = ? OR admin_ids LIKE ?` — умова, а не просто форма запиту:
+          // у тесті вона й мусить відсіяти чуже.
+          const [userId, like] = record.binds;
+          const needle = String(like).replace(/%/g, "");
+          return {
+            results: rows.filter(
+              (row) => row.owner_id === userId || String(row.admin_ids).includes(needle),
+            ),
+          };
         },
       };
       statements.push(record);
@@ -169,11 +110,7 @@ function makeEnv(options: {
   return { env: { DB: db, BOT_TOKEN: "t" } as unknown as Env, statements };
 }
 
-function sqlOf(statements: Captured[], verb: RegExp): Captured | undefined {
-  return statements.find((s) => verb.test(s.sql.trimStart()));
-}
-
-describe("читання сторінок, які веде людина", () => {
+describe("читання сценаріїв, які веде людина", () => {
   it("список відбирається грубо, а рішення ухвалює роль", async () => {
     const { env, statements } = makeEnv({
       // `LIKE %200%` збігається і з чужим довшим id — фільтр ролі мусить прибрати такий рядок.
@@ -182,56 +119,22 @@ describe("читання сторінок, які веде людина", () => 
         page({ id: 6, slug: "чужа", owner_id: 2001, admin_ids: "[]" }),
       ],
     });
-    const service = new PagesService(env);
 
-    const list = await service.listManaged(ADMIN);
+    const list = await new PagesService(env).listManaged(ADMIN);
 
     expect(list.map((one) => one.slug)).toEqual(["olena"]);
-    expect(sqlOf(statements, /^SELECT/)).toBeDefined();
+    expect(statements.some((s) => /^SELECT/.test(s.sql.trimStart()))).toBe(true);
   });
-});
 
-describe("Відкриті сторінки: що там видно", () => {
-  it("приватна сторінка не потрапляє в список", async () => {
-    const { env, statements } = makeEnv({
-      rows: [page({ is_public: 0 }), page({ id: 6, slug: "shop", is_public: 1 })],
+  it("ім'я в картці «Доступ» — з `users`, а не номер", async () => {
+    const { env } = makeEnv({
+      rows: [page({ id: 5, owner_id: OWNER, admin_ids: "[]" })],
+      people: [OWNER],
     });
 
-    const list = await new PagesService(env).listPublished();
+    const [one] = await new PagesService(env).listManaged(OWNER);
 
-    expect(list.map((one) => one.slug)).toEqual(["shop"]);
-    const sql = sqlOf(statements, /^SELECT/)?.sql ?? "";
-    expect(sql).toMatch(/COALESCE\(s\.is_public, 0\) = 1/);
-  });
-
-  it("контент платформи видно, а заблоковані людини — ні", async () => {
-    const { env, statements } = makeEnv({
-      rows: [
-        page({ id: 5, slug: "дослідження", is_public: 1, owner_id: null }),
-        page({ id: 6, slug: "блокована", is_public: 1, owner_id: OWNER }),
-        page({ id: 7, slug: "видима", is_public: 1, owner_id: OWNER }),
-      ],
-      blocked: [6],
-    });
-
-    const list = await new PagesService(env).listPublished();
-
-    expect(list.map((one) => one.slug)).toEqual(["дослідження", "видима"]);
-    // Сторінка продукту не має автора: `0` — це «підпис дає платформа».
-    expect(list.find((one) => one.slug === "дослідження")?.author.id).toBe(0);
-
-    const sql = statements.map((s) => s.sql).join("\n");
-    expect(sql).toMatch(/LEFT JOIN users/);
-    expect(sql).not.toMatch(/owner_id IS NOT NULL/);
-    expect(sql).toMatch(/is_blocked/);
-  });
-
-  it("межа сторінок затискається, а не передається як є", async () => {
-    const { env, statements } = makeEnv({ rows: [] });
-    await new PagesService(env).listPublished(10 ** 9);
-
-    const limit = sqlOf(statements, /^SELECT/)?.binds.at(-1);
-    expect(Number(limit)).toBeLessThanOrEqual(100);
-    expect(Number(limit)).toBeGreaterThan(0);
+    expect(one.staff).toEqual([{ id: OWNER, name: "#user100", role: "owner" }]);
+    expect(one.role).toBe("owner");
   });
 });

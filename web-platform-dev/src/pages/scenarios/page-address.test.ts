@@ -8,7 +8,7 @@
  * живе в спільному модулі (`@wwwuabot/shared/pages`), а цей тест стереже, щоб
  * він не розійшовся з `app/routes.ts` — єдиним власником маршрутів.
  *
- * @module web-platform-dev/src/pages/user-pages/page-address.test
+ * @module web-platform-dev/src/pages/scenarios/page-address.test
  */
 
 import { describe, expect, it } from "vitest";
@@ -22,7 +22,7 @@ import {
   MESSAGES_PATH,
   NOTES_ROUTE,
   ORDERS_ROUTE,
-  PAGES_ROUTE,
+  SCENARIOS_ROUTE,
   SERVICES_ROUTE,
   USERS_ROUTE,
 } from "../../app/routes";
@@ -44,7 +44,7 @@ describe("адреси, зайняті платформою", () => {
       NOTES_ROUTE,
       CONTACTS_ROUTE,
       FAVORITES_ROUTE,
-      PAGES_ROUTE,
+      SCENARIOS_ROUTE,
       topSegment(MESSAGES_PATH),
     ];
 

@@ -1,8 +1,9 @@
 /**
  * Навігація платформи: головні пункти + «Ще». Пункт — це адреса: усе, що
  * стоїть у меню, уже має екран, і екран, якого немає, не робить вигляд, що
- * натискається. «Тут ти» — найдовша адреса, що збігається, тож `/pages/7`
- * світить лише «Базар», а `/account` — «Я».
+ * натискається. «Тут ти» — найдовша адреса, що збігається, тож `/account`
+ * світить лише «Я», а вкладки магазину (`/scenarios/7/products`) — нічого: вони
+ * не пункт меню, а сторінка всередині магазину.
  *
  * @module web-platform-dev/src/layout/platform-nav
  */
@@ -16,7 +17,6 @@ import {
   MESSAGES_PATH,
   NOTES_PATH,
   ORDERS_PATH,
-  PAGES_PATH,
   SERVICES_PATH,
   TRACKERS_PATH,
   USERS_PATH,
@@ -25,7 +25,6 @@ import {
 /** Головне меню: щоденна робота людини, у порядку ранку. */
 const MAIN: readonly SideBarItem[] = [
   { key: "day", label: "Мій день", icon: "home", href: DAY_PATH },
-  { key: "bazar", label: "Базар", icon: "cart", href: PAGES_PATH },
   { key: "hurt", label: "Гурт", icon: "users", href: USERS_PATH },
   { key: "me", label: "Я", icon: "user-solid", href: ACCOUNT_PATH },
 ];

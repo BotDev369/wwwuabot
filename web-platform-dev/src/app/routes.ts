@@ -20,10 +20,9 @@
  * читається один раз, при появі. Це той самий прийом, що з відкриттям розмови
  * (`?peer=`, `@wwwuabot/shared/messages`).
  *
- * **Сторінки з шаблону створює платформа, а не людина:** нового рядка з
- * `/pages/new` немає, і сторінку не править ніхто, крім платформи: людина лише
- * дивиться те, що їй дали. Сторінку збирає й публікує розробник — кодом і
- * міграціями, а не форма в інтерфейсі.
+ * **Сторінку створює платформа, а не людина:** окремого екрана сторінки немає
+ * взагалі — контент відкривається за своїм `slug` одним `ScenarioPage`, і
+ * править його тільки розробник: кодом і міграціями, а не форма в інтерфейсі.
  *
  * @module web-platform-dev/src/app/routes
  */
@@ -72,10 +71,10 @@ export const ACCOUNT_ROUTE = "account";
  * Замовлення — робота, яку людина веде, а не сторінка.
  *
  * Магазинів у людини буває кілька, і замовлення лежать під кожним із них
- * (`/pages/7/orders`). Другої реалізації того самого списку тут немає: цей
+ * (`/scenarios/7/orders`). Другої реалізації того самого списку тут немає: цей
  * екран каже лише **де** працює людина — власником чи адміном, — і веде до
  * замовлень того магазину. Тому адреса має власний сегмент, а не живе під
- * `/pages`: під сторінкою вже стоять товари й замовлення **однієї** сторінки.
+ * сценарієм: під ним уже стоять товари й замовлення **одного** магазину.
  */
 export const ORDERS_ROUTE = "orders";
 export const ORDERS_PATH = `/${ORDERS_ROUTE}`;
@@ -117,59 +116,61 @@ export const USERS_ROUTE = "users";
 export const USERS_PATH = `/${USERS_ROUTE}`;
 
 /**
- * Сторінки — власні сторінки людини: ті самі рядки `scenarios`, але з
- * власником (`owner_id`).
+ * Сценарій за номером — адреса його вкладок: товарів і замовлень магазину.
  *
- * Адреса тут, а не в базі, бо це **список** входів у власні сторінки, а не
- * сторінка: сам контент відкривається за своїм `slug` (`/slug`) і рендериться
- * тим самим `PageRenderer`, а список і перегляд — екрани платформи. Вигадати під
- * них `slug` означало б завести друге правило «яка адреса відповідає цьому
- * екрану» (AGENTS.md §7).
+ * Сам сценарій відкривається за своїм `slug` (`/slug`) і рендериться одним
+ * `ScenarioPage` — іншого екрана сторінки немає ні в платформі, ні в адмінці.
+ * Номер рядка `scenarios` потрібен лише там, де під сторінкою стоять **дані,
+ * яких у `page_data` немає**: `shop_products` і `shop_orders` належать тому
+ * самому рядку (`shop_id`), тож їхні адреси стоять під ним —
+ * `/scenarios/7/products`. Окремий розділ `/shop` зробив би другу навігацію по
+ * тому самому контенту (`AGENTS.md` §7).
+ *
+ * `scenarios` — верхній сегмент платформи, тож сторінка з таким `slug` не
+ * відкриється: його стереже `RESERVED_PAGE_SLUGS`.
  */
-export const PAGES_ROUTE = "pages";
-export const PAGES_PATH = `/${PAGES_ROUTE}`;
+export const SCENARIOS_ROUTE = "scenarios";
+export const SCENARIOS_PATH = `/${SCENARIOS_ROUTE}`;
 
-/** Своя сторінка окремо: за рядком списку стоїть одна сторінка. */
-export const userPagePath = (id: number): string => `${PAGES_PATH}/${id}`;
+/** Один сценарій за номером рядка: під ним стоять вкладки магазину. */
+export const scenarioPath = (id: number): string => `${SCENARIOS_PATH}/${id}`;
 
 export { RESEARCH_PATH, RESEARCH_ROUTE } from "@/pages/research/route";
 
 /**
- * Товари магазину — **під сторінкою**, а не окремим розділом.
+ * Товари магазину — **під сценарієм**, а не окремим розділом.
  *
  * Магазин — це рядок `scenarios` зі своєю адресою, а товари належать йому
- * (`shop_id`), тож і адреса їхня стоїть під своєю сторінкою: `/pages/7/products`.
- * Окремий розділ `/shop` зробив би другу навігацію по тому самому контенту
- * (`AGENTS.md` §7) і змусив би вибирати магазин там, де його й так видно.
+ * (`shop_id`), тож і адреса їхня стоїть під ним: `/scenarios/7/products`.
  *
  * `products` під `:id` не збивається з `orders`: це різні сегменти на одному
- * місці, і сторінка не може мати адреси `pages`.
+ * місці, і сценарій не може мати адреси `scenarios`.
  */
 export const SHOP_PRODUCTS_ROUTE = "products";
-export const shopProductsPath = (pageId: number): string =>
-  `${userPagePath(pageId)}/${SHOP_PRODUCTS_ROUTE}`;
+export const shopProductsPath = (scenarioId: number): string =>
+  `${scenarioPath(scenarioId)}/${SHOP_PRODUCTS_ROUTE}`;
 
 /** Новий товар — **окрема адреса**: у форми є «назад», історія й посилання. */
-export const shopProductNewPath = (pageId: number): string => `${shopProductsPath(pageId)}/new`;
+export const shopProductNewPath = (scenarioId: number): string =>
+  `${shopProductsPath(scenarioId)}/new`;
 
 /** Правка товару: за адресою стоїть один рядок `shop_products`. */
-export const shopProductEditPath = (pageId: number, productId: number): string =>
-  `${shopProductsPath(pageId)}/${productId}`;
+export const shopProductEditPath = (scenarioId: number, productId: number): string =>
+  `${shopProductsPath(scenarioId)}/${productId}`;
 
 /**
  * Замовлення магазину — там само, де товари, і з тієї ж причини.
  *
  * `shop_orders` належить тому самому рядку `scenarios`, тож адреса стоїть під
- * його сторінкою: `/pages/7/orders`. Окремий розділ `/shop` зробив би другу
- * навігацію по тому самому контенту (`AGENTS.md` §7).
+ * ним: `/scenarios/7/orders`.
  *
  * Сегмент свій, а не вкладка в товарах: замовлення — це **робота з людиною**, а
  * товари — каталог, і змішуються вони лише в одному випадку: коли магазин
  * зовсім порожній.
  */
 export const SHOP_ORDERS_ROUTE = "orders";
-export const shopOrdersPath = (pageId: number): string =>
-  `${userPagePath(pageId)}/${SHOP_ORDERS_ROUTE}`;
+export const shopOrdersPath = (scenarioId: number): string =>
+  `${scenarioPath(scenarioId)}/${SHOP_ORDERS_ROUTE}`;
 
 /**
  * Одне замовлення — **своя адреса**, і це вибір, а не дрібниця.
@@ -179,8 +180,8 @@ export const shopOrdersPath = (pageId: number): string =>
  * з позиціями, контактом і коментарем — це місце, куди людина повертається, тож
  * адреса в нього мусить бути. Сегмент — номер у тому самому `orders`.
  */
-export const shopOrderPath = (pageId: number, orderId: number): string =>
-  `${shopOrdersPath(pageId)}/${orderId}`;
+export const shopOrderPath = (scenarioId: number, orderId: number): string =>
+  `${shopOrdersPath(scenarioId)}/${orderId}`;
 
 /**
  * Трекери — власні щоденні записи людини, не рядок `scenarios`.

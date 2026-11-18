@@ -37,8 +37,8 @@ import {
   type ShopProduct,
 } from "@wwwuabot/shared/shop";
 import { shopProductsPath } from "@/app/routes";
-import { PageState } from "@/pages/user-pages/PageState";
-import { useUserPage } from "@/pages/user-pages/useUserPage";
+import { PageState } from "@/pages/scenarios/PageState";
+import { useManagedScenario } from "@/pages/scenarios/useManagedScenario";
 import { shopApi } from "@/shared/api/shop.api";
 import { mediaInUse, productAddressLabel } from "./shop-view";
 import { ShopAttributeField } from "./ShopAttributeField";
@@ -104,7 +104,7 @@ function Field({ label, children }: { label: string; children: ReactNode }): Rea
 export function ShopProductForm(): ReactElement {
   const { id, productId } = useParams<{ id: string; productId?: string }>();
   const navigate = useNavigate();
-  const { page, loading, error } = useUserPage(id);
+  const { page, loading, error } = useManagedScenario(id);
   const shop = useShopProducts(page?.id ?? null);
 
   const productNumericId = Number(productId);

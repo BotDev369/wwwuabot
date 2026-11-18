@@ -12,11 +12,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { UserPage } from "@wwwuabot/shared/pages";
+import type { ManagedScenario } from "@wwwuabot/shared/pages";
 import { shopOrdersPath } from "@/app/routes";
 
 interface State {
-  pages: UserPage[];
+  pages: ManagedScenario[];
   loading: boolean;
   error: string | null;
   upsert: () => void;
@@ -30,13 +30,16 @@ const hooks = {
 
 vi.mock("react-router-dom", () => ({ useNavigate: () => hooks.navigate }));
 vi.mock("@wwwuabot/ui/nav", () => ({ useScreenChrome: () => {} }));
-vi.mock("@/pages/user-pages/useUserPages", () => ({ useUserPages: () => hooks.state }));
+vi.mock("@/pages/scenarios/useManagedScenarios", () => ({
+  useManagedScenarios: () => hooks.state,
+}));
 
 const { ProfileOrdersPage } = await import("./ProfileOrdersPage");
 
-const page = (fields: Record<string, unknown>): UserPage => fields as unknown as UserPage;
+const page = (fields: Record<string, unknown>): ManagedScenario =>
+  fields as unknown as ManagedScenario;
 
-const shop = (id: number, title: string, role: "owner" | "admin"): UserPage =>
+const shop = (id: number, title: string, role: "owner" | "admin"): ManagedScenario =>
   page({ id, title, template: "shop", role });
 
 const show = (over: Partial<State>): void => {

@@ -13,10 +13,10 @@
  * `ScenarioPage`.
  *
  * `/account`, `/orders`, `/ads`, `/games`, `/users`, `/notes`, `/contacts`,
- * `/messages` і `/pages` стоять **перед** catch-all навмисно: це єдині екрани,
+ * `/messages` і `/scenarios` стоять **перед** catch-all навмисно: це єдині екрани,
  * які не є рядком контенту (`slug`). Їхні адреси дає `app/routes.ts` — один
  * власник на маршрут і пункт навігації. Саме тому ці сегменти не можуть стати
- * адресою сторінки людини: їх стереже `pages/user-pages/page-address.test.ts`.
+ * адресою сторінки людини: їх стереже `pages/scenarios/page-address.test.ts`.
  *
  * Партія (`/games/:key`) стоїть перед `/games` **порядком рядків**: довший шлях
  * мусить збігтися першим, інакше `/games` з'їв би його хвіст.
@@ -35,10 +35,10 @@ import {
   MESSAGES_PATH,
   NOTES_ROUTE,
   ORDERS_ROUTE,
-  PAGES_ROUTE,
   RESEARCH_ROUTE,
   SHOP_ORDERS_ROUTE,
   SHOP_PRODUCTS_ROUTE,
+  SCENARIOS_ROUTE,
   SERVICES_ROUTE,
   TRACKERS_ROUTE,
   USERS_ROUTE,
@@ -64,8 +64,6 @@ import { ShopOrderPage } from "@/pages/shop/ShopOrderPage";
 import { ShopOrdersPage } from "@/pages/shop/ShopOrdersPage";
 import { ShopProductForm } from "@/pages/shop/ShopProductForm";
 import { ShopProductsPage } from "@/pages/shop/ShopProductsPage";
-import { UserPageView } from "@/pages/user-pages/UserPageView";
-import { UserPagesPage } from "@/pages/user-pages/UserPagesPage";
 
 export const router = createBrowserRouter([
   {
@@ -105,23 +103,25 @@ export const router = createBrowserRouter([
       { path: GAMES_ROUTE, element: <GamesPage /> },
       { path: USERS_ROUTE, element: <UsersPage /> },
       { path: ADS_ROUTE, element: <AdsPage /> },
-      // Сторінки людини — теж не рядок контенту, а екран: список власних
-      // сторінок, перегляд однієї й її правка. Сам контент відкривається за
-      // `slug` (catch-all нижче) — і то лише тоді, коли він їй видимий.
-      // Нових сторінок людина не заводить: рядок створює платформа.
-      // Товари магазину — **під своєю сторінкою**: `shop_products` належить
-      // рядку `scenarios`, тож і адреса стоїть під ним (`/pages/7/products`).
+      // Сторінка контенту — одна на всю платформу (catch-all нижче). Окремих
+      // екранів списку й перегляду сторінки немає: контент відкривається за
+      // своїм `slug`, а під сценарієм стоять лише вкладки магазину.
+      // Товари — **під своїм сценарієм**: `shop_products` належить рядку
+      // `scenarios`, тож і адреса стоїть під ним (`/scenarios/7/products`).
       // `new` мусить стояти перед `:productId` — інакше номер з'їв би його, і
       // замість форми нового товару відкрилось би «такого товару немає».
       {
-        path: `${PAGES_ROUTE}/:id/${SHOP_PRODUCTS_ROUTE}/new`,
+        path: `${SCENARIOS_ROUTE}/:id/${SHOP_PRODUCTS_ROUTE}/new`,
         element: <ShopProductForm />,
       },
       {
-        path: `${PAGES_ROUTE}/:id/${SHOP_PRODUCTS_ROUTE}/:productId`,
+        path: `${SCENARIOS_ROUTE}/:id/${SHOP_PRODUCTS_ROUTE}/:productId`,
         element: <ShopProductForm />,
       },
-      { path: `${PAGES_ROUTE}/:id/${SHOP_PRODUCTS_ROUTE}`, element: <ShopProductsPage /> },
+      {
+        path: `${SCENARIOS_ROUTE}/:id/${SHOP_PRODUCTS_ROUTE}`,
+        element: <ShopProductsPage />,
+      },
       // Замовлення магазину — там само, де товари: `shop_orders` належить тому
       // самому рядку `scenarios`. Сегмент свій, бо це робота з людиною, а не
       // каталог (`pages/shop/ShopOrdersPage`).
@@ -129,12 +129,10 @@ export const router = createBrowserRouter([
       // з'їв би номер замовлення як сторінку, і замість правки відкрилась би
       // черга (та сама причина, що в `products/new`).
       {
-        path: `${PAGES_ROUTE}/:id/${SHOP_ORDERS_ROUTE}/:orderId`,
+        path: `${SCENARIOS_ROUTE}/:id/${SHOP_ORDERS_ROUTE}/:orderId`,
         element: <ShopOrderPage />,
       },
-      { path: `${PAGES_ROUTE}/:id/${SHOP_ORDERS_ROUTE}`, element: <ShopOrdersPage /> },
-      { path: `${PAGES_ROUTE}/:id`, element: <UserPageView /> },
-      { path: PAGES_ROUTE, element: <UserPagesPage /> },
+      { path: `${SCENARIOS_ROUTE}/:id/${SHOP_ORDERS_ROUTE}`, element: <ShopOrdersPage /> },
       // Нотатки — власні дані людини (таблиця `notes`), не рядок `scenarios`
       { path: NOTES_ROUTE, element: <NotesPage /> },
       // Контакти — довідник людини (таблиця `contacts`), теж не рядок контенту

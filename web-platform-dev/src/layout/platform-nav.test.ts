@@ -12,7 +12,7 @@ import {
   ASSESSMENTS_PATH,
   ACCOUNT_PATH,
   DAY_PATH,
-  PAGES_PATH,
+  ORDERS_PATH,
   TRACKERS_PATH,
   USERS_PATH,
 } from "@/app/routes";
@@ -33,10 +33,12 @@ describe("меню платформи", () => {
     expect(activeKeys("/")).toEqual([]);
   });
 
-  it("сторінка за адресою світить «Базар»", () => {
-    expect(activeKeys(PAGES_PATH)).toEqual(["bazar"]);
-    // Глибше за список — та сама сторінка: `/pages/7` не має світити двоє.
-    expect(activeKeys("/pages/7")).toEqual(["bazar"]);
+  it("замовлення — свій пункт, і лише він", () => {
+    expect(activeKeys(ORDERS_PATH)).toEqual(["orders"]);
+  });
+
+  it("вкладки магазину не світять нічого: це сторінка всередині сценарію", () => {
+    expect(activeKeys("/scenarios/7/products")).toEqual([]);
   });
 
   it("акаунт — «Я», і лише він", () => {

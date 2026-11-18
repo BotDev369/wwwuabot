@@ -12,7 +12,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { DAY_PATH, PAGES_PATH, USERS_PATH } from "@/app/routes";
+import { DAY_PATH, ORDERS_PATH, USERS_PATH } from "@/app/routes";
 
 const hooks = {
   navigate: vi.fn(),
@@ -51,12 +51,12 @@ describe("вітрина", () => {
   it("кожен вхід веде на свій наявний екран", async () => {
     render(<EntryPage />);
 
-    await userEvent.click(screen.getByRole("button", { name: /Крамниця/ }));
+    await userEvent.click(screen.getByRole("button", { name: /Замовлення/ }));
     await userEvent.click(screen.getByRole("button", { name: /Гурт/ }));
     await userEvent.click(screen.getByRole("button", { name: /Мій день/ }));
 
     expect(hooks.navigate.mock.calls.map((call) => call[0])).toEqual([
-      PAGES_PATH,
+      ORDERS_PATH,
       USERS_PATH,
       DAY_PATH,
     ]);

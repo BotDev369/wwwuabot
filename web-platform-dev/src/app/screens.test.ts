@@ -10,10 +10,10 @@ describe("ключ екрана з адреси", () => {
     expect(screenKeyOfPath("/games/quiz")).toBe("games");
   });
 
-  it("не плутає сторінки людини з екраном сторінок", () => {
-    expect(screenKeyOfPath("/pages")).toBe("pages");
-    // Товари й замовлення живуть під сторінкою — це той самий екран.
-    expect(screenKeyOfPath("/pages/7/products")).toBe("pages");
+  it("вкладки магазину — свій ключ, а не сторінка контенту", () => {
+    // Товари й замовлення живуть під номером сценарію — це той самий екран.
+    expect(screenKeyOfPath("/scenarios/7/products")).toBe("scenarios");
+    expect(screenKeyOfPath("/scenarios/7/orders")).toBe("scenarios");
   });
 
   it("сторінка контенту за slug — окремий ключ, а не чужий екран", () => {

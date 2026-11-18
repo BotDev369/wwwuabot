@@ -21,6 +21,7 @@ import { PageCanvas } from "@wwwuabot/ui";
 import { apiFetchRaw } from "@/shared/api/client";
 import { useShopCatalog } from "@/pages/shop/useShopCatalog";
 import { ShopStore } from "@/pages/shop/store/ShopStore";
+import { ShopOwnerPanel } from "@/pages/shop/ShopOwnerPanel";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { ResearchArticleFrame } from "@/pages/research/ResearchArticleFrame";
@@ -236,6 +237,14 @@ export function ScenarioPage() {
   if (isShop) {
     return (
       <>
+        {/* Вхід у товари й замовлення — лише тому, хто веде цей магазин; сам
+            сценарій він і так бачить за адресою ↗. */}
+        <ShopOwnerPanel
+          scenarioId={scenarioId}
+          loading={catalog.loading}
+          count={catalog.products.length}
+          error={null}
+        />
         <ShopStore
           slug={pageSlug}
           title={scenarioTitle}

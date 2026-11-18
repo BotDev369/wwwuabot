@@ -21,7 +21,7 @@
  * @module @wwwuabot/shared/pages
  */
 
-import type { PageRole, PageStaff, UserPage } from "./types";
+import type { PageRole, PageStaff, ManagedScenario } from "./types";
 
 /** Стеля адмінів на сторінку: це помічники, а не штат. */
 export const PAGE_ADMINS_MAX = 20;
@@ -105,7 +105,7 @@ export function pageStaffIds(ownerId: number | null, adminIds: readonly number[]
 }
 
 /** Склад адмінів зі сторінки: виводиться зі `staff`, а не тримається копією. */
-export function pageAdminsOf(page: UserPage): number[] {
+export function pageAdminsOf(page: ManagedScenario): number[] {
   return page.staff.filter((member: PageStaff) => member.role === "admin").map((m) => m.id);
 }
 

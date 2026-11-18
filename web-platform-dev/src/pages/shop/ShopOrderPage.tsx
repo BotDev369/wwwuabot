@@ -40,8 +40,8 @@ import {
 } from "@wwwuabot/shared/shop";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { shopOrdersPath } from "@/app/routes";
-import { PageState } from "@/pages/user-pages/PageState";
-import { useUserPage } from "@/pages/user-pages/useUserPage";
+import { PageState } from "@/pages/scenarios/PageState";
+import { useManagedScenario } from "@/pages/scenarios/useManagedScenario";
 import { addableProducts, orderStatusTone, type EditableOrderItem } from "./order-view";
 import { ShopOrderBuyerCard } from "./ShopOrderBuyerCard";
 import { ShopOrderItemsCard } from "./ShopOrderItemsCard";
@@ -60,7 +60,7 @@ export function ShopOrderPage(): ReactElement {
   const navigate = useNavigate();
   const dialog = useDialog();
 
-  const { page, loading, error } = useUserPage(id);
+  const { page, loading, error } = useManagedScenario(id);
   const shop = useShopOrders(page?.id ?? null);
   const products = useShopProducts(page?.id ?? null);
 
