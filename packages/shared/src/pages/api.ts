@@ -13,15 +13,7 @@
  * @module @wwwuabot/shared/pages
  */
 
-import type {
-  PageDeleteResponse,
-  PageDraft,
-  PageListResponse,
-  PageSaveResponse,
-  PublicPage,
-  PublicPageListResponse,
-  UserPage,
-} from "./types";
+import type { PageListResponse, PublicPage, PublicPageListResponse, UserPage } from "./types";
 
 /** Мінімум, який потрібен від транспорту оболонки. */
 export interface PagesTransport {
@@ -31,10 +23,6 @@ export interface PagesTransport {
 export interface PagesApi {
   /** Власні сторінки — разом із приватними: їх треба бачити саме авторові. */
   listOwn: () => Promise<UserPage[]>;
-  /** Зберегти: без `id` — нова, з `id` — правка своєї. */
-  save: (draft: PageDraft) => Promise<UserPage | null>;
-  /** Видалити свою за номером. Чужого номера тут бути не може: власника додає сервер. */
-  remove: (id: number) => Promise<void>;
   /** Відкриті: сторінки, які автори відкрили. */
   published: () => Promise<PublicPage[]>;
 }
@@ -49,18 +37,5 @@ export function createPagesApi(fetchJson: PagesTransport, paths: PagesApiPaths):
   return {
     listOwn: async () => (await fetchJson<PageListResponse>(paths.own)).pages ?? [],
     published: async () => (await fetchJson<PublicPageListResponse>(paths.public)).pages ?? [],
-    save: async (draft) =>
-      (
-        await fetchJson<PageSaveResponse>(paths.own, {
-          method: "POST",
-          body: JSON.stringify(draft),
-        })
-      ).page ?? null,
-    remove: async (id) => {
-      const response = await fetchJson<PageDeleteResponse>(`${paths.own}?id=${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error(response.error ?? "Не вдалося видалити сторінку");
-    },
   };
 }

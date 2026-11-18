@@ -48,6 +48,7 @@ export { createPageStore } from "./store";
 export type { PageStore } from "./store";
 
 // --- Рендерери та захист ---
+export { PageCanvas } from "./PageCanvas";
 export { PageRenderer } from "./PageRenderer";
 export { ZoneRenderer } from "./ZoneRenderer";
 export { PermissionGate } from "./PermissionGate";

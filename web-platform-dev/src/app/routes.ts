@@ -21,8 +21,9 @@
  * (`?peer=`, `@wwwuabot/shared/messages`).
  *
  * **Сторінки з шаблону створює платформа, а не людина:** нового рядка з
- * `/pages/new` більше немає, і людина лише веде те, що їй дали. Правка наявної
- * сторінки лишається адресою (`/pages/:id/edit`), бо вона про конкретний рядок.
+ * `/pages/new` немає, і сторінку не править ніхто, крім платформи: людина лише
+ * дивиться те, що їй дали. Сторінку збирає й публікує розробник — кодом і
+ * міграціями, а не форма в інтерфейсі.
  *
  * @module web-platform-dev/src/app/routes
  */
@@ -134,16 +135,6 @@ export const userPagePath = (id: number): string => `${PAGES_PATH}/${id}`;
 export { RESEARCH_PATH, RESEARCH_ROUTE } from "@/pages/research/route";
 
 /**
- * Редактор уже наявної сторінки — теж екран.
- *
- * Правка — не перегляд: вона завжди про конкретний рядок, і адреса про це
- * каже (`/pages/7/edit`). Через це «назад» із редактора вертає на перегляд,
- * а не в список, і посилання на редактор можна надіслати.
- */
-export const PAGE_EDIT_ROUTE = "edit";
-export const userPageEditPath = (id: number): string => `${userPagePath(id)}/${PAGE_EDIT_ROUTE}`;
-
-/**
  * Товари магазину — **під сторінкою**, а не окремим розділом.
  *
  * Магазин — це рядок `scenarios` зі своєю адресою, а товари належать йому
@@ -151,8 +142,8 @@ export const userPageEditPath = (id: number): string => `${userPagePath(id)}/${P
  * Окремий розділ `/shop` зробив би другу навігацію по тому самому контенту
  * (`AGENTS.md` §7) і змусив би вибирати магазин там, де його й так видно.
  *
- * `products` під `:id` не збивається з `edit` і `new`: це різні сегменти на
- * одному місці, і сторінка людини не може мати адреси `pages`.
+ * `products` під `:id` не збивається з `orders`: це різні сегменти на одному
+ * місці, і сторінка не може мати адреси `pages`.
  */
 export const SHOP_PRODUCTS_ROUTE = "products";
 export const shopProductsPath = (pageId: number): string =>

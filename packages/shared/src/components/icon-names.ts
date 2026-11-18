@@ -61,7 +61,6 @@ export const ICON_NAMES = [
   "refresh",
   "upload",
   "link",
-  "external-link",
   "plus",
   "minus",
   "search",

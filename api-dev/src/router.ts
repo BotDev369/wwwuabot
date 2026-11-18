@@ -12,7 +12,6 @@ import {
   handleBotScenarioUpdate,
   handlePlatformPagesList,
   handlePlatformPageRead,
-  handlePlatformPageUpdate,
 } from "./controllers/scenarios-admin.controller";
 import { matchScreensRoute } from "./routes/screens";
 import { handleMyDates } from "./controllers/my-dates.controller";
@@ -217,9 +216,6 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/api/admin/platform-pages/read" && request.method === "POST") {
     return handlePlatformPageRead(request, env);
-  }
-  if (pathname === "/api/admin/platform-pages/update" && request.method === "POST") {
-    return handlePlatformPageUpdate(request, env);
   }
 
   // ── Admin: Users CRUD ──────────────────────────────────────────

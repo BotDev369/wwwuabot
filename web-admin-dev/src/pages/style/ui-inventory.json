@@ -53,12 +53,12 @@
     }
   },
   "summary": {
-    "total": 218,
-    "both": 49,
-    "one": 78,
-    "shared": 48,
+    "total": 217,
+    "both": 48,
+    "one": 79,
+    "shared": 46,
     "builder": 43,
-    "unused": 0
+    "unused": 1
   },
   "groups": [
     {
@@ -74,7 +74,7 @@
           "sampleText": "Кнопка",
           "note": "Базова кнопка: мірки, радіус і вага — з токенів.",
           "usage": {
-            "platform": 41,
+            "platform": 39,
             "admin": 25,
             "ui": 20,
             "shared": 4
@@ -89,8 +89,8 @@
           "sampleText": "Зберегти",
           "note": "Одна основна дія на екран.",
           "usage": {
-            "platform": 21,
-            "admin": 15,
+            "platform": 20,
+            "admin": 14,
             "ui": 16,
             "shared": 4
           },
@@ -104,7 +104,7 @@
           "sampleText": "Скасувати",
           "note": "Дія поруч з основною, без акценту.",
           "usage": {
-            "platform": 31,
+            "platform": 29,
             "admin": 14,
             "ui": 15,
             "shared": 4
@@ -119,7 +119,7 @@
           "sampleText": "Детальніше",
           "note": "Дія в рядку або в шапці.",
           "usage": {
-            "platform": 6,
+            "platform": 5,
             "admin": 9,
             "ui": 4,
             "shared": 0
@@ -164,7 +164,7 @@
           "sampleText": "",
           "note": "Кругла кнопка зі знаком закриття.",
           "usage": {
-            "platform": 7,
+            "platform": 6,
             "admin": 3,
             "ui": 6,
             "shared": 0
@@ -201,7 +201,7 @@
           "sampleText": "Значення",
           "note": "Однорядковий ввід із кільцем фокуса.",
           "usage": {
-            "platform": 10,
+            "platform": 9,
             "admin": 12,
             "ui": 10,
             "shared": 0
@@ -232,7 +232,7 @@
           "note": "Той самий вигляд, інша висота.",
           "usage": {
             "platform": 5,
-            "admin": 9,
+            "admin": 8,
             "ui": 4,
             "shared": 0
           },
@@ -261,7 +261,7 @@
           "sampleText": "Назва поля",
           "note": "Підпис над контролом.",
           "usage": {
-            "platform": 10,
+            "platform": 9,
             "admin": 5,
             "ui": 10,
             "shared": 0
@@ -306,12 +306,12 @@
           "sampleText": "Некоректне значення",
           "note": "Кільце помилки без зміни рамки.",
           "usage": {
-            "platform": 1,
+            "platform": 0,
             "admin": 0,
             "ui": 0,
             "shared": 0
           },
-          "verdict": "one"
+          "verdict": "unused"
         },
         {
           "id": "tags-input",
@@ -343,7 +343,7 @@
           "sampleText": "Заголовок картки",
           "note": "Плита з тінню й волосяною межею.",
           "usage": {
-            "platform": 5,
+            "platform": 3,
             "admin": 4,
             "ui": 0,
             "shared": 0
@@ -358,7 +358,7 @@
           "sampleText": "Заголовок картки",
           "note": "Смуга тону блока над тілом.",
           "usage": {
-            "platform": 4,
+            "platform": 3,
             "admin": 4,
             "ui": 0,
             "shared": 0
@@ -373,7 +373,7 @@
           "sampleText": "Вміст картки",
           "note": "Береги картки й міра рядка.",
           "usage": {
-            "platform": 5,
+            "platform": 3,
             "admin": 1,
             "ui": 0,
             "shared": 0
@@ -776,12 +776,12 @@
           "sampleText": "Найменший рівень",
           "note": "Підписи й службові рядки.",
           "usage": {
-            "platform": 1,
+            "platform": 0,
             "admin": 2,
             "ui": 5,
             "shared": 0
           },
-          "verdict": "both"
+          "verdict": "one"
         },
         {
           "id": "text-sm",
@@ -792,11 +792,11 @@
           "note": "Пояснення під заголовком.",
           "usage": {
             "platform": 0,
-            "admin": 0,
+            "admin": 1,
             "ui": 16,
             "shared": 0
           },
-          "verdict": "shared"
+          "verdict": "one"
         },
         {
           "id": "text-base",
@@ -807,11 +807,11 @@
           "note": "Тіло сторінки.",
           "usage": {
             "platform": 0,
-            "admin": 0,
+            "admin": 1,
             "ui": 1,
             "shared": 0
           },
-          "verdict": "shared"
+          "verdict": "one"
         },
         {
           "id": "text-md",
@@ -836,7 +836,7 @@
           "sampleText": "Другорядний текст",
           "note": "Те, що читають після головного.",
           "usage": {
-            "platform": 33,
+            "platform": 31,
             "admin": 2,
             "ui": 14,
             "shared": 1
@@ -1627,7 +1627,7 @@
           "note": "",
           "icon": "users",
           "usage": {
-            "platform": 3,
+            "platform": 2,
             "admin": 6,
             "ui": 1,
             "shared": 1
@@ -1931,7 +1931,7 @@
           "note": "",
           "icon": "edit",
           "usage": {
-            "platform": 6,
+            "platform": 4,
             "admin": 4,
             "ui": 5,
             "shared": 1
@@ -1963,7 +1963,7 @@
           "note": "",
           "icon": "lock",
           "usage": {
-            "platform": 2,
+            "platform": 1,
             "admin": 2,
             "ui": 0,
             "shared": 1
@@ -1995,7 +1995,7 @@
           "note": "",
           "icon": "trash",
           "usage": {
-            "platform": 11,
+            "platform": 10,
             "admin": 4,
             "ui": 4,
             "shared": 3
@@ -2091,7 +2091,7 @@
           "note": "",
           "icon": "check",
           "usage": {
-            "platform": 12,
+            "platform": 11,
             "admin": 1,
             "ui": 4,
             "shared": 2
@@ -2163,22 +2163,6 @@
           "verdict": "one"
         },
         {
-          "id": "icon-external-link",
-          "name": "external-link",
-          "className": "Icon name=\"external-link\"",
-          "sample": "icon",
-          "sampleText": "",
-          "note": "",
-          "icon": "external-link",
-          "usage": {
-            "platform": 1,
-            "admin": 0,
-            "ui": 0,
-            "shared": 2
-          },
-          "verdict": "one"
-        },
-        {
           "id": "icon-plus",
           "name": "plus",
           "className": "Icon name=\"plus\"",
@@ -2187,7 +2171,7 @@
           "note": "",
           "icon": "plus",
           "usage": {
-            "platform": 13,
+            "platform": 12,
             "admin": 1,
             "ui": 2,
             "shared": 1
@@ -2443,7 +2427,7 @@
           "note": "",
           "icon": "arrow-left",
           "usage": {
-            "platform": 9,
+            "platform": 8,
             "admin": 1,
             "ui": 2,
             "shared": 2

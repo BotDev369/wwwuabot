@@ -82,13 +82,3 @@ export async function readPlatformPage(id: number): Promise<PlatformPageRecord |
   );
   return res.item;
 }
-
-export async function updatePlatformPage(
-  id: number,
-  fields: Partial<PlatformPageRecord>,
-): Promise<void> {
-  await apiFetch("/api/admin/platform-pages/update", {
-    method: "POST",
-    body: JSON.stringify({ id, ...fields }),
-  });
-}

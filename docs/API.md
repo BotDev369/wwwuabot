@@ -101,7 +101,6 @@
 | `ANY` | `/api/admin/notes` | `handleAdminNotes` |
 | `GET` | `/api/admin/platform-pages` | `handlePlatformPagesList` |
 | `POST` | `/api/admin/platform-pages/read` | `handlePlatformPageRead` |
-| `POST` | `/api/admin/platform-pages/update` | `handlePlatformPageUpdate` |
 | `ANY` | `/api/admin/spending/codes` | `handleSpendingCodes` |
 | `ANY` | `/api/admin/spending/documents` | `handleSpendingDocuments` |
 | `ANY` | `/api/admin/spending/overview` | `handleSpendingOverview` |
@@ -130,4 +129,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **101**.
+Усього шляхів: **100**.

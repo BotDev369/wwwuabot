@@ -1,48 +1,26 @@
 /**
- * Контролер сторінок, які створює людина.
+ * Контролер сторінок — **лише читання**.
  *
- * Дві поверхні, і різниця між ними принципова:
+ *   GET /api/user/pages    — сторінки, які людина бачить (разом із приватними)
+ *   GET /api/public/pages  — сторінки, які автори відкрили
  *
- *   GET    /api/user/pages   — сторінки, які людина веде (разом із приватними)
- *   POST   /api/user/pages   — правка наявної; без `id` — `403`
- *   DELETE /api/user/pages   — прибрати свою за номером (тільки власник)
- *   GET    /api/public/pages  — сторінки, які автори відкрили
- *
- * **Нових сторінок людина не заводить.** Рядок створює платформа (адмінка й
- * міграції), тож `POST` без `id` — це не «нова сторінка», а відмова: інакше
- * зникнення кнопки в інтерфейсі лишалося б єдиною перепоною на шляху API.
- *
- * **Список — це «що я веду», а не «що я створив».** Адмін стоїть у
- * `scenarios.admin_ids` і отримує ту саму сторінку — разом із магазином,
- * товарами й замовленнями; ролі розрізняє сервіс (`pageRole`), а не цей файл:
- * склад адмінів лежить JSON-ом, і в `WHERE` його не висловити.
+ * **Сторінку не створює й не править ніхто з інтерфейсу.** Її заводить
+ * платформа: код і міграції. Тому `POST` і `DELETE` тут не «заборонені для
+ * цієї ролі», а **не існують** — відповідь `405` каже саме це, і жоден шлях не
+ * лишає по собі запису в базі.
  *
  * Ідентичність береться **тільки** з підписаного `initData` (`resolveUserId`):
  * жоден заголовок чи параметр не називає автора (`AGENTS.md` §7). Відкритий
- * список публічний — і це безпечно саме тому, що видимість відбирає **запит до бази**
- * (`PagesService.listPublished`), а не цей файл.
- *
- * Коди відповідей різні навмисно (правило з `docs/RECIPES.md` §1): зайнята
- * адреса — `409` (людина може обрати іншу), «немає» й «чуже» — **однаково**
- * `404`, бо різниця між ними сама сказала б, що чужа сторінка існує.
+ * список публічний — і це безпечно саме тому, що видимість відбирає **запит до
+ * бази** (`PagesService.listPublished`), а не цей файл.
  *
  * @module api-dev/src/controllers/pages.controller
  */
 
-import { validatePageDraft } from "@wwwuabot/shared/pages";
-import { z } from "zod";
 import type { Env } from "../shared/types";
-import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
 import { resolveUserId } from "../shared/identity";
 import { PagesService } from "../services/pages.service";
-
-/**
- * Сторінка: зміст перевіряє спільне `validatePageDraft`, а `id` мусить бути
- * числом — ним вирішується «правка чи створення». Не-число відпадає цілому, щоб
- * замість правки не вийшла нова сторінка-дубль.
- */
-const pageBody = z.object({ id: z.number().optional() }).passthrough();
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -51,54 +29,17 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-/** `GET` / `POST` / `DELETE /api/user/pages` — власні сторінки. */
+/** `GET /api/user/pages` — сторінки, які людина бачить. Решта методів — `405`. */
 export async function handleUserPages(request: Request, env: Env): Promise<Response> {
+  if (request.method !== "GET") {
+    return json({ ok: false, error: "Method not allowed" }, 405);
+  }
+
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
 
-  const service = new PagesService(env);
-
   try {
-    if (request.method === "GET") {
-      return json({ ok: true, pages: await service.listManaged(identity.userId) });
-    }
-
-    if (request.method === "POST") {
-      const parsed = await readBody(request, pageBody);
-      if (!parsed.ok) return parsed.response;
-
-      const validated = validatePageDraft(parsed.body);
-      if (!validated.ok) return json({ ok: false, error: validated.message }, 400);
-
-      // Спершу зміст, потім «чи це правка»: причина відмови змісту корисніша
-      // за «немає id», і саме її людина має побачити.
-      const id = parsed.body.id;
-      if (typeof id !== "number" || !Number.isInteger(id) || id <= 0) {
-        return json({ ok: false, error: "Сторінки створює платформа" }, 403);
-      }
-
-      const outcome = await service.save(identity.userId, validated.value, id);
-
-      if (outcome.kind === "not_found") return json({ ok: false, error: "Not found" }, 404);
-      if (outcome.kind === "address_taken") {
-        return json({ ok: false, error: "Така адреса вже зайнята — оберіть іншу" }, 409);
-      }
-
-      return json({ ok: true, page: outcome.page });
-    }
-
-    if (request.method === "DELETE") {
-      const id = Number(new URL(request.url).searchParams.get("id"));
-      if (!Number.isInteger(id) || id <= 0) {
-        return json({ ok: false, error: "Missing id" }, 400);
-      }
-
-      const removed = await service.remove(id, identity.userId);
-      if (!removed) return json({ ok: false, error: "Not found" }, 404);
-      return json({ ok: true, id });
-    }
-
-    return json({ ok: false, error: "Method not allowed" }, 405);
+    return json({ ok: true, pages: await new PagesService(env).listManaged(identity.userId) });
   } catch (e: unknown) {
     apiLog.error("Pages error", e);
     return json({ ok: false, error: "Не вдалося виконати дію" }, 500);

@@ -1,6 +1,11 @@
 /**
- * «Платформа» — сторінки вебу з таблиці `platform_pages`: список і картка правки.
- * Поля екрана бота живуть у `bot_scenarios` і мають власний екран.
+ * «Платформа» — сторінки вебу з таблиці `platform_pages`: список і **перегляд**.
+ *
+ * **Правки тут немає.** Сторінку збирає й публікує розробник (код і міграції),
+ * тож картка показує поля сторінки як є — без інпутів, чекбоксів і кнопки
+ * «Зберегти». Сирий `page_data` у textarea був другим способом збудувати екран
+ * руками; тепер екран будує рівно один шлях — `PageCanvas` із тих даних, які
+ * поклала міграція.
  *
  * @module web-admin-dev/src/pages/platform/PlatformPagesPage
  */
@@ -10,45 +15,18 @@ import { PageTopbar } from "../../layout/PageTopbar";
 import {
   listPlatformPages,
   readPlatformPage,
-  updatePlatformPage,
   type PlatformPageListItem,
   type PlatformPageRecord,
 } from "../../shared/api/scenarios-admin.api";
 
 type Status = "loading" | "idle" | "error";
 
-interface PageDraft {
-  id: number;
-  slug: string;
-  title: string;
-  photo_url: string;
-  template_key: string;
-  page_data: string;
-  is_public: boolean;
-  is_active: boolean;
-}
-
-function draftOf(record: PlatformPageRecord): PageDraft {
-  return {
-    id: record.id,
-    slug: record.slug,
-    title: record.title ?? "",
-    photo_url: record.photo_url ?? "",
-    template_key: record.template_key ?? "",
-    page_data: record.page_data ?? "",
-    is_public: Number(record.is_public ?? 0) === 1,
-    is_active: Number(record.is_active ?? 1) === 1,
-  };
-}
-
 export function PlatformPagesPage() {
   const [items, setItems] = useState<PlatformPageListItem[]>([]);
   const [status, setStatus] = useState<Status>("loading");
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
-  const [draft, setDraft] = useState<PageDraft | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState("");
+  const [record, setRecord] = useState<PlatformPageRecord | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -74,38 +52,8 @@ export function PlatformPagesPage() {
   }, [items, query]);
 
   async function open(id: number): Promise<void> {
-    const record = await readPlatformPage(id);
-    if (record) {
-      setSaveError("");
-      setDraft(draftOf(record));
-    }
-  }
-
-  function change<K extends keyof PageDraft>(key: K, value: PageDraft[K]): void {
-    setDraft((current) => (current ? { ...current, [key]: value } : current));
-  }
-
-  async function save(): Promise<void> {
-    if (!draft) return;
-    setSaving(true);
-    setSaveError("");
-    try {
-      await updatePlatformPage(draft.id, {
-        slug: draft.slug,
-        title: draft.title,
-        photo_url: draft.photo_url,
-        template_key: draft.template_key,
-        page_data: draft.page_data,
-        is_public: draft.is_public ? 1 : 0,
-        is_active: draft.is_active ? 1 : 0,
-      });
-      setDraft(null);
-      await load();
-    } catch (e) {
-      setSaveError((e as Error).message);
-    } finally {
-      setSaving(false);
-    }
+    const found = await readPlatformPage(id);
+    if (found) setRecord(found);
   }
 
   return (
@@ -191,85 +139,51 @@ export function PlatformPagesPage() {
         )}
       </div>
 
-      {draft && (
-        <div className="wb-modal-overlay" onClick={() => setDraft(null)}>
+      {record && (
+        <div className="wb-modal-overlay" onClick={() => setRecord(null)}>
           <div className="wb-modal wb-admin-modal" onClick={(e) => e.stopPropagation()}>
             <div className="wb-modal-header">
-              <h2 className="wb-modal-title">{draft.title || draft.slug || "/"}</h2>
-              <button className="wb-btn wb-btn-secondary" onClick={() => setDraft(null)}>
+              <h2 className="wb-modal-title">{record.title || record.slug || "/"}</h2>
+              <button className="wb-btn wb-btn-secondary" onClick={() => setRecord(null)}>
                 Закрити
               </button>
             </div>
             <div className="wb-modal-body wb-admin-form">
-              <label className="wb-admin-field">
+              <div className="wb-admin-field">
                 <span className="wb-admin-label">Адреса (slug)</span>
-                <input
-                  className="wb-input"
-                  value={draft.slug}
-                  onChange={(e) => change("slug", e.target.value)}
-                />
-              </label>
-              <label className="wb-admin-field">
+                <p className="wb-text-base">{record.slug || "/"}</p>
+              </div>
+              <div className="wb-admin-field">
                 <span className="wb-admin-label">Назва</span>
-                <input
-                  className="wb-input"
-                  value={draft.title}
-                  onChange={(e) => change("title", e.target.value)}
-                />
-              </label>
-              <label className="wb-admin-field">
+                <p className="wb-text-base">{record.title || "—"}</p>
+              </div>
+              <div className="wb-admin-field">
                 <span className="wb-admin-label">Фото (URL)</span>
-                <input
-                  className="wb-input"
-                  value={draft.photo_url}
-                  onChange={(e) => change("photo_url", e.target.value)}
-                />
-              </label>
-              <label className="wb-admin-field">
+                <p className="wb-text-base">{record.photo_url || "—"}</p>
+              </div>
+              <div className="wb-admin-field">
                 <span className="wb-admin-label">Шаблон</span>
-                <input
-                  className="wb-input"
-                  value={draft.template_key}
-                  onChange={(e) => change("template_key", e.target.value)}
-                />
-              </label>
-              <label className="wb-admin-field">
+                <p className="wb-text-base">{record.template_key || "—"}</p>
+              </div>
+              <div className="wb-admin-field">
+                <span className="wb-admin-label">Публічна</span>
+                <p className="wb-text-base">{Number(record.is_public ?? 0) === 1 ? "Так" : "Ні"}</p>
+              </div>
+              <div className="wb-admin-field">
+                <span className="wb-admin-label">Активна</span>
+                <p className="wb-text-base">{Number(record.is_active ?? 1) === 1 ? "Так" : "Ні"}</p>
+              </div>
+              <div className="wb-admin-field">
                 <span className="wb-admin-label">Контент сторінки (JSON)</span>
-                <textarea
-                  className="wb-textarea wb-admin-json wb-admin-json--page"
-                  rows={14}
-                  value={draft.page_data}
-                  onChange={(e) => change("page_data", e.target.value)}
-                />
-              </label>
-              <label className="wb-admin-check">
-                <input
-                  type="checkbox"
-                  checked={draft.is_public}
-                  onChange={(e) => change("is_public", e.target.checked)}
-                />
-                <span>Публічна сторінка</span>
-              </label>
-              <label className="wb-admin-check">
-                <input
-                  type="checkbox"
-                  checked={draft.is_active}
-                  onChange={(e) => change("is_active", e.target.checked)}
-                />
-                <span>Сторінка активна</span>
-              </label>
-              {saveError && <p className="wb-admin-error">{saveError}</p>}
+                <pre className="wb-admin-json wb-admin-json--page">{record.page_data || "{}"}</pre>
+              </div>
+              <p className="wb-text-sm wb-text-muted">
+                Сторінку збирає розробник — кодом і міграціями. Тут лише перегляд.
+              </p>
             </div>
             <div className="wb-modal-footer">
-              <button className="wb-btn wb-btn-secondary" onClick={() => setDraft(null)}>
-                Скасувати
-              </button>
-              <button
-                className="wb-btn wb-btn-primary"
-                onClick={() => void save()}
-                disabled={saving}
-              >
-                {saving ? "Збереження…" : "Зберегти"}
+              <button className="wb-btn wb-btn-secondary" onClick={() => setRecord(null)}>
+                Закрити
               </button>
             </div>
           </div>

@@ -35,7 +35,6 @@ import {
   MESSAGES_PATH,
   NOTES_ROUTE,
   ORDERS_ROUTE,
-  PAGE_EDIT_ROUTE,
   PAGES_ROUTE,
   RESEARCH_ROUTE,
   SHOP_ORDERS_ROUTE,
@@ -61,7 +60,6 @@ import { ScenarioPage } from "@/pages/ScenarioPage";
 import { UsersPage } from "@/pages/UsersPage";
 import { GamePage } from "@/pages/games/GamePage";
 import { GamesPage } from "@/pages/games/GamesPage";
-import { PageEditPage } from "@/pages/user-pages/PageEditPage";
 import { ShopOrderPage } from "@/pages/shop/ShopOrderPage";
 import { ShopOrdersPage } from "@/pages/shop/ShopOrdersPage";
 import { ShopProductForm } from "@/pages/shop/ShopProductForm";
@@ -135,7 +133,6 @@ export const router = createBrowserRouter([
         element: <ShopOrderPage />,
       },
       { path: `${PAGES_ROUTE}/:id/${SHOP_ORDERS_ROUTE}`, element: <ShopOrdersPage /> },
-      { path: `${PAGES_ROUTE}/:id/${PAGE_EDIT_ROUTE}`, element: <PageEditPage /> },
       { path: `${PAGES_ROUTE}/:id`, element: <UserPageView /> },
       { path: PAGES_ROUTE, element: <UserPagesPage /> },
       // Нотатки — власні дані людини (таблиця `notes`), не рядок `scenarios`

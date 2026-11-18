@@ -33,7 +33,6 @@ export const CHECKPOINT_ACTIONS: readonly CheckpointAction[] = [
   { key: "messages.send", screen: "messages", action: "POST /api/messages/send" },
   { key: "dates.compare", screen: "date-analysis", action: "POST /api/mydate/compare" },
   { key: "dates.save", screen: "date-analysis", action: "POST /api/my-dates" },
-  { key: "pages.save", screen: "pages", action: "POST /api/user/pages" },
   { key: "shop.order", screen: "orders", action: "POST /api/public/shop/orders" },
   { key: "ads.save", screen: "ads", action: "POST /api/ads" },
 ];

@@ -152,40 +152,11 @@ export async function handleBotScenarioUpdate(request: Request, env: Env): Promi
 
 /* ── Сторінки платформи: окрема таблиця, окремий екран, з ботом не пов'язані ── */
 
-const PAGE_FIELDS = [
-  "slug",
-  "title",
-  "photo_url",
-  "page_data",
-  "template_key",
-  "is_active",
-  "is_public",
-] as const;
-
-function pickPageFields(body: Record<string, unknown>): Record<string, string | number | null> {
-  const fields: Record<string, string | number | null> = {};
-  for (const key of PAGE_FIELDS) {
-    if (!(key in body)) continue;
-    const value = body[key];
-    if (key === "is_active" || key === "is_public") {
-      fields[key] = value ? 1 : 0;
-      continue;
-    }
-    fields[key] = typeof value === "string" ? value : value === null ? null : String(value);
-  }
-  return fields;
-}
-
-function validPage(fields: Record<string, string | number | null>): boolean {
-  if (!("page_data" in fields)) return true;
-  const text = String(fields.page_data ?? "").trim();
-  if (text === "") return true;
-  try {
-    const parsed: unknown = JSON.parse(text);
-    return !!parsed && typeof parsed === "object" && !Array.isArray(parsed);
-  } catch {
-    return false;
-  }
+async function pageItem(db: D1Database, id: number): Promise<Record<string, unknown> | null> {
+  return db
+    .prepare("SELECT * FROM platform_pages WHERE id = ?")
+    .bind(id)
+    .first<Record<string, unknown>>();
 }
 
 /** `GET /api/admin/platform-pages` — сторінки платформи без `page_data`. */
@@ -205,13 +176,6 @@ export async function handlePlatformPagesList(_request: Request, env: Env): Prom
   }
 }
 
-async function pageItem(db: D1Database, id: number): Promise<Record<string, unknown> | null> {
-  return db
-    .prepare("SELECT * FROM platform_pages WHERE id = ?")
-    .bind(id)
-    .first<Record<string, unknown>>();
-}
-
 /** `POST /api/admin/platform-pages/read` — усі поля сторінки. */
 export async function handlePlatformPageRead(request: Request, env: Env): Promise<Response> {
   try {
@@ -222,40 +186,6 @@ export async function handlePlatformPageRead(request: Request, env: Env): Promis
     return item ? json({ ok: true, item }) : json({ ok: false, error: "Not found" }, 404);
   } catch (error: unknown) {
     apiLog.error("platform page read error", error);
-    return json({ ok: false, error: "Internal error" }, 500);
-  }
-}
-
-/** `POST /api/admin/platform-pages/update` — зберегти поля сторінки. */
-export async function handlePlatformPageUpdate(request: Request, env: Env): Promise<Response> {
-  try {
-    await ensureTables(env.DB, ["platform_pages"]);
-    const body = await readJsonObject(request);
-    const id = readId(body);
-    if (id === null) return json({ ok: false, error: "id required" }, 400);
-
-    const fields = pickPageFields(body);
-    if (!validPage(fields))
-      return json({ ok: false, error: "page_data: потрібен JSON-об'єкт" }, 400);
-
-    const keys = Object.keys(fields);
-    if (keys.length === 0) return json({ ok: false, error: "no fields" }, 400);
-
-    const result = await env.DB.prepare(
-      `UPDATE platform_pages SET ${keys.map((key) => `${key} = ?`).join(", ")}, updated_at = ?
-        WHERE id = ?`,
-    )
-      .bind(...keys.map((key) => fields[key]), formatSqliteDatetime(), id)
-      .run();
-    if ((result.meta?.changes ?? 0) === 0) return json({ ok: false, error: "Not found" }, 404);
-
-    return json({ ok: true, item: await pageItem(env.DB, id) });
-  } catch (error: unknown) {
-    apiLog.error("platform page update error", error);
-    const message = error instanceof Error ? error.message : "";
-    if (/UNIQUE constraint failed: platform_pages\.slug/.test(message)) {
-      return json({ ok: false, error: "Адреса вже зайнята іншою сторінкою" }, 409);
-    }
     return json({ ok: false, error: "Internal error" }, 500);
   }
 }

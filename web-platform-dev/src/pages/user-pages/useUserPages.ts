@@ -12,14 +12,14 @@
  * фільтром, а розійтися вони могли б лише в одному — у видимості, тобто саме
  * там, де помилка найдорожча.
  *
- * **Оновлення — локальні, а не повторним запитом.** Сервер уже повертає
- * збережений рядок, тож другий похід по весь список був би зайвим і показав би
- * «завантаження» там, де нічого не завантажується.
+ * **Це читання, і тільки воно.** Сторінку не створюють і не правлять із
+ * інтерфейсу — її заводить платформа кодом і міграціями, тож список не має ні
+ * `upsert`, ні `remove`: дія, якої немає на сервері, не має бути й на клієнті.
  *
  * @module web-platform-dev/src/pages/user-pages
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { UserPage } from "@wwwuabot/shared/pages";
 import { pagesApi } from "@/shared/api/pages.api";
 
@@ -27,10 +27,6 @@ export interface UserPagesState {
   pages: UserPage[];
   loading: boolean;
   error: string | null;
-  /** Додати або замінити сторінку: збережений рядок — джерело правди. */
-  upsert: (page: UserPage) => void;
-  /** Прибрати сторінку зі списку після видалення. */
-  remove: (id: number) => void;
 }
 
 export function useUserPages(): UserPagesState {
@@ -63,17 +59,5 @@ export function useUserPages(): UserPagesState {
     };
   }, []);
 
-  const upsert = useCallback((page: UserPage) => {
-    setPages((prev) =>
-      prev.some((item) => item.id === page.id)
-        ? prev.map((item) => (item.id === page.id ? page : item))
-        : [page, ...prev],
-    );
-  }, []);
-
-  const remove = useCallback((id: number) => {
-    setPages((prev) => prev.filter((page) => page.id !== id));
-  }, []);
-
-  return { pages, loading, error, upsert, remove };
+  return { pages, loading, error };
 }

@@ -10,8 +10,6 @@ import {
   handleBotScenarioRead,
   handleBotScenarioUpdate,
   handleBotScenariosList,
-  handlePlatformPageRead,
-  handlePlatformPageUpdate,
   handlePlatformPagesList,
 } from "./scenarios-admin.controller";
 import type { Env } from "../shared/types";
@@ -142,37 +140,5 @@ describe("сторінки платформи", () => {
     expect(((await res.json()) as { items: unknown[] }).items).toHaveLength(1);
     const list = calls.find((call) => call.sql.includes("FROM platform_pages ORDER"));
     expect(list?.sql).not.toContain("page_data");
-  });
-
-  it("читання й правка сторінки", async () => {
-    const { env } = makeDb({ pageRow: { id: 2, slug: "dateanalysis" } });
-    expect((await handlePlatformPageRead(post({ id: 2 }), env)).status).toBe(200);
-    expect((await handlePlatformPageRead(post({}), env)).status).toBe(400);
-
-    const res = await handlePlatformPageUpdate(
-      post({ id: 2, title: "Нова", page_data: '{"blocks":[]}' }),
-      env,
-    );
-    expect(res.status).toBe(200);
-  });
-
-  it("⛔ page_data мусить бути об'єктом", async () => {
-    const { env } = makeDb({});
-    expect((await handlePlatformPageUpdate(post({ id: 2, page_data: "[]" }), env)).status).toBe(
-      400,
-    );
-  });
-
-  it("зайнята адреса — 409; без рядка — 404", async () => {
-    const { env } = makeDb({
-      pageRow: null,
-      runError: new Error("D1_ERROR: UNIQUE constraint failed: platform_pages.slug"),
-    });
-    expect((await handlePlatformPageUpdate(post({ id: 2, slug: "x" }), env)).status).toBe(409);
-
-    const missing = makeDb({ changes: 0 });
-    expect((await handlePlatformPageUpdate(post({ id: 2, title: "x" }), missing.env)).status).toBe(
-      404,
-    );
   });
 });

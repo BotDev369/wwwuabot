@@ -14,7 +14,6 @@ const {
   updateBotScenario,
   listPlatformPages,
   readPlatformPage,
-  updatePlatformPage,
 } = await import("./scenarios-admin.api");
 
 beforeEach(() => {
@@ -56,13 +55,5 @@ describe("сторінки платформи", () => {
 
     mocks.request.mockResolvedValueOnce({ ok: true, item: { id: 6 } });
     expect(await readPlatformPage(6)).toEqual({ id: 6 });
-  });
-
-  it("правка везе номер і поля сторінки", async () => {
-    mocks.request.mockResolvedValueOnce({ ok: true });
-    await updatePlatformPage(7, { title: "Назва", is_public: 1 });
-
-    const [, init] = mocks.request.mock.calls[0] as [string, RequestInit];
-    expect(JSON.parse(init.body as string)).toEqual({ id: 7, title: "Назва", is_public: 1 });
   });
 });

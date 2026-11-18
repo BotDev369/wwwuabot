@@ -17,7 +17,7 @@ import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { HOME_SLUG } from "@wwwuabot/shared/content";
 import { favoriteTargetId } from "@wwwuabot/shared/favorites";
 import { isResearchBlockSlug } from "@wwwuabot/shared/research";
-import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
+import { PageCanvas } from "@wwwuabot/ui";
 import { apiFetchRaw } from "@/shared/api/client";
 import { useShopCatalog } from "@/pages/shop/useShopCatalog";
 import { ShopStore } from "@/pages/shop/store/ShopStore";
@@ -250,11 +250,13 @@ export function ScenarioPage() {
     );
   }
 
+  /* Сторінку малює спільне полотно — той самий код, що й у своєї сторінки в
+     платформі: різниця між ними в даних, а не в поданні. */
   const rendered = (
-    <PageRenderer
+    <PageCanvas
       config={activeConfig}
       context={status === "fallback" ? { slug: HOME_SLUG, title: null, photoUrl: null } : context}
-      className="page-layout"
+      article={status === "ready" && templateKey === "article"}
     />
   );
 
@@ -262,16 +264,6 @@ export function ScenarioPage() {
   // сторінку це не міняє — рамка лише додає те, чого в `page_data` немає.
   if (status === "ready" && isResearchBlockSlug(pageSlug)) {
     return <ResearchArticleFrame slug={pageSlug}>{rendered}</ResearchArticleFrame>;
-  }
-
-  // Шаблон «Стаття» — це не інший набір блоків, а інший спосіб читати: та сама
-  // сторінка стає текстом із міркою рядка. Дослідження мають ще й рамку вище.
-  if (status === "ready" && templateKey === "article") {
-    return (
-      <div className="wb-article wb-article--page">
-        <div className="wb-article-body">{rendered}</div>
-      </div>
-    );
   }
 
   return rendered;
