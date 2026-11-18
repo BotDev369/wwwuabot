@@ -1,31 +1,29 @@
 /**
  * Дані й графіки: число, смуги, кільця й легенда.
  *
- * Назва блока — головна; число — другорядне, але кольором своєї серії. Колір
- * смуги, числа й підпису легенди збігається: це та сама серія.
+ * Назва блока — головна; число — другорядне, але кольором своєї серії.
  *
  * @module web-admin-dev/src/pages/style/DataSection
  */
 
 import type { ReactElement } from "react";
-import { KPI, LEGEND, RINGS, TRACKER_GROUPS } from "./demo-content";
+import demo from "./demo.json";
 
 export function DataSection(): ReactElement {
+  const { data } = demo;
   return (
     <section className="sc-section">
       <div className="sc-sect-head">
-        <h3 className="sc-sect-title">Дані й графіки</h3>
-        <span className="sc-sect-note">
-          кільце, смуги й число фарбуються серією, підписи — сірі
-        </span>
+        <h3 className="sc-sect-title">{data.title}</h3>
+        <span className="sc-sect-note">{data.note}</span>
       </div>
 
       <div className="sc-grid">
-        {KPI.map((item) => (
+        {data.kpi.map((item) => (
           <article className="sc-card sc-motion-rise" key={item.label}>
             <div className="sc-card-head">
               <h4 className="sc-card-title">{item.label}</h4>
-              <span className="wb-badge wb-badge-neutral">живе</span>
+              <span className="wb-badge wb-badge-neutral">{data.badge}</span>
             </div>
             <p className={`sc-role sc-size-number sc-gap-tight sc-tone-data-${item.series}`}>
               {item.value}
@@ -37,9 +35,9 @@ export function DataSection(): ReactElement {
 
       <div className="sc-grid">
         <article className="sc-card">
-          <h4 className="sc-card-title">Трекери за групами</h4>
+          <h4 className="sc-card-title">{data.groups.title}</h4>
           <div className="sc-bars">
-            {TRACKER_GROUPS.map((group) => (
+            {data.groups.rows.map((group) => (
               <div className={`sc-bar-row sc-series-${group.series}`} key={group.name}>
                 <span className="sc-bar-name sc-tone-ink">{group.name}</span>
                 <span className="sc-bar-track">
@@ -52,9 +50,9 @@ export function DataSection(): ReactElement {
         </article>
 
         <article className="sc-card">
-          <h4 className="sc-card-title">Розподіл</h4>
+          <h4 className="sc-card-title">{data.rings.title}</h4>
           <div className="sc-rings">
-            {RINGS.map((ring) => (
+            {data.rings.items.map((ring) => (
               <div className="sc-ring-item" key={ring.label}>
                 <span className={`sc-ring sc-series-${ring.series} sc-ring-p-${ring.percent}`} />
                 <span className="sc-ring-text">
@@ -65,7 +63,7 @@ export function DataSection(): ReactElement {
             ))}
           </div>
           <div className="sc-legend">
-            {LEGEND.map((item) => (
+            {data.legend.map((item) => (
               <span className={`sc-legend-item sc-series-${item.series}`} key={item.label}>
                 <span className="sc-dot" />
                 {item.label}

@@ -1,95 +1,95 @@
 /**
  * Форми: поле, вибір, область тексту, перемикач і дії.
  *
- * Смуга-підсумок над полями — теж роль (`panel-strip`), а не окрема розмітка:
- * тому вона виглядає так само, як смуги на інших екранах.
- *
  * @module web-admin-dev/src/pages/style/FormSection
  */
 
 import { useState, type ReactElement } from "react";
 import { SwitchRow } from "@wwwuabot/shared";
+import demo from "./demo.json";
+
+const BUTTONS = ["wb-btn-primary", "wb-btn-secondary", "wb-btn-ghost"] as const;
 
 export function FormSection(): ReactElement {
-  const [publicProfile, setPublicProfile] = useState(true);
-  const [alerts, setAlerts] = useState(false);
+  const { form } = demo;
+  const [switches, setSwitches] = useState<boolean[]>(() =>
+    form.switches.map((_, index) => index === 0),
+  );
+
+  const setSwitch = (index: number, next: boolean): void =>
+    setSwitches((prev) => prev.map((value, at) => (at === index ? next : value)));
 
   return (
     <section className="sc-section">
       <div className="sc-sect-head">
-        <h3 className="sc-sect-title">Форми</h3>
-        <span className="sc-sect-note">підпис згори, підказка знизу, стан — перемикачем</span>
+        <h3 className="sc-sect-title">{form.title}</h3>
+        <span className="sc-sect-note">{form.note}</span>
       </div>
 
       <div className="sc-card">
         <div className="sc-form">
           <div className="sc-field">
             <label className="sc-field-label" htmlFor="sc-name">
-              Назва сторінки
+              {form.name.label}
             </label>
-            <input id="sc-name" className="wb-input" defaultValue="Мій шлях" />
+            <input id="sc-name" className="wb-input" defaultValue={form.name.value} />
           </div>
           <div className="sc-field">
             <label className="sc-field-label" htmlFor="sc-slug">
-              Адреса
+              {form.slug.label}
             </label>
             <input
               id="sc-slug"
               className="wb-input wb-input-error"
-              defaultValue="мій шлях"
+              defaultValue={form.slug.value}
               readOnly
             />
-            <span className="sc-field-hint">Лише латиниця, цифри й дефіс</span>
+            <span className="sc-field-hint">{form.slug.hint}</span>
           </div>
           <div className="sc-field">
             <label className="sc-field-label" htmlFor="sc-kind">
-              Вид
+              {form.kind.label}
             </label>
-            <select id="sc-kind" className="wb-select" defaultValue="screen">
-              <option value="screen">Екран</option>
-              <option value="article">Стаття</option>
-              <option value="shop">Магазин</option>
+            <select id="sc-kind" className="wb-select" defaultValue={form.kind.options[0].value}>
+              {form.kind.options.map((option) => (
+                <option value={option.value} key={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
           <div className="sc-field">
             <label className="sc-field-label" htmlFor="sc-about">
-              Опис
+              {form.about.label}
             </label>
             <textarea
               id="sc-about"
               className="wb-textarea"
               rows={2}
-              defaultValue="Короткий опис того, що людина знайде на сторінці."
+              defaultValue={form.about.value}
             />
           </div>
         </div>
 
         <div className="sc-actions">
-          <button type="button" className="wb-btn wb-btn-primary">
-            Зберегти
-          </button>
-          <button type="button" className="wb-btn wb-btn-secondary">
-            Скасувати
-          </button>
-          <button type="button" className="wb-btn wb-btn-ghost">
-            Видалити
-          </button>
+          {form.actions.map((action, index) => (
+            <button type="button" className={`wb-btn ${BUTTONS[index]}`} key={action}>
+              {action}
+            </button>
+          ))}
         </div>
       </div>
 
       <div className="sc-card">
-        <SwitchRow
-          label="Публічний профіль"
-          hint="Вас видно іншим"
-          checked={publicProfile}
-          onToggle={setPublicProfile}
-        />
-        <SwitchRow
-          label="Сповіщення"
-          hint="Лише важливі події"
-          checked={alerts}
-          onToggle={setAlerts}
-        />
+        {form.switches.map((item, index) => (
+          <SwitchRow
+            key={item.label}
+            label={item.label}
+            hint={item.hint}
+            checked={switches[index] ?? false}
+            onToggle={(next) => setSwitch(index, next)}
+          />
+        ))}
       </div>
     </section>
   );

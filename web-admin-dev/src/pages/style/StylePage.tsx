@@ -2,12 +2,12 @@
  * Сторінка «Стиль» — демо-лендінг продукту.
  *
  * **Не перелік токенів і не галерея тем.** Сторінка показує сам вигляд: гасло,
- * каталог ролей, палітру, дані, таблицю, форми, стани й рух. Тему тут
- * перемикають одним перемикачем — світла / темна.
+ * каталог ролей, палітру, дані, таблицю, форми, стани й рух. Тему перемикають
+ * одним перемикачем — світла / темна.
  *
  * **Вигляд не описаний на сторінці.** Кожен блок бере роль із
- * `@wwwuabot/shared/ui/role-catalog`; тексти — у `demo-content.ts`. Тому нова
- * сторінка продукту не пише CSS: вона пише тексти й називає категорію.
+ * `@wwwuabot/shared/ui/role-catalog`, а слова — з `demo.json`: сторінка не
+ * тримає ні кольору, ні тексту в коді.
  *
  * @module web-admin-dev/src/pages/style/StylePage
  */
@@ -16,6 +16,7 @@ import type { ReactElement } from "react";
 import { ThemeButton } from "@wwwuabot/shared";
 import { PageTopbar } from "../../layout/PageTopbar";
 import { DataSection } from "./DataSection";
+import demo from "./demo.json";
 import { FormSection } from "./FormSection";
 import { MiscSection } from "./MiscSection";
 import { PaletteSection } from "./PaletteSection";
@@ -27,9 +28,9 @@ export function StylePage(): ReactElement {
   return (
     <>
       <PageTopbar>
-        <h1 className="wb-topbar-title">Стиль</h1>
+        <h1 className="wb-topbar-title">{demo.topbar.title}</h1>
         <div className="wb-topbar-right">
-          <span className="sc-demo-note">дві теми · каталог ролей · демо</span>
+          <span className="sc-demo-note">{demo.topbar.note}</span>
         </div>
       </PageTopbar>
 
@@ -38,10 +39,8 @@ export function StylePage(): ReactElement {
 
         <div className="sc-card sc-row">
           <div>
-            <h3 className="sc-card-title">Тема</h3>
-            <p className="sc-demo-note">
-              Тем рівно дві. Перемикач міняє палітру й памʼятає вибір на пристрої.
-            </p>
+            <h3 className="sc-card-title">{demo.theme.title}</h3>
+            <p className="sc-demo-note">{demo.theme.note}</p>
           </div>
           <ThemeButton />
         </div>

@@ -13,6 +13,7 @@ import {
   rolesIn,
   type StyleRole,
 } from "@wwwuabot/shared/ui/role-catalog";
+import demo from "./demo.json";
 
 function RoleCard({ role }: { role: StyleRole }): ReactElement {
   return (
@@ -34,10 +35,8 @@ export function RoleCatalogSection(): ReactElement {
   return (
     <section className="sc-section">
       <div className="sc-sect-head">
-        <h3 className="sc-sect-title">Каталог ролей</h3>
-        <span className="sc-sect-note">
-          колір, розмір, відступ, рух і радіус задає роль — не сторінка
-        </span>
+        <h3 className="sc-sect-title">{demo.catalog.title}</h3>
+        <span className="sc-sect-note">{demo.catalog.note}</span>
       </div>
       {ROLE_CATEGORIES.map((category) => (
         <div className="sc-section" key={category.id}>

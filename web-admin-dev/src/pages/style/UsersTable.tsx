@@ -2,46 +2,34 @@
  * Таблиця демо: 14 стовпців × 60 рядків.
  *
  * **Гортається сама.** Висота обмежена, тож сторінка їде далі, коли курсор
- * усередині таблиці; шапка й перший стовпець закріплені — видно, чий це рядок
- * і що в колонці, навіть після прокрутки вбік.
+ * усередині таблиці; шапка й перший стовпець закріплені.
  *
  * @module web-admin-dev/src/pages/style/UsersTable
  */
 
 import type { ReactElement } from "react";
-import { DEMO_USERS, USER_COLUMNS, USER_COLUMN_TONES } from "./demo-content";
-
-const STATUS_TONE: Record<string, string> = {
-  Активний: "wb-badge-green",
-  Запрошено: "wb-badge-yellow",
-  Заблоковано: "wb-badge-red",
-  Чернетка: "wb-badge-neutral",
-};
+import { COLUMN_TONES, DEMO_USERS } from "./demo-content";
+import demo from "./demo.json";
 
 export function UsersTable(): ReactElement {
+  const { table } = demo;
   return (
     <section className="sc-section">
       <div className="sc-sect-head">
-        <h3 className="sc-sect-title">Люди платформи</h3>
-        <span className="sc-sect-note">
-          14 стовпців · 60 рядків · шапка й перший стовпець закріплені
-        </span>
+        <h3 className="sc-sect-title">{table.title}</h3>
+        <span className="sc-sect-note">{table.note}</span>
       </div>
 
       <div className="sc-table-wrap">
         <table className="sc-table">
-          <caption className="sc-demo-note">
-            Дані вигадані: таблиця показує поведінку поверхні, а не базу.
-          </caption>
+          <caption className="sc-demo-note">{table.caption}</caption>
           <thead>
             <tr>
-              {USER_COLUMNS.map((column, index) => (
+              {table.columns.map((column, index) => (
                 <th
                   key={column}
                   scope="col"
-                  className={
-                    index === 0 ? "sc-table-pin" : `sc-col-${USER_COLUMN_TONES[index] ?? 1}`
-                  }
+                  className={index === 0 ? "sc-table-pin" : `sc-col-${COLUMN_TONES[index] ?? 1}`}
                 >
                   {column}
                 </th>
@@ -62,9 +50,7 @@ export function UsersTable(): ReactElement {
                 <td>{user.role}</td>
                 <td>{user.plan}</td>
                 <td>
-                  <span className={`wb-badge ${STATUS_TONE[user.status] ?? "wb-badge-neutral"}`}>
-                    {user.status}
-                  </span>
+                  <span className={`wb-badge ${user.statusTone}`}>{user.status}</span>
                 </td>
                 <td>{user.access}</td>
                 <td>{user.city}</td>
@@ -77,9 +63,9 @@ export function UsersTable(): ReactElement {
                   <button
                     type="button"
                     className="wb-btn wb-btn-ghost wb-btn-sm"
-                    aria-label={`Дії: ${user.lead}`}
+                    aria-label={`${table.action}: ${user.lead}`}
                   >
-                    Відкрити
+                    {table.action}
                   </button>
                 </td>
               </tr>
