@@ -38,7 +38,15 @@
 
 import { statSync } from "node:fs";
 import { dirname, join, normalize } from "node:path";
-import { ROOT, read, readLines, repoPathExists, walk, WORKSPACES } from "./lib/files.mjs";
+import {
+  projectFiles,
+  ROOT,
+  read,
+  readLines,
+  repoPathExists,
+  walk,
+  WORKSPACES,
+} from "./lib/files.mjs";
 import { API_DOC, renderApiDoc } from "./lib/api-routes.mjs";
 
 /**
@@ -80,7 +88,9 @@ const GENERATED = { [API_DOC]: renderApiDoc };
 const errors = [];
 const warnings = [];
 
-const docs = walk(".", (p) => p.endsWith(".md"));
+/** Тільки те, що бачить Git: `artifacts/` — локальні знімки, яких у CI немає. */
+const visible = new Set(projectFiles());
+const docs = walk(".", (p) => p.endsWith(".md") && visible.has(p));
 
 /**
  * **`content/` — контент, а не документація.** Це імпортований пакет (markdown
@@ -242,7 +252,7 @@ const DOC_MENTION_RE = /docs\/[A-Za-z0-9_./-]+\.md/g;
 const DOC_REF_LANG = /\.(?:[cm]?[jt]sx?|css|toml|sql)$/;
 const isTestFile = (p) => /\.(?:test|spec)\.[cm]?[jt]sx?$/.test(p);
 
-for (const file of walk(".", (p) => DOC_REF_LANG.test(p) && !isTestFile(p))) {
+for (const file of walk(".", (p) => DOC_REF_LANG.test(p) && !isTestFile(p) && visible.has(p))) {
   readLines(file).forEach((line, i) => {
     for (const m of line.matchAll(DOC_MENTION_RE)) {
       if (!statSafeAbs(join(ROOT, m[0]))) {

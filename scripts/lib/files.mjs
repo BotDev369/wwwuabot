@@ -10,6 +10,7 @@
  * @module scripts/lib/files
  */
 
+import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -111,10 +112,33 @@ export function repoPathExists(path) {
   );
 }
 
+/**
+ * Файли, які бачить Git: відстежувані й нові, але **не ігноровані**. Гейт, що
+ * обходить теку напряму, бачить і `artifacts/` — локальні знімки й звіти, яких
+ * у CI немає, тож той самий гейт стає червоним лише на машині.
+ */
+let projectFilesCache = null;
+export function projectFiles() {
+  if (!projectFilesCache) {
+    projectFilesCache = execFileSync(
+      "git",
+      ["ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+      {
+        cwd: ROOT,
+        encoding: "utf8",
+        maxBuffer: 64 * 1024 * 1024,
+      },
+    )
+      .split("\0")
+      .filter(Boolean);
+  }
+  return projectFilesCache;
+}
+
 /** Усі файли чекауту — один раз, далі з кешу: обхід дорогий. */
 let repoFilesCache = null;
 function repoFiles() {
-  if (!repoFilesCache) repoFilesCache = [...walk(".", () => true), ...walk(".github", () => true)];
+  if (!repoFilesCache) repoFilesCache = projectFiles();
   return repoFilesCache;
 }
 
