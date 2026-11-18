@@ -25,11 +25,9 @@ import { describe, expect, it } from "vitest";
 import { PagesService } from "./pages.service";
 import type { PageRow } from "./pages-rows";
 import type { Env } from "../shared/types";
-import type { PageDraftInput } from "@wwwuabot/shared/pages";
 
 const OWNER = 100;
 const ADMIN = 200;
-const STRANGER = 300;
 
 /** Колонки `platform_pages`, щоб `ensureTables` не вигадував `ALTER` на кожен прогін. */
 const SCENARIO_COLUMNS = [
@@ -169,24 +167,6 @@ function makeEnv(options: {
   };
 
   return { env: { DB: db, BOT_TOKEN: "t" } as unknown as Env, statements };
-}
-
-function draft(overrides: Partial<PageDraftInput> = {}): PageDraftInput {
-  return {
-    address: "olena",
-    template: "card",
-    values: { title: "Олена", tagline: "Роблю сайти" },
-    isPublic: true,
-    admins: null,
-    ...overrides,
-  } as PageDraftInput;
-}
-
-/** Чи змінив сервіс рядок сторінок (DDL і прагми не рахуємо). */
-function wrotePages(statements: Captured[]): boolean {
-  return statements.some((s) =>
-    /^(INSERT INTO|UPDATE|DELETE FROM)\s+platform_pages\b/i.test(s.sql.trimStart()),
-  );
 }
 
 function sqlOf(statements: Captured[], verb: RegExp): Captured | undefined {
