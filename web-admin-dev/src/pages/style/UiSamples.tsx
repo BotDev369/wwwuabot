@@ -8,7 +8,7 @@
  */
 
 import type { ReactElement, ReactNode } from "react";
-import { Icon } from "@wwwuabot/shared";
+import { Icon, type IconName } from "@wwwuabot/shared";
 import {
   CloseButton,
   SampleCard,
@@ -304,6 +304,10 @@ export function UiSample({
           </button>
         </div>
       );
+      break;
+
+    case "icon":
+      content = <Icon name={(element.icon ?? "info") as IconName} size={20} />;
       break;
 
     case "text-xs":

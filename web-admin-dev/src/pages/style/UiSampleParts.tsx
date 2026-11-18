@@ -18,7 +18,11 @@ export type InventoryElement = {
   sampleText: string;
   note: string;
   usage: { platform: number; admin: number; ui: number; shared: number };
-  verdict: "both" | "one" | "shared" | "unused";
+  verdict: "both" | "builder" | "one" | "shared" | "unused";
+  /** Знак: його ім'я з `IconName`; зразок малює `<Icon name />`. */
+  icon?: string;
+  /** Не прямий клас у розмітці, а рендер через механізм (Page Builder). */
+  via?: string;
 };
 
 export type InventoryCopy = {

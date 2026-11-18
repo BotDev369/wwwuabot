@@ -22,6 +22,9 @@ export const PAGE = {
   admin: "адмінка",
   sharedCode: "спільний код",
   sampleBody: "Так виглядає кирпичик у продукті.",
+  iconGroup: "Знаки",
+  iconGroupNote:
+    'Один набір знаків на обидві оболонки: `Icon` із спільного коду. Присуд — у скількох файлах ужито `name="…"`.',
   emptyTitle: "Тут поки нічого немає",
   sampleValue: "Значення",
   sampleOption: "Другий варіант",
@@ -40,6 +43,7 @@ export const PAGE = {
 
 export const VERDICTS = {
   both: { label: "шаблон в обох оболонках", tone: "wb-badge-green" },
+  builder: { label: "шаблон через Page Builder", tone: "wb-badge-green" },
   one: { label: "лише одна оболонка", tone: "wb-badge-yellow" },
   shared: { label: "лише в спільному коді", tone: "wb-badge-neutral" },
   unused: { label: "не вживається", tone: "wb-badge-red" },
@@ -506,7 +510,8 @@ export const GROUPS = [
         className: "wb-block-hero",
         sample: "block-hero",
         sampleText: "Банер",
-        note: "Заголовок, підпис і дії сторінки.",
+        via: "page-builder",
+        note: "Блок Page Builder: заголовок, підпис і дії сторінки.",
       },
       {
         id: "block-section",
@@ -514,7 +519,8 @@ export const GROUPS = [
         className: "wb-block-section",
         sample: "block-section",
         sampleText: "Розділ",
-        note: "Згорнутий розділ довгої сторінки.",
+        via: "page-builder",
+        note: "Блок Page Builder: згорнутий розділ довгої сторінки.",
       },
     ],
   },

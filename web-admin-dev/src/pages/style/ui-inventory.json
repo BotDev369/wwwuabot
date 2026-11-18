@@ -9,6 +9,8 @@
     "admin": "адмінка",
     "sharedCode": "спільний код",
     "sampleBody": "Так виглядає кирпичик у продукті.",
+    "iconGroup": "Знаки",
+    "iconGroupNote": "Один набір знаків на обидві оболонки: `Icon` із спільного коду. Присуд — у скількох файлах ужито `name=\"…\"`.",
     "emptyTitle": "Тут поки нічого немає",
     "sampleValue": "Значення",
     "sampleOption": "Другий варіант",
@@ -29,6 +31,10 @@
       "label": "шаблон в обох оболонках",
       "tone": "wb-badge-green"
     },
+    "builder": {
+      "label": "шаблон через Page Builder",
+      "tone": "wb-badge-green"
+    },
     "one": {
       "label": "лише одна оболонка",
       "tone": "wb-badge-yellow"
@@ -43,10 +49,11 @@
     }
   },
   "summary": {
-    "total": 52,
-    "both": 21,
-    "one": 17,
-    "shared": 14,
+    "total": 177,
+    "both": 49,
+    "one": 78,
+    "shared": 48,
+    "builder": 2,
     "unused": 0
   },
   "groups": [
@@ -860,14 +867,15 @@
           "className": "wb-block-hero",
           "sample": "block-hero",
           "sampleText": "Банер",
-          "note": "Заголовок, підпис і дії сторінки.",
+          "note": "Блок Page Builder: заголовок, підпис і дії сторінки.",
           "usage": {
             "platform": 0,
             "admin": 0,
             "ui": 1,
             "shared": 0
           },
-          "verdict": "shared"
+          "verdict": "builder",
+          "via": "page-builder"
         },
         {
           "id": "block-section",
@@ -875,14 +883,2022 @@
           "className": "wb-block-section",
           "sample": "block-section",
           "sampleText": "Розділ",
-          "note": "Згорнутий розділ довгої сторінки.",
+          "note": "Блок Page Builder: згорнутий розділ довгої сторінки.",
           "usage": {
             "platform": 0,
             "admin": 0,
             "ui": 1,
             "shared": 0
           },
+          "verdict": "builder",
+          "via": "page-builder"
+        }
+      ]
+    },
+    {
+      "id": "icons",
+      "label": "Знаки",
+      "note": "Один набір знаків на обидві оболонки: `Icon` із спільного коду. Присуд — у скількох файлах ужито `name=\"…\"`.",
+      "elements": [
+        {
+          "id": "icon-home",
+          "name": "home",
+          "className": "Icon name=\"home\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "home",
+          "usage": {
+            "platform": 0,
+            "admin": 1,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-users",
+          "name": "users",
+          "className": "Icon name=\"users\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "users",
+          "usage": {
+            "platform": 3,
+            "admin": 6,
+            "ui": 1,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-bot",
+          "name": "bot",
+          "className": "Icon name=\"bot\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "bot",
+          "usage": {
+            "platform": 0,
+            "admin": 4,
+            "ui": 1,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-my-dates",
+          "name": "my-dates",
+          "className": "Icon name=\"my-dates\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "my-dates",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-growth",
+          "name": "growth",
+          "className": "Icon name=\"growth\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "growth",
+          "usage": {
+            "platform": 1,
+            "admin": 1,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-compare",
+          "name": "compare",
+          "className": "Icon name=\"compare\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "compare",
+          "usage": {
+            "platform": 0,
+            "admin": 1,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-settings",
+          "name": "settings",
+          "className": "Icon name=\"settings\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "settings",
+          "usage": {
+            "platform": 0,
+            "admin": 2,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-logout",
+          "name": "logout",
+          "className": "Icon name=\"logout\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "logout",
+          "usage": {
+            "platform": 0,
+            "admin": 2,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-sidebar-toggle",
+          "name": "sidebar-toggle",
+          "className": "Icon name=\"sidebar-toggle\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "sidebar-toggle",
+          "usage": {
+            "platform": 0,
+            "admin": 1,
+            "ui": 1,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-announce",
+          "name": "announce",
+          "className": "Icon name=\"announce\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "announce",
+          "usage": {
+            "platform": 2,
+            "admin": 1,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-palette",
+          "name": "palette",
+          "className": "Icon name=\"palette\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "palette",
+          "usage": {
+            "platform": 0,
+            "admin": 1,
+            "ui": 1,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-game",
+          "name": "game",
+          "className": "Icon name=\"game\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "game",
+          "usage": {
+            "platform": 2,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-pin",
+          "name": "pin",
+          "className": "Icon name=\"pin\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "pin",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-contact",
+          "name": "contact",
+          "className": "Icon name=\"contact\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "contact",
+          "usage": {
+            "platform": 4,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-page",
+          "name": "page",
+          "className": "Icon name=\"page\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "page",
+          "usage": {
+            "platform": 7,
+            "admin": 0,
+            "ui": 4,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-folder",
+          "name": "folder",
+          "className": "Icon name=\"folder\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "folder",
+          "usage": {
+            "platform": 4,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-question",
+          "name": "question",
+          "className": "Icon name=\"question\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "question",
+          "usage": {
+            "platform": 2,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-crown",
+          "name": "crown",
+          "className": "Icon name=\"crown\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "crown",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
           "verdict": "shared"
+        },
+        {
+          "id": "icon-eye",
+          "name": "eye",
+          "className": "Icon name=\"eye\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "eye",
+          "usage": {
+            "platform": 1,
+            "admin": 1,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-eye-off",
+          "name": "eye-off",
+          "className": "Icon name=\"eye-off\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "eye-off",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-edit",
+          "name": "edit",
+          "className": "Icon name=\"edit\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "edit",
+          "usage": {
+            "platform": 6,
+            "admin": 4,
+            "ui": 5,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-mail",
+          "name": "mail",
+          "className": "Icon name=\"mail\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "mail",
+          "usage": {
+            "platform": 0,
+            "admin": 2,
+            "ui": 1,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-lock",
+          "name": "lock",
+          "className": "Icon name=\"lock\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "lock",
+          "usage": {
+            "platform": 2,
+            "admin": 2,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-unlock",
+          "name": "unlock",
+          "className": "Icon name=\"unlock\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "unlock",
+          "usage": {
+            "platform": 0,
+            "admin": 2,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-trash",
+          "name": "trash",
+          "className": "Icon name=\"trash\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "trash",
+          "usage": {
+            "platform": 11,
+            "admin": 4,
+            "ui": 4,
+            "shared": 3
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-eraser",
+          "name": "eraser",
+          "className": "Icon name=\"eraser\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "eraser",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 1,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-clipboard",
+          "name": "clipboard",
+          "className": "Icon name=\"clipboard\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "clipboard",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 1,
+            "shared": 1
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-save",
+          "name": "save",
+          "className": "Icon name=\"save\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "save",
+          "usage": {
+            "platform": 2,
+            "admin": 0,
+            "ui": 5,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-copy",
+          "name": "copy",
+          "className": "Icon name=\"copy\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "copy",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 2,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-share",
+          "name": "share",
+          "className": "Icon name=\"share\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "share",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 1,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-check",
+          "name": "check",
+          "className": "Icon name=\"check\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "check",
+          "usage": {
+            "platform": 12,
+            "admin": 1,
+            "ui": 4,
+            "shared": 2
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-close",
+          "name": "close",
+          "className": "Icon name=\"close\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "close",
+          "usage": {
+            "platform": 2,
+            "admin": 12,
+            "ui": 13,
+            "shared": 3
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-refresh",
+          "name": "refresh",
+          "className": "Icon name=\"refresh\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "refresh",
+          "usage": {
+            "platform": 11,
+            "admin": 2,
+            "ui": 1,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-upload",
+          "name": "upload",
+          "className": "Icon name=\"upload\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "upload",
+          "usage": {
+            "platform": 1,
+            "admin": 1,
+            "ui": 1,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-link",
+          "name": "link",
+          "className": "Icon name=\"link\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "link",
+          "usage": {
+            "platform": 0,
+            "admin": 2,
+            "ui": 1,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-external-link",
+          "name": "external-link",
+          "className": "Icon name=\"external-link\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "external-link",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-plus",
+          "name": "plus",
+          "className": "Icon name=\"plus\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "plus",
+          "usage": {
+            "platform": 13,
+            "admin": 1,
+            "ui": 2,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-minus",
+          "name": "minus",
+          "className": "Icon name=\"minus\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "minus",
+          "usage": {
+            "platform": 5,
+            "admin": 0,
+            "ui": 5,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-search",
+          "name": "search",
+          "className": "Icon name=\"search\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "search",
+          "usage": {
+            "platform": 5,
+            "admin": 2,
+            "ui": 2,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-filter",
+          "name": "filter",
+          "className": "Icon name=\"filter\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "filter",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 1,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-sort",
+          "name": "sort",
+          "className": "Icon name=\"sort\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "sort",
+          "usage": {
+            "platform": 3,
+            "admin": 0,
+            "ui": 3,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-menu",
+          "name": "menu",
+          "className": "Icon name=\"menu\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "menu",
+          "usage": {
+            "platform": 0,
+            "admin": 1,
+            "ui": 2,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-more",
+          "name": "more",
+          "className": "Icon name=\"more\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "more",
+          "usage": {
+            "platform": 2,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-expand",
+          "name": "expand",
+          "className": "Icon name=\"expand\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "expand",
+          "usage": {
+            "platform": 1,
+            "admin": 2,
+            "ui": 1,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-collapse",
+          "name": "collapse",
+          "className": "Icon name=\"collapse\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "collapse",
+          "usage": {
+            "platform": 1,
+            "admin": 1,
+            "ui": 1,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-sparkles",
+          "name": "sparkles",
+          "className": "Icon name=\"sparkles\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "sparkles",
+          "usage": {
+            "platform": 2,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-construction",
+          "name": "construction",
+          "className": "Icon name=\"construction\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "construction",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 1,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-wrench",
+          "name": "wrench",
+          "className": "Icon name=\"wrench\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "wrench",
+          "usage": {
+            "platform": 0,
+            "admin": 1,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-warning",
+          "name": "warning",
+          "className": "Icon name=\"warning\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "warning",
+          "usage": {
+            "platform": 17,
+            "admin": 1,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-info",
+          "name": "info",
+          "className": "Icon name=\"info\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "info",
+          "usage": {
+            "platform": 4,
+            "admin": 1,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-arrow-up",
+          "name": "arrow-up",
+          "className": "Icon name=\"arrow-up\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "arrow-up",
+          "usage": {
+            "platform": 4,
+            "admin": 0,
+            "ui": 2,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-arrow-down",
+          "name": "arrow-down",
+          "className": "Icon name=\"arrow-down\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "arrow-down",
+          "usage": {
+            "platform": 4,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-arrow-left",
+          "name": "arrow-left",
+          "className": "Icon name=\"arrow-left\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "arrow-left",
+          "usage": {
+            "platform": 9,
+            "admin": 1,
+            "ui": 2,
+            "shared": 2
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-arrow-right",
+          "name": "arrow-right",
+          "className": "Icon name=\"arrow-right\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "arrow-right",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 1,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-chevron-down",
+          "name": "chevron-down",
+          "className": "Icon name=\"chevron-down\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "chevron-down",
+          "usage": {
+            "platform": 10,
+            "admin": 2,
+            "ui": 8,
+            "shared": 2
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-chevron-right",
+          "name": "chevron-right",
+          "className": "Icon name=\"chevron-right\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "chevron-right",
+          "usage": {
+            "platform": 11,
+            "admin": 3,
+            "ui": 3,
+            "shared": 3
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-chevron-up",
+          "name": "chevron-up",
+          "className": "Icon name=\"chevron-up\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "chevron-up",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 7,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-image",
+          "name": "image",
+          "className": "Icon name=\"image\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "image",
+          "usage": {
+            "platform": 3,
+            "admin": 0,
+            "ui": 3,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-camera",
+          "name": "camera",
+          "className": "Icon name=\"camera\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "camera",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-video",
+          "name": "video",
+          "className": "Icon name=\"video\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "video",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 2,
+            "shared": 1
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-text",
+          "name": "text",
+          "className": "Icon name=\"text\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "text",
+          "usage": {
+            "platform": 4,
+            "admin": 0,
+            "ui": 4,
+            "shared": 5
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-list",
+          "name": "list",
+          "className": "Icon name=\"list\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "list",
+          "usage": {
+            "platform": 2,
+            "admin": 0,
+            "ui": 3,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-divider",
+          "name": "divider",
+          "className": "Icon name=\"divider\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "divider",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 1,
+            "shared": 3
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-grid",
+          "name": "grid",
+          "className": "Icon name=\"grid\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "grid",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 1,
+            "shared": 3
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-blocks",
+          "name": "blocks",
+          "className": "Icon name=\"blocks\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "blocks",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 4,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-layout",
+          "name": "layout",
+          "className": "Icon name=\"layout\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "layout",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 1,
+            "shared": 4
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-card",
+          "name": "card",
+          "className": "Icon name=\"card\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "card",
+          "usage": {
+            "platform": 6,
+            "admin": 0,
+            "ui": 2,
+            "shared": 3
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-table",
+          "name": "table",
+          "className": "Icon name=\"table\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "table",
+          "usage": {
+            "platform": 0,
+            "admin": 1,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-quote",
+          "name": "quote",
+          "className": "Icon name=\"quote\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "quote",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-code",
+          "name": "code",
+          "className": "Icon name=\"code\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "code",
+          "usage": {
+            "platform": 0,
+            "admin": 1,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-tag",
+          "name": "tag",
+          "className": "Icon name=\"tag\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "tag",
+          "usage": {
+            "platform": 3,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-badge",
+          "name": "badge",
+          "className": "Icon name=\"badge\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "badge",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-star",
+          "name": "star",
+          "className": "Icon name=\"star\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "star",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-heart",
+          "name": "heart",
+          "className": "Icon name=\"heart\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "heart",
+          "usage": {
+            "platform": 2,
+            "admin": 0,
+            "ui": 2,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-heart-solid",
+          "name": "heart-solid",
+          "className": "Icon name=\"heart-solid\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "heart-solid",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 1,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-thumbs-up",
+          "name": "thumbs-up",
+          "className": "Icon name=\"thumbs-up\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "thumbs-up",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-bar-chart",
+          "name": "bar-chart",
+          "className": "Icon name=\"bar-chart\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "bar-chart",
+          "usage": {
+            "platform": 3,
+            "admin": 2,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-progress",
+          "name": "progress",
+          "className": "Icon name=\"progress\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "progress",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 3
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-footsteps",
+          "name": "footsteps",
+          "className": "Icon name=\"footsteps\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "footsteps",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-droplet",
+          "name": "droplet",
+          "className": "Icon name=\"droplet\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "droplet",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-flame",
+          "name": "flame",
+          "className": "Icon name=\"flame\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "flame",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-book",
+          "name": "book",
+          "className": "Icon name=\"book\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "book",
+          "usage": {
+            "platform": 2,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-wallet",
+          "name": "wallet",
+          "className": "Icon name=\"wallet\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "wallet",
+          "usage": {
+            "platform": 0,
+            "admin": 1,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-thermometer",
+          "name": "thermometer",
+          "className": "Icon name=\"thermometer\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "thermometer",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-lotus",
+          "name": "lotus",
+          "className": "Icon name=\"lotus\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "lotus",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-percent",
+          "name": "percent",
+          "className": "Icon name=\"percent\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "percent",
+          "usage": {
+            "platform": 1,
+            "admin": 1,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-hash",
+          "name": "hash",
+          "className": "Icon name=\"hash\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "hash",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 2,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-run",
+          "name": "run",
+          "className": "Icon name=\"run\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "run",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-bike",
+          "name": "bike",
+          "className": "Icon name=\"bike\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "bike",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-pulse",
+          "name": "pulse",
+          "className": "Icon name=\"pulse\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "pulse",
+          "usage": {
+            "platform": 0,
+            "admin": 3,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-flask",
+          "name": "flask",
+          "className": "Icon name=\"flask\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "flask",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-plate",
+          "name": "plate",
+          "className": "Icon name=\"plate\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "plate",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-cup",
+          "name": "cup",
+          "className": "Icon name=\"cup\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "cup",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-mobile",
+          "name": "mobile",
+          "className": "Icon name=\"mobile\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "mobile",
+          "usage": {
+            "platform": 0,
+            "admin": 2,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-cigarette",
+          "name": "cigarette",
+          "className": "Icon name=\"cigarette\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "cigarette",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-glass",
+          "name": "glass",
+          "className": "Icon name=\"glass\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "glass",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-pill",
+          "name": "pill",
+          "className": "Icon name=\"pill\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "pill",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-jar",
+          "name": "jar",
+          "className": "Icon name=\"jar\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "jar",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-cap",
+          "name": "cap",
+          "className": "Icon name=\"cap\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "cap",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-hryvnia",
+          "name": "hryvnia",
+          "className": "Icon name=\"hryvnia\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "hryvnia",
+          "usage": {
+            "platform": 0,
+            "admin": 1,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-message-square",
+          "name": "message-square",
+          "className": "Icon name=\"message-square\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "message-square",
+          "usage": {
+            "platform": 4,
+            "admin": 0,
+            "ui": 1,
+            "shared": 3
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-layers",
+          "name": "layers",
+          "className": "Icon name=\"layers\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "layers",
+          "usage": {
+            "platform": 1,
+            "admin": 1,
+            "ui": 3,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-calendar",
+          "name": "calendar",
+          "className": "Icon name=\"calendar\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "calendar",
+          "usage": {
+            "platform": 2,
+            "admin": 1,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-clock",
+          "name": "clock",
+          "className": "Icon name=\"clock\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "clock",
+          "usage": {
+            "platform": 0,
+            "admin": 1,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-globe",
+          "name": "globe",
+          "className": "Icon name=\"globe\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "globe",
+          "usage": {
+            "platform": 1,
+            "admin": 1,
+            "ui": 1,
+            "shared": 3
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-sun",
+          "name": "sun",
+          "className": "Icon name=\"sun\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "sun",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 2,
+            "shared": 3
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-moon",
+          "name": "moon",
+          "className": "Icon name=\"moon\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "moon",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 2,
+            "shared": 3
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-tabs",
+          "name": "tabs",
+          "className": "Icon name=\"tabs\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "tabs",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 1,
+            "shared": 1
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-accordion",
+          "name": "accordion",
+          "className": "Icon name=\"accordion\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "accordion",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-spacer",
+          "name": "spacer",
+          "className": "Icon name=\"spacer\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "spacer",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-hero",
+          "name": "hero",
+          "className": "Icon name=\"hero\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "hero",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-select",
+          "name": "select",
+          "className": "Icon name=\"select\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "select",
+          "usage": {
+            "platform": 1,
+            "admin": 1,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-field",
+          "name": "field",
+          "className": "Icon name=\"field\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "field",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-textarea",
+          "name": "textarea",
+          "className": "Icon name=\"textarea\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "textarea",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-checklist",
+          "name": "checklist",
+          "className": "Icon name=\"checklist\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "checklist",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-buttons",
+          "name": "buttons",
+          "className": "Icon name=\"buttons\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "buttons",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-mark-x",
+          "name": "mark-x",
+          "className": "Icon name=\"mark-x\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "mark-x",
+          "usage": {
+            "platform": 2,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-mark-o",
+          "name": "mark-o",
+          "className": "Icon name=\"mark-o\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "mark-o",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-rock",
+          "name": "rock",
+          "className": "Icon name=\"rock\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "rock",
+          "usage": {
+            "platform": 2,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-scissors",
+          "name": "scissors",
+          "className": "Icon name=\"scissors\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "scissors",
+          "usage": {
+            "platform": 1,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-paper",
+          "name": "paper",
+          "className": "Icon name=\"paper\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "paper",
+          "usage": {
+            "platform": 1,
+            "admin": 1,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-user-solid",
+          "name": "user-solid",
+          "className": "Icon name=\"user-solid\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "user-solid",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 2
+          },
+          "verdict": "shared"
+        },
+        {
+          "id": "icon-user",
+          "name": "user",
+          "className": "Icon name=\"user\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "user",
+          "usage": {
+            "platform": 1,
+            "admin": 5,
+            "ui": 1,
+            "shared": 1
+          },
+          "verdict": "both"
+        },
+        {
+          "id": "icon-cart",
+          "name": "cart",
+          "className": "Icon name=\"cart\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "cart",
+          "usage": {
+            "platform": 3,
+            "admin": 0,
+            "ui": 0,
+            "shared": 1
+          },
+          "verdict": "one"
+        },
+        {
+          "id": "icon-shop",
+          "name": "shop",
+          "className": "Icon name=\"shop\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "",
+          "icon": "shop",
+          "usage": {
+            "platform": 8,
+            "admin": 0,
+            "ui": 0,
+            "shared": 4
+          },
+          "verdict": "one"
         }
       ]
     }

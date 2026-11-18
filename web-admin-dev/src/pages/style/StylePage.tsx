@@ -13,7 +13,14 @@ import inventory from "./ui-inventory.json";
 type Inventory = {
   page: InventoryCopy & { title: string; intro: string };
   verdicts: Record<InventoryElement["verdict"], { label: string; tone: string }>;
-  summary: { total: number; both: number; one: number; shared: number; unused: number };
+  summary: {
+    total: number;
+    both: number;
+    builder: number;
+    one: number;
+    shared: number;
+    unused: number;
+  };
   groups: {
     id: string;
     label: string;
@@ -67,6 +74,9 @@ export function StylePage(): ReactElement {
               <span className="wb-badge wb-badge-green">
                 {verdicts.both.label} {summary.both}
               </span>
+              <span className="wb-badge wb-badge-green">
+                {verdicts.builder.label} {summary.builder}
+              </span>
               <span className="wb-badge wb-badge-yellow">
                 {verdicts.one.label} {summary.one}
               </span>
@@ -94,8 +104,12 @@ export function StylePage(): ReactElement {
                   <UiSample element={element} copy={page} />
                   <div className="ui-meta">
                     <span className="ui-name">{element.name}</span>
-                    <code className="ui-class">.{element.className}</code>
-                    <span className="wb-text-sm wb-text-muted">{element.note}</span>
+                    <code className="ui-class">
+                      {element.sample === "icon" ? element.className : `.${element.className}`}
+                    </code>
+                    {element.note ? (
+                      <span className="wb-text-sm wb-text-muted">{element.note}</span>
+                    ) : null}
                   </div>
                   {usageChips(element, page)}
                 </div>

@@ -36,8 +36,14 @@ describe("сторінка «Єдиний UI»", () => {
 
     expect(document.querySelectorAll(".ui-row")).toHaveLength(elements.length);
     expect(document.querySelectorAll(".ui-sample")).toHaveLength(elements.length);
+
+    /* Підписи збираємо з DOM, а не шукаємо кожен окремо: 177 запитів по живій
+       сторінці не вкладаються в ліміт тесту. */
+    const labels = [...document.querySelectorAll(".ui-class")].map((node) => node.textContent);
+    expect(labels).toHaveLength(elements.length);
     for (const element of elements) {
-      expect(screen.getByText(`.${element.className}`)).toBeTruthy();
+      const label = element.sample === "icon" ? element.className : `.${element.className}`;
+      expect(labels).toContain(label);
     }
   });
 

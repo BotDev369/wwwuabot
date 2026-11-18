@@ -59,6 +59,25 @@ function verdictOf(usage) {
   return "unused";
 }
 
+/* Знаки: імена — з єдиного списку `ICON_NAMES` (тип `IconName`), ужиток —
+   скільки файлів кожної частини звуть `name="…"`. */
+const ICONS = [
+  ...read("packages/shared/src/components/icon-names.ts").matchAll(/"([a-z0-9-]+)",/g),
+].map(([, name]) => name);
+
+function iconUsage(icon) {
+  /* Той самий погляд, що в `icons.test.ts`: знак ужито, якщо файл тримає набір
+     (`<Icon>`, `IconName`, мапа `icons`) і згадує ім'я. */
+  const pattern = new RegExp(`["'\`]${escape(icon)}["'\`]`);
+  const usage = {};
+  for (const [key, files] of Object.entries(FILES)) {
+    usage[key] = files.filter(
+      (text) => /<Icon\b|IconName|\bicons\b/.test(text) && pattern.test(text),
+    ).length;
+  }
+  return usage;
+}
+
 function build() {
   const version = JSON.parse(read("packages/shared/src/styles/catalog.json")).version;
   const groups = GROUPS.map((group) => ({
@@ -75,16 +94,37 @@ function build() {
         sampleText: element.sampleText,
         note: element.note,
         usage,
-        verdict: verdictOf(usage),
+        verdict: element.via === "page-builder" ? "builder" : verdictOf(usage),
+        ...(element.via ? { via: element.via } : {}),
       };
     }),
   }));
+  groups.push({
+    id: "icons",
+    label: PAGE.iconGroup,
+    note: PAGE.iconGroupNote,
+    elements: ICONS.map((icon) => {
+      const usage = iconUsage(icon);
+      return {
+        id: `icon-${icon}`,
+        name: icon,
+        className: `Icon name="${icon}"`,
+        sample: "icon",
+        sampleText: "",
+        note: "",
+        icon,
+        usage,
+        verdict: verdictOf(usage),
+      };
+    }),
+  });
   const all = groups.flatMap((group) => group.elements);
   const summary = {
     total: all.length,
     both: all.filter((element) => element.verdict === "both").length,
     one: all.filter((element) => element.verdict === "one").length,
     shared: all.filter((element) => element.verdict === "shared").length,
+    builder: all.filter((element) => element.verdict === "builder").length,
     unused: all.filter((element) => element.verdict === "unused").length,
   };
   return { version, page: PAGE, verdicts: VERDICTS, summary, groups };
