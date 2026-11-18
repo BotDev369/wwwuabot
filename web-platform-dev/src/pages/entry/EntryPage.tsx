@@ -40,6 +40,14 @@ export function EntryPage(): ReactElement {
 
   return (
     <main className="wb-showcase">
+      <div className="wb-showcase-blob wb-showcase-blob-a" aria-hidden="true" />
+      <div className="wb-showcase-blob wb-showcase-blob-b" aria-hidden="true" />
+      <svg className="wb-showcase-watermark" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="58" r="28" fill="#ffffff" />
+        <path d="M6 80h88" stroke="#ffffff" strokeWidth="1.3" />
+        <path d="M14 72h72" stroke="#ffffff" strokeWidth="1" opacity="0.7" />
+      </svg>
+
       <div className="wb-showcase-top">
         <svg className="wb-showcase-mark" viewBox="0 0 64 64" aria-hidden="true">
           <circle cx="32" cy="32" r="30" fill="#ffffff" opacity="0.96" />
@@ -63,7 +71,14 @@ export function EntryPage(): ReactElement {
 
       <div className="wb-showcase-hero">
         <p className="wb-showcase-cap">Вхід за запрошенням</p>
-        <h1 className="wb-showcase-title">Ділова платформа для Своїх</h1>
+        {/* Три рядки — як у макеті: перенос задає автор, а не ширина екрана. */}
+        <h1 className="wb-showcase-title" aria-label="Ділова платформа для Своїх">
+          Ділова
+          <br />
+          платформа
+          <br />
+          для Своїх
+        </h1>
         <p className="wb-showcase-sub">
           Своє коло. Свої справи. Своя мова.
           <br />

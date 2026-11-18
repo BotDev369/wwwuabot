@@ -1,5 +1,5 @@
 {
-  "version": "46f76f8",
+  "version": "696e120",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -209,7 +209,7 @@
     {
       "file": "showcase.css",
       "tokens": 0,
-      "classes": 20
+      "classes": 24
     },
     {
       "file": "subbar.css",
@@ -228,12 +228,12 @@
     },
     {
       "file": "themes.css",
-      "tokens": 75,
+      "tokens": 77,
       "classes": 0
     },
     {
       "file": "tokens.css",
-      "tokens": 202,
+      "tokens": 206,
       "classes": 0
     },
     {
@@ -588,6 +588,14 @@
       "paletteDark": ""
     },
     {
+      "name": "--display-size-hero",
+      "section": "Typography",
+      "light": "2.25rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
       "name": "--display-tracking",
       "section": "Typography",
       "light": "-0.045em",
@@ -704,6 +712,14 @@
       "section": "Поле вводу",
       "light": "#ffffff",
       "dark": "#3a3358",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--field-line",
+      "section": "Світанок: світло екрана",
+      "light": "rgba(120, 105, 160, 0.2)",
+      "dark": "rgba(255, 255, 255, 0.14)",
       "palette": "",
       "paletteDark": ""
     },
@@ -974,8 +990,8 @@
     {
       "name": "--hero-cap",
       "section": "Світанок: світло екрана",
-      "light": "rgba(255, 255, 255, 0.78)",
-      "dark": "rgba(251, 250, 255, 0.78)",
+      "light": "#ffffff",
+      "dark": "#ffffff",
       "palette": "",
       "paletteDark": ""
     },
@@ -1068,9 +1084,25 @@
       "paletteDark": ""
     },
     {
+      "name": "--panel-sheet",
+      "section": "Світанок: світло екрана",
+      "light": "rgba(255, 253, 251, 0.96)",
+      "dark": "#241f36",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
       "name": "--radius",
       "section": "Border radius",
       "light": "10px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--radius-2xl",
+      "section": "Border radius",
+      "light": "28px",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -6002,6 +6034,9 @@
         "names": [
           "wb-showcase",
           "wb-showcase-ask",
+          "wb-showcase-blob",
+          "wb-showcase-blob-a",
+          "wb-showcase-blob-b",
           "wb-showcase-cap",
           "wb-showcase-feat",
           "wb-showcase-feat-label",
@@ -6019,6 +6054,7 @@
           "wb-showcase-sub",
           "wb-showcase-title",
           "wb-showcase-top",
+          "wb-showcase-watermark",
           "wb-showcase-word"
         ]
       }

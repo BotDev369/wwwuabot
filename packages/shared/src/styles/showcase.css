@@ -1,7 +1,11 @@
 /*
- * Вітрина — головний екран: залите світлом поле зверху, світла панель входів
- * знизу (там, де дістає великий палець). Плями живуть у `background`, а не
- * елементами з `filter: blur()`: у TWA розмиття коштує кадрів.
+ * Вітрина — головний екран (макет 08): залите фіалкою поле зверху, біла
+ * панель входів знизу. Значення взяті з макета один в один: градієнт
+ * `135deg`, дисплей 36 px, капс чистим білим, панель `rgba(255,253,251,.96)`,
+ * верхні кути 28 px, кнопки-пігулки 16 px по висоті.
+ *
+ * Плями — шари `radial-gradient`, а не `filter: blur()`: у TWA розмиття
+ * коштує кадрів, а на око різниці на 260 px немає.
  */
 
 .wb-showcase {
@@ -10,26 +14,45 @@
   flex-direction: column;
   min-height: 100dvh;
   padding: calc(var(--sp-5) + var(--safe-top)) var(--sp-5) 0;
-  background:
-    radial-gradient(52% 34% at 92% -4%, var(--hero-glow), transparent 70%),
-    radial-gradient(48% 32% at -6% 64%, var(--hero-glow), transparent 70%), var(--gradient-hero);
+  background: var(--gradient-hero);
   color: var(--hero-ink);
   overflow: hidden;
 }
 
-/* Плескатий знак хліба на тлі — той самий, що в макеті: він тримає порожнечу
-   між слоганом і панеллю, не додаючи жодного слова. */
-.wb-showcase::after {
-  content: "";
+/* Дві плями з макета: 260 px у правому верхньому куті, 240 px — у лівому
+   нижньому. Широкі заливки на пів екрана, які тут стояли раніше, з'їдали
+   насиченість фіалки й робили обкладинку сірою. */
+.wb-showcase-blob {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--hero-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.wb-showcase-blob-a {
+  width: 260px;
+  height: 260px;
+  top: -70px;
+  right: -80px;
+}
+
+.wb-showcase-blob-b {
+  width: 240px;
+  height: 240px;
+  bottom: 120px;
+  left: -90px;
+}
+
+/* Плескатий знак хліба — біле коло на 13% із двома лініями «столу». Тримає
+   порожнечу між слоганом і панеллю, не додаючи жодного слова. */
+.wb-showcase-watermark {
   position: absolute;
   left: 50%;
-  top: 38%;
-  width: 300px;
-  height: 300px;
+  top: 42%;
+  width: 320px;
+  height: 320px;
   transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 1.5px solid var(--hero-glow);
-  background: radial-gradient(circle, var(--hero-glow), transparent 68%);
+  opacity: 0.13;
   pointer-events: none;
 }
 
@@ -51,6 +74,7 @@
   font-size: var(--cap-size);
   font-weight: var(--weight-black);
   letter-spacing: 0.2em;
+  color: #ffffff;
 }
 
 .wb-showcase-hero {
@@ -69,15 +93,13 @@
 }
 
 .wb-showcase-title {
-  margin: var(--sp-3) 0 0;
-  max-width: 12ch;
+  margin: var(--sp-2) 0 0;
   font-family: var(--font-display);
-  font-size: var(--display-size);
+  font-size: var(--display-size-hero);
   font-weight: var(--weight-black);
   letter-spacing: -0.045em;
   line-height: 0.98;
-  color: var(--hero-ink);
-  text-wrap: balance;
+  color: #ffffff;
 }
 
 .wb-showcase-sub {
@@ -85,32 +107,32 @@
   font-size: var(--text-base);
   font-weight: var(--weight-bold);
   line-height: 1.45;
-  color: var(--hero-ink);
+  color: #ffffff;
 }
 
-/* Панель входів: єдина світла поверхня на градієнті. */
+/* Панель входів: білий аркуш, що приїжджає знизу. */
 .wb-showcase-panel {
   position: relative;
   z-index: 1;
   margin-top: auto;
   margin-inline: calc(-1 * var(--sp-5));
   padding: var(--sp-5) var(--sp-4) calc(var(--sp-5) + var(--safe-bottom));
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  background: var(--surface);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  background: var(--panel-sheet);
   box-shadow: 0 -18px 44px -24px var(--surface-overlay);
   color: var(--text-primary);
 }
 
 .wb-showcase-go {
   width: 100%;
-  height: 52px;
+  padding: var(--sp-4);
   border: 0;
   border-radius: var(--radius-full);
   background: var(--gradient-cta);
   box-shadow: var(--cta-shadow);
   color: var(--cta-ink);
   font: inherit;
-  font-size: var(--text-md);
+  font-size: var(--text-base);
   font-weight: var(--weight-black);
 }
 
@@ -130,14 +152,14 @@
 
 .wb-showcase-ghost {
   width: 100%;
-  height: 48px;
-  border: 1.5px solid var(--border);
+  padding: var(--sp-4);
+  border: 1.5px solid var(--field-line);
   border-radius: var(--radius-full);
   background: transparent;
   color: var(--text-primary);
   font: inherit;
   font-size: var(--text-base);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-black);
 }
 
 .wb-showcase-ask {
@@ -160,7 +182,7 @@
 .wb-showcase-feats {
   display: flex;
   gap: var(--sp-4);
-  margin-top: var(--sp-5);
+  margin-top: 18px;
 }
 
 /* Входи — кнопки, а не підписи: те, що виглядає як вхід, мусить ним бути. */
@@ -195,7 +217,7 @@
   text-align: center;
   font-size: var(--cap-size);
   font-weight: var(--cap-weight);
-  letter-spacing: var(--cap-tracking);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
