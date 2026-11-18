@@ -46,7 +46,7 @@ export const CLASSES = [
   {
     id: "audit",
     step: /^Security audit/,
-    cause: "`npm audit` знайшов уразливість рівня high",
+    cause: "`npm audit --omit=dev` знайшов уразливість `high` у тому, що їде на прод",
     fix: "оновити залежність; якщо фіксу немає — виняток із причиною в PR",
   },
   {
