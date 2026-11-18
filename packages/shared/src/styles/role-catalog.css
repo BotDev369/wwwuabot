@@ -1118,8 +1118,4 @@
     align-items: start;
     gap: var(--sp-2);
   }
-
-  .ui-meta {
-    padding-top: 2px;
-  }
 }
