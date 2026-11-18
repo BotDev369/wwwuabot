@@ -1,5 +1,5 @@
 {
-  "version": "011db18",
+  "version": "4a684d8",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -194,7 +194,7 @@
     {
       "file": "role-catalog.css",
       "tokens": 5,
-      "classes": 131
+      "classes": 146
     },
     {
       "file": "shop-storefront.css",
@@ -6007,6 +6007,26 @@
           "sc-skeleton-lg",
           "sc-skeleton-sm",
           "sc-table-wrap"
+        ]
+      },
+      {
+        "section": "Перелік єдиного UI (`/style`)",
+        "names": [
+          "ui-class",
+          "ui-count",
+          "ui-intro",
+          "ui-meta",
+          "ui-name",
+          "ui-page",
+          "ui-row",
+          "ui-sample",
+          "ui-sample-stage",
+          "ui-skeleton-sample",
+          "ui-usage",
+          "wb-cover",
+          "wb-modal",
+          "wb-modal-overlay",
+          "wb-table-scroll"
         ]
       }
     ],

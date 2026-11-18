@@ -1,58 +1,66 @@
 // @vitest-environment jsdom
 /**
- * Сторінка «Стиль»: демо-лендінг, таблиця на 60 рядків, перемикач теми.
+ * «Єдиний UI»: перелік, лічильники й зразки кожного кирпичика.
  *
  * @module web-admin-dev/src/pages/style/StylePage.dom.test
  */
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { StylePage } from "./StylePage";
+import inventory from "./ui-inventory.json";
 
-describe("сторінка «Стиль»", () => {
+const elements = inventory.groups.flatMap((group) => group.elements);
+
+describe("сторінка «Єдиний UI»", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
   afterEach(() => {
-    document.documentElement.removeAttribute("data-theme");
+    cleanup();
     localStorage.clear();
   });
 
-  it("показує гасло продукту і каталог ролей", () => {
+  it("показує назву, вступ і всі розділи переліку", () => {
     render(<StylePage />);
 
-    expect(screen.getByText("ПАЛЯНИЦЯ")).toBeTruthy();
-    expect(screen.getByText("Каталог ролей")).toBeTruthy();
-    expect(screen.getAllByText("Палітра").length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: inventory.page.title })).toBeTruthy();
+    for (const group of inventory.groups) {
+      expect(screen.getByRole("heading", { name: group.label })).toBeTruthy();
+    }
   });
 
-  it("рендерить таблицю на 14 стовпців і 60 рядків", () => {
-    const { container } = render(<StylePage />);
-    const table = container.querySelector(".sc-table");
-
-    expect(table).toBeTruthy();
-    expect(table?.querySelectorAll("thead th")).toHaveLength(14);
-    expect(table?.querySelectorAll("tbody tr")).toHaveLength(60);
-    expect(table?.querySelector("thead th.sc-table-pin")).toBeTruthy();
-  });
-
-  it("перемикач теми міняє світлу на темну", () => {
+  it("показує кожен елемент переліку з його класом і зразком", () => {
     render(<StylePage />);
 
-    const toggle = screen.getAllByRole("switch", { name: "Тема" })[0];
-    fireEvent.click(toggle);
-
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(document.querySelectorAll(".ui-row")).toHaveLength(elements.length);
+    expect(document.querySelectorAll(".ui-sample")).toHaveLength(elements.length);
+    for (const element of elements) {
+      expect(screen.getByText(`.${element.className}`)).toBeTruthy();
+    }
   });
 
-  it("модалка відкривається і закривається", () => {
+  it("лічить ужиток класів тим самим числом, що перелік", () => {
     render(<StylePage />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Відкрити" }));
-    expect(screen.getByRole("dialog", { name: "Демо модалки" })).toBeTruthy();
+    const button = elements.find((element) => element.id === "btn");
+    expect(button).toBeTruthy();
+    const row = screen.getByText(".wb-btn").closest(".ui-row");
+    expect(row?.textContent).toContain(`${inventory.page.platform} ${button!.usage.platform}`);
+    expect(row?.textContent).toContain(`${inventory.page.admin} ${button!.usage.admin}`);
+  });
 
-    fireEvent.click(screen.getByRole("button", { name: "Гаразд" }));
-    expect(screen.queryByRole("dialog")).toBeNull();
+  it("ставить присуд кожному елементу", () => {
+    render(<StylePage />);
+
+    const verdicts = inventory.verdicts as Record<string, { label: string }>;
+    for (const label of Object.values(verdicts).map((verdict) => verdict.label)) {
+      const count = elements.filter((element) => verdicts[element.verdict].label === label).length;
+      const inRows = [...document.querySelectorAll(".ui-row .wb-badge")].filter(
+        (badge) => badge.textContent === label,
+      );
+      expect(inRows.length).toBe(count);
+    }
   });
 });

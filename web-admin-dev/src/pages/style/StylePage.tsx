@@ -1,56 +1,108 @@
 /**
- * Сторінка «Стиль» — демо-лендінг продукту.
- *
- * **Не перелік токенів і не галерея тем.** Сторінка показує сам вигляд: гасло,
- * каталог ролей, палітру, дані, таблицю, форми, стани й рух. Тему перемикають
- * одним перемикачем — світла / темна.
- *
- * **Вигляд не описаний на сторінці.** Кожен блок бере роль із
- * `@wwwuabot/shared/ui/role-catalog`, а слова — з `demo.json`: сторінка не
- * тримає ні кольору, ні тексту в коді.
+ * Сторінка «Єдиний UI»: перелік кирпичиків продукту — справжній зразок і
+ * присуд ужитку класу. Дані — `ui-inventory.json` (`npm run doc:style`).
  *
  * @module web-admin-dev/src/pages/style/StylePage
  */
 
 import type { ReactElement } from "react";
-import { ThemeButton } from "@wwwuabot/shared";
 import { PageTopbar } from "../../layout/PageTopbar";
-import { DataSection } from "./DataSection";
-import demo from "./demo.json";
-import { FormSection } from "./FormSection";
-import { MiscSection } from "./MiscSection";
-import { PaletteSection } from "./PaletteSection";
-import { RoleCatalogSection } from "./RoleCatalogSection";
-import { StyleHero } from "./StyleHero";
-import { UsersTable } from "./UsersTable";
+import { UiSample, type InventoryCopy, type InventoryElement } from "./UiSamples";
+import inventory from "./ui-inventory.json";
+
+type Inventory = {
+  page: InventoryCopy & { title: string; intro: string };
+  verdicts: Record<InventoryElement["verdict"], { label: string; tone: string }>;
+  summary: { total: number; both: number; one: number; shared: number; unused: number };
+  groups: {
+    id: string;
+    label: string;
+    note: string;
+    elements: InventoryElement[];
+  }[];
+};
+
+const data = inventory as Inventory;
+
+function usageChips(element: InventoryElement, copy: InventoryCopy): ReactElement {
+  const chips = [
+    { key: "platform", label: copy.platform, count: element.usage.platform },
+    { key: "admin", label: copy.admin, count: element.usage.admin },
+    { key: "ui", label: copy.sharedCode, count: element.usage.ui + element.usage.shared },
+  ].filter((chip) => chip.count > 0);
+
+  return (
+    <div className="ui-usage">
+      <span className={`wb-badge ${data.verdicts[element.verdict].tone}`}>
+        {data.verdicts[element.verdict].label}
+      </span>
+      {chips.map((chip) => (
+        <span key={chip.key} className="ui-count">
+          {chip.label} {chip.count}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export function StylePage(): ReactElement {
+  const { page, summary, verdicts, groups } = data;
+
   return (
     <>
+      {/* Перемикач теми — один на продукт, у сайдбарі: другий тут був би
+          копією того самого контрола (AGENTS.md §3). */}
       <PageTopbar>
-        <h1 className="wb-topbar-title">{demo.topbar.title}</h1>
-        <div className="wb-topbar-right">
-          <span className="sc-demo-note">{demo.topbar.note}</span>
-        </div>
+        <h1 className="wb-topbar-title">{page.title}</h1>
       </PageTopbar>
 
-      <section className="sc-page">
-        <StyleHero />
-
-        <div className="sc-card sc-row">
-          <div>
-            <h3 className="sc-card-title">{demo.theme.title}</h3>
-            <p className="sc-demo-note">{demo.theme.note}</p>
+      <section className="sc-page ui-page">
+        <div className="wb-card">
+          <div className="wb-card-body ui-intro">
+            <p className="wb-text-base">{page.intro}</p>
+            <div className="ui-usage">
+              <span className="wb-badge wb-badge-neutral">
+                {page.total} {summary.total}
+              </span>
+              <span className="wb-badge wb-badge-green">
+                {verdicts.both.label} {summary.both}
+              </span>
+              <span className="wb-badge wb-badge-yellow">
+                {verdicts.one.label} {summary.one}
+              </span>
+              <span className="wb-badge wb-badge-neutral">
+                {verdicts.shared.label} {summary.shared}
+              </span>
+              <span className="wb-badge wb-badge-red">
+                {verdicts.unused.label} {summary.unused}
+              </span>
+            </div>
+            <p className="wb-text-sm wb-text-muted">{page.legend}</p>
           </div>
-          <ThemeButton />
         </div>
 
-        <RoleCatalogSection />
-        <PaletteSection />
-        <DataSection />
-        <UsersTable />
-        <FormSection />
-        <MiscSection />
+        {groups.map((group) => (
+          <div className="wb-card" key={group.id}>
+            <div className="wb-card-header">
+              <h2 className="wb-card-title">{group.label}</h2>
+              <span className="wb-badge wb-badge-neutral">{group.elements.length}</span>
+            </div>
+            <div className="wb-card-body">
+              <p className="wb-text-sm wb-text-muted">{group.note}</p>
+              {group.elements.map((element) => (
+                <div className="ui-row" key={element.id}>
+                  <UiSample element={element} copy={page} />
+                  <div className="ui-meta">
+                    <span className="ui-name">{element.name}</span>
+                    <code className="ui-class">.{element.className}</code>
+                    <span className="wb-text-sm wb-text-muted">{element.note}</span>
+                  </div>
+                  {usageChips(element, page)}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </section>
     </>
   );
