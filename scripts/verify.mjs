@@ -10,6 +10,7 @@
 
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { writeStamp } from "./verify-stamp.mjs";
 
 const WORKFLOW = ".github/workflows/deploy.yml";
 
@@ -120,5 +121,12 @@ if (!drift) {
     process.exitCode = 1;
   } else if (steps.length) {
     console.log(`\n✓ Усі ${done} кроків зелені за ${time(Date.now() - startedAt)}.`);
+    // Штамп — лише за **повний** прогін без `--only`/`--no-audit`: частковий
+    // зелений прогін не про той деплой, що поїде (`scripts/verify-stamp.mjs`).
+    if (!only && !noAudit && done === STEPS.length) {
+      console.log(`✓ Штамп verify: ${writeStamp().tree}`);
+    } else {
+      console.log("! Штамп не записано: це частковий прогін, пуш він не відкриває.");
+    }
   }
 }

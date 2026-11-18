@@ -1,0 +1,4 @@
+#!/bin/sh
+# Фізичний замок: пуш без зеленого `npm run verify` на цьому дереві не проходить.
+# Див. `scripts/verify-stamp.mjs` і `docs/QUALITY_GATE.md`.
+exec node scripts/verify-stamp.mjs --check

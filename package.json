@@ -63,6 +63,8 @@
     "audit:spend": "node scripts/audit-spend.mjs",
     "audit:bricks": "node scripts/audit-bricks.mjs",
     "verify": "node scripts/verify.mjs",
-    "clean:tmp": "node scripts/clean-tmp.mjs"
+    "clean:tmp": "node scripts/clean-tmp.mjs",
+    "prepare": "node scripts/install-hooks.mjs",
+    "check:verify-stamp": "node scripts/verify-stamp.mjs --check"
   }
 }
