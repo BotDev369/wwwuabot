@@ -1,5 +1,5 @@
 {
-  "version": "6f17cdc",
+  "version": "46f76f8",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -246,7 +246,7 @@
     {
       "name": "--accent",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#4f3ac9",
+      "light": "#5741d1",
       "dark": "#b0a2ff",
       "palette": "",
       "paletteDark": ""
@@ -254,7 +254,7 @@
     {
       "name": "--accent-dim",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "rgba(79, 58, 201, 0.1)",
+      "light": "rgba(91, 70, 214, 0.1)",
       "dark": "rgba(176, 162, 255, 0.14)",
       "palette": "",
       "paletteDark": ""
@@ -262,7 +262,7 @@
     {
       "name": "--accent-hover",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#3f2cb2",
+      "light": "#4a37c4",
       "dark": "#c6bbff",
       "palette": "",
       "paletteDark": ""
@@ -270,7 +270,7 @@
     {
       "name": "--accent-soft",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "rgba(79, 58, 201, 0.14)",
+      "light": "rgba(91, 70, 214, 0.14)",
       "dark": "rgba(176, 162, 255, 0.16)",
       "palette": "",
       "paletteDark": ""
@@ -286,7 +286,7 @@
     {
       "name": "--bg-0",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#fff8f2",
+      "light": "#fff7f1",
       "dark": "#1b1928",
       "palette": "",
       "paletteDark": ""
@@ -774,7 +774,7 @@
     {
       "name": "--font-ui",
       "section": "Typography",
-      "light": "\"Inter\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "light": "\"Onest\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1614,7 +1614,7 @@
     {
       "name": "--text-muted",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#635b80",
+      "light": "#625a80",
       "dark": "#a79fc0",
       "palette": "",
       "paletteDark": ""
@@ -1630,7 +1630,7 @@
     {
       "name": "--text-primary",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#453e5c",
+      "light": "#4e4763",
       "dark": "#dcd6ee",
       "palette": "",
       "paletteDark": ""
@@ -1638,7 +1638,7 @@
     {
       "name": "--text-secondary",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#5b5375",
+      "light": "#635c7e",
       "dark": "#b0a8c6",
       "palette": "",
       "paletteDark": ""
