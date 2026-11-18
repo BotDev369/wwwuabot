@@ -87,6 +87,34 @@
   --chrome-header-bg: #1b1928;
   --chrome-bottom-bg: #1b1928;
   --bg-page: var(--chrome-header-bg);
+
+  /* Світанок · ніч: те саме світло, тільки з-під землі — індиго → графіт →
+     морська зелень, а плями й герой стають глибшими, не блідішими. */
+  --gradient-page: linear-gradient(170deg, #1b1928 0%, #221e36 48%, #1d2a2a 100%);
+  --blob-1: rgba(255, 140, 95, 0.2);
+  --blob-2: rgba(124, 108, 255, 0.26);
+  --blob-3: rgba(70, 180, 200, 0.18);
+
+  --gradient-display: linear-gradient(120deg, #b0a2ff 0%, #8fc7ff 55%, #86e0ae 100%);
+  --gradient-hero: linear-gradient(135deg, #6552f0 0%, #4b5fe0 58%, #3f4fc8 100%);
+  --hero-ink: #fbfaff;
+  --hero-note: rgba(251, 250, 255, 0.84);
+  --hero-cap: rgba(251, 250, 255, 0.78);
+  --hero-glow: rgba(120, 230, 255, 0.2);
+  --hero-shadow: 0 22px 44px -24px rgba(70, 60, 180, 0.9);
+  --spark: rgba(255, 255, 255, 0.9);
+  --spark-dim: rgba(255, 255, 255, 0.28);
+
+  --gradient-cta: linear-gradient(135deg, #ffa26b 0%, #ffc466 100%);
+  --cta-ink: #3a1a06;
+  --cta-shadow: 0 20px 40px -24px rgba(255, 150, 90, 0.55);
+
+  --gradient-tile-1: linear-gradient(135deg, #1f3a32 0%, #21413a 100%);
+  --gradient-tile-2: linear-gradient(135deg, #3b2a24 0%, #40302a 100%);
+  --tile-1-ink: #7fd8cb;
+  --tile-2-ink: #ff9e86;
+  --tile-1-shadow: none;
+  --tile-2-shadow: none;
   --modal-scrim: rgba(0, 0, 0, 0.5);
 
   color-scheme: dark;

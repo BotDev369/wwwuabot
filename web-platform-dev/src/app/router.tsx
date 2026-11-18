@@ -27,6 +27,7 @@ import { PlatformShell } from "@/layout/PlatformShell";
 import {
   ADS_ROUTE,
   CONTACTS_ROUTE,
+  DAY_ROUTE,
   FAVORITES_ROUTE,
   ACCOUNT_ROUTE,
   ASSESSMENTS_ROUTE,
@@ -51,6 +52,7 @@ import { AssessmentsScreen } from "@/pages/assessments/AssessmentsScreen";
 import { MessagesPage } from "@/pages/MessagesPage";
 import { NotesPage } from "@/pages/NotesPage";
 import { ProfileAccountPage } from "@/pages/ProfileAccountPage";
+import { EntryPage } from "@/pages/entry/EntryPage";
 import { MyDayPage } from "@/pages/day/MyDayPage";
 import { ProfileOrdersPage } from "@/pages/ProfileOrdersPage";
 import { ServicesPage } from "@/pages/ServicesPage";
@@ -71,10 +73,12 @@ export const router = createBrowserRouter([
   {
     element: <PlatformShell />,
     children: [
-      // «Мій день» — корінь продукту: людина відкриває застосунок і бачить свій
-      // день, а не форму акаунта. Адреса не стрибає: це справжній екран, а не
-      // перехід на інший.
-      { index: true, element: <MyDayPage /> },
+      // Корінь — вітрина з входами (макет 08): хто ми, для кого й три двері
+      // всередину. Це обкладинка продукту, а не дашборд.
+      { index: true, element: <EntryPage /> },
+      // «Мій день» — перший екран **усередині**: сюди веде «Увійти» на вітрині
+      // й однойменний пункт меню.
+      { path: DAY_ROUTE, element: <MyDayPage /> },
       // Сервіси — хаб платформи: список екранів, які вже працюють.
       { path: SERVICES_ROUTE, element: <ServicesPage /> },
       { path: FAVORITES_ROUTE, element: <FavoritesPage /> },

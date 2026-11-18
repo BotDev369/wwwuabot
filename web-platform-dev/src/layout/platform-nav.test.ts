@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 import {
   ASSESSMENTS_PATH,
   ACCOUNT_PATH,
+  DAY_PATH,
   PAGES_PATH,
   TRACKERS_PATH,
   USERS_PATH,
@@ -26,8 +27,10 @@ function activeKeys(pathname: string): string[] {
 }
 
 describe("меню платформи", () => {
-  it("корінь — це «Мій день», а не акаунт", () => {
-    expect(activeKeys("/")).toEqual(["day"]);
+  it("«Мій день» — на своїй адресі, а корінь — вітрина без пункту", () => {
+    expect(activeKeys(DAY_PATH)).toEqual(["day"]);
+    // Вітрина — обкладинка продукту: у меню їй місця немає.
+    expect(activeKeys("/")).toEqual([]);
   });
 
   it("сторінка за адресою світить «Базар»", () => {

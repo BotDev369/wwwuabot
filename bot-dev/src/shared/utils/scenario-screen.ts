@@ -168,7 +168,7 @@ function startScreenHtml(platformUrl: string | undefined): string {
   const button = (label: string, path: string, style: string): string =>
     `<tg-button type="web_app" style="${style}" url="${platform}${path}">` + `${label}</tg-button>`;
   const sections: [string, string][] = [
-    ["Мій день", "/"],
+    ["Мій день", "/day"],
     ["Базар", "/pages"],
     ["Гурт", "/users"],
     ["Я", "/account"],

@@ -44,8 +44,10 @@ const FORM_SCREENS = [
 describe("вхід у продукт", () => {
   const router = readFileSync(join(REPO_ROOT, "web-platform-dev/src/app/router.tsx"), "utf8");
 
-  it("корінь — «Мій день», а не стрибок на акаунт", () => {
-    expect(router).toContain("{ index: true, element: <MyDayPage /> }");
+  it("корінь — вітрина з входами, а не день і не акаунт", () => {
+    expect(router).toContain("{ index: true, element: <EntryPage /> }");
+    // «Мій день» — екран усередині продукту, зі своєю адресою.
+    expect(router).toContain("{ path: DAY_ROUTE, element: <MyDayPage /> }");
     // Редирект з кореня з'їдав історію: «Назад» із першого екрана не мав куди йти.
     expect(router).not.toContain("<Navigate to={ACCOUNT_PATH}");
   });

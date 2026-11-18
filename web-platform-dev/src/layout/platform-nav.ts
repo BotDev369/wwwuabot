@@ -11,6 +11,7 @@ import type { SideBarItem, SideBarSection } from "@wwwuabot/ui/nav";
 import {
   ACCOUNT_PATH,
   CONTACTS_PATH,
+  DAY_PATH,
   FAVORITES_PATH,
   MESSAGES_PATH,
   NOTES_PATH,
@@ -23,7 +24,7 @@ import {
 
 /** Головне меню: щоденна робота людини, у порядку ранку. */
 const MAIN: readonly SideBarItem[] = [
-  { key: "day", label: "Мій день", icon: "home", href: "/" },
+  { key: "day", label: "Мій день", icon: "home", href: DAY_PATH },
   { key: "bazar", label: "Базар", icon: "cart", href: PAGES_PATH },
   { key: "hurt", label: "Гурт", icon: "users", href: USERS_PATH },
   { key: "me", label: "Я", icon: "user-solid", href: ACCOUNT_PATH },

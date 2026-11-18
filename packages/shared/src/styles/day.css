@@ -28,12 +28,26 @@
   font-weight: var(--display-weight);
   letter-spacing: var(--display-tracking);
   line-height: 1.04;
-  color: var(--text-primary);
+  /* Рядок-світанок: градієнт по літерах, як у макеті. */
+  background: var(--gradient-display);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   text-wrap: balance;
+}
+
+/* Без `background-clip` прозорий колір сховав би привітання зовсім. */
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .wb-day-hello {
+    background: none;
+    color: var(--text-primary);
+  }
 }
 
 /* ── Ритм тижня ─────────────────────────────────────────────────────────── */
 
+/* Картка-герой — така сама залита, як у макеті: на ній білий текст і білі
+   стовпчики, тож вона перша в ієрархії, а не ще одна плитка. */
 .wb-day-rhythm {
   position: relative;
   display: flex;
@@ -41,10 +55,39 @@
   gap: var(--sp-1);
   padding: var(--sp-4);
   border-radius: var(--radius-lg);
-  background:
-    radial-gradient(120% 100% at 100% 0%, var(--accent-soft), transparent 62%), var(--surface);
-  box-shadow: var(--shadow-card);
+  background: var(--gradient-hero);
+  box-shadow: var(--hero-shadow);
   overflow: hidden;
+}
+
+/* Світло з кута: коло, а не розмиття — як у макеті. */
+.wb-day-rhythm::after {
+  content: "";
+  position: absolute;
+  right: -40px;
+  top: -50px;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: var(--hero-glow);
+  z-index: 0;
+}
+
+.wb-day-rhythm > * {
+  position: relative;
+  z-index: 1;
+}
+
+.wb-day-rhythm .wb-day-cap {
+  color: var(--hero-cap);
+}
+
+.wb-day-rhythm .wb-day-value {
+  color: var(--hero-ink);
+}
+
+.wb-day-rhythm .wb-day-note {
+  color: var(--hero-note);
 }
 
 .wb-day-cap {
@@ -76,20 +119,22 @@
 .wb-day-spark {
   display: flex;
   align-items: flex-end;
-  gap: 5px;
-  height: 52px;
+  gap: 6px;
+  height: 38px;
   margin-top: var(--sp-2);
 }
 
+/* Стовпчик тягнеться на свою частку ширини: сім днів мусять читатись як
+   тиждень, а не як смужка зліва. */
 .wb-day-bar {
-  width: 10px;
-  border-radius: var(--radius-full);
-  background: var(--accent);
+  flex: 1;
+  border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+  background: var(--spark);
 }
 
 /* Порожній день — не привід малювати нуль: смужка є, але вона тиха. */
 .wb-day-bar--dim {
-  background: var(--surface-active);
+  background: var(--spark-dim);
 }
 
 /* ── Плитки ─────────────────────────────────────────────────────────────── */
@@ -106,19 +151,28 @@
   gap: 2px;
   padding: var(--sp-4);
   border-radius: var(--radius-lg);
-  background: var(--tint-1);
-  box-shadow: var(--shadow-xs);
+  background: var(--gradient-tile-1);
+  box-shadow: var(--tile-1-shadow);
 }
 
 .wb-day-tile--alt {
-  background: var(--tint-2);
+  background: var(--gradient-tile-2);
+  box-shadow: var(--tile-2-shadow);
 }
 
+/* Підпис плитки — капс із макета, а не звичайний рядок: він пояснює число,
+   тож не має з ним змагатися. */
 .wb-day-label {
   margin: 0;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  color: var(--text-secondary);
+  font-size: var(--cap-size);
+  font-weight: var(--cap-weight);
+  letter-spacing: var(--cap-tracking);
+  text-transform: uppercase;
+  color: var(--tile-1-ink);
+}
+
+.wb-day-tile--alt .wb-day-label {
+  color: var(--tile-2-ink);
 }
 
 /* Плитки нижчі за картку ритму: число в них менше, інакше екран кричить. */

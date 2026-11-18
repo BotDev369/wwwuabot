@@ -14,7 +14,7 @@
  */
 
 import { useCallback, useEffect, useState, type ReactElement } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AppBar, ScreenChromeProvider } from "@wwwuabot/ui/nav";
 import { ThemeMenu } from "@/pages/themes/ThemeMenu";
 import { apiFetch } from "@/shared/api/client";
@@ -47,6 +47,7 @@ function useBotUsername(): string | null {
 
 export function PlatformShell(): ReactElement {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const goBack = useCallback(() => void navigate(-1), [navigate]);
   const [themeOpen, setThemeOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
@@ -65,6 +66,17 @@ export function PlatformShell(): ReactElement {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [navOpen]);
+
+  // Вітрина — обкладинка, а не кабінет: сайдбар і хедер тут були б другою
+  // шапкою над власною шапкою екрана.
+  if (pathname === "/") {
+    return (
+      <ScreenChromeProvider>
+        <JournalBridge />
+        <Outlet />
+      </ScreenChromeProvider>
+    );
+  }
 
   return (
     <ScreenChromeProvider>

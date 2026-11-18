@@ -148,8 +148,7 @@ describe("renderScenario", () => {
     expect(html).toContain('type="web_app"');
     expect(html).not.toContain('type="url"');
     // Головне меню платформи: вхід у застосунок починається з «Мого дня».
-    expect(html).toContain('url="https://platform.test/"');
-    for (const path of ["/pages", "/users", "/account", "/contacts"]) {
+    for (const path of ["/day", "/pages", "/users", "/account", "/contacts"]) {
       expect(html).toContain(`https://platform.test${path}`);
     }
     expect(html).toContain("Мій день");

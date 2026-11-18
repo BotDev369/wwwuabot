@@ -391,10 +391,16 @@
    навігація — та сама, що в адмінці: колонка на десктопі й поверхня на
    телефоні. Мірки пункту не повторюються тут: їх тримає `.wb-nav*`. */
 
+/* Світанок: тло — тепле світло, а не плоский колір. Три плями живуть в
+   одному `background`, а не окремими елементами: зайвий DOM і `filter: blur()`
+   коштували б кадрів у TWA, а тут це просто градієнти. */
 .wb-platform {
   display: flex;
   min-height: 100dvh;
-  background: var(--bg-page);
+  background:
+    radial-gradient(58% 40% at 6% 0%, var(--blob-1), transparent 62%),
+    radial-gradient(52% 36% at 96% 14%, var(--blob-2), transparent 64%),
+    radial-gradient(64% 44% at 52% 100%, var(--blob-3), transparent 62%), var(--gradient-page);
 }
 
 .wb-platform-main {

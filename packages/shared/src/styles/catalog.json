@@ -1,5 +1,5 @@
 {
-  "version": "652d64d",
+  "version": "6f17cdc",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -207,6 +207,11 @@
       "classes": 56
     },
     {
+      "file": "showcase.css",
+      "tokens": 0,
+      "classes": 20
+    },
+    {
       "file": "subbar.css",
       "tokens": 0,
       "classes": 10
@@ -223,12 +228,12 @@
     },
     {
       "file": "themes.css",
-      "tokens": 53,
+      "tokens": 75,
       "classes": 0
     },
     {
       "file": "tokens.css",
-      "tokens": 180,
+      "tokens": 202,
       "classes": 0
     },
     {
@@ -331,6 +336,30 @@
       "section": "Фон екрана",
       "light": "var(--chrome-header-bg)",
       "dark": "var(--chrome-header-bg)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--blob-1",
+      "section": "Світанок: світло екрана",
+      "light": "rgba(255, 154, 107, 0.34)",
+      "dark": "rgba(255, 140, 95, 0.2)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--blob-2",
+      "section": "Світанок: світло екрана",
+      "light": "rgba(124, 108, 255, 0.28)",
+      "dark": "rgba(124, 108, 255, 0.26)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--blob-3",
+      "section": "Світанок: світло екрана",
+      "light": "rgba(79, 179, 240, 0.26)",
+      "dark": "rgba(70, 180, 200, 0.18)",
       "palette": "",
       "paletteDark": ""
     },
@@ -475,6 +504,22 @@
       "section": "Сайдбар: крок пункту й берег",
       "light": "var(--nav-bar-h)",
       "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--cta-ink",
+      "section": "Світанок: світло екрана",
+      "light": "#3f1c07",
+      "dark": "#3a1a06",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--cta-shadow",
+      "section": "Світанок: світло екрана",
+      "light": "0 20px 40px -22px rgba(255, 150, 90, 0.95)",
+      "dark": "0 20px 40px -24px rgba(255, 150, 90, 0.55)",
       "palette": "",
       "paletteDark": ""
     },
@@ -743,6 +788,54 @@
       "paletteDark": ""
     },
     {
+      "name": "--gradient-cta",
+      "section": "Світанок: світло екрана",
+      "light": "linear-gradient(135deg, #ff9a6b 0%, #ffc466 100%)",
+      "dark": "linear-gradient(135deg, #ffa26b 0%, #ffc466 100%)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--gradient-display",
+      "section": "Світанок: світло екрана",
+      "light": "linear-gradient(120deg, #5b46d6 0%, #3358c9 55%, #1f7a63 100%)",
+      "dark": "linear-gradient(120deg, #b0a2ff 0%, #8fc7ff 55%, #86e0ae 100%)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--gradient-hero",
+      "section": "Світанок: світло екрана",
+      "light": "linear-gradient(135deg, #5b4be0 0%, #4b62de 55%, #4470c8 100%)",
+      "dark": "linear-gradient(135deg, #6552f0 0%, #4b5fe0 58%, #3f4fc8 100%)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--gradient-page",
+      "section": "Світанок: світло екрана",
+      "light": "linear-gradient(170deg, #fff7f1 0%, #f4f3ff 46%, #f1fbf4 100%)",
+      "dark": "linear-gradient(170deg, #1b1928 0%, #221e36 48%, #1d2a2a 100%)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--gradient-tile-1",
+      "section": "Світанок: світло екрана",
+      "light": "linear-gradient(135deg, #ddfbef 0%, #eaf7ff 100%)",
+      "dark": "linear-gradient(135deg, #1f3a32 0%, #21413a 100%)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--gradient-tile-2",
+      "section": "Світанок: світло екрана",
+      "light": "linear-gradient(135deg, #ffede2 0%, #fff8e7 100%)",
+      "dark": "linear-gradient(135deg, #3b2a24 0%, #40302a 100%)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
       "name": "--gradient-wash",
       "section": "Спектр",
       "light": "radial-gradient(120% 80% at 0% 0%, var(--accent-soft), transparent 62%)",
@@ -875,6 +968,46 @@
       "section": "Заголовки всередині екрана",
       "light": "var(--weight-semibold)",
       "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--hero-cap",
+      "section": "Світанок: світло екрана",
+      "light": "rgba(255, 255, 255, 0.78)",
+      "dark": "rgba(251, 250, 255, 0.78)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--hero-glow",
+      "section": "Світанок: світло екрана",
+      "light": "rgba(255, 255, 255, 0.18)",
+      "dark": "rgba(120, 230, 255, 0.2)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--hero-ink",
+      "section": "Світанок: світло екрана",
+      "light": "#ffffff",
+      "dark": "#fbfaff",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--hero-note",
+      "section": "Світанок: світло екрана",
+      "light": "rgba(255, 255, 255, 0.84)",
+      "dark": "rgba(251, 250, 255, 0.84)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--hero-shadow",
+      "section": "Світанок: світло екрана",
+      "light": "0 22px 44px -22px rgba(80, 70, 190, 0.85)",
+      "dark": "0 22px 44px -24px rgba(70, 60, 180, 0.9)",
       "palette": "",
       "paletteDark": ""
     },
@@ -1327,6 +1460,22 @@
       "paletteDark": ""
     },
     {
+      "name": "--spark",
+      "section": "Світанок: світло екрана",
+      "light": "rgba(255, 255, 255, 0.94)",
+      "dark": "rgba(255, 255, 255, 0.9)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--spark-dim",
+      "section": "Світанок: світло екрана",
+      "light": "rgba(255, 255, 255, 0.34)",
+      "dark": "rgba(255, 255, 255, 0.28)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
       "name": "--subbar-h",
       "section": "Сайдбар: крок пункту й берег",
       "light": "var(--nav-bar-h)",
@@ -1515,6 +1664,38 @@
       "section": "Typography",
       "light": "0.6875rem",
       "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--tile-1-ink",
+      "section": "Світанок: світло екрана",
+      "light": "#12756d",
+      "dark": "#7fd8cb",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--tile-1-shadow",
+      "section": "Світанок: світло екрана",
+      "light": "0 12px 28px -20px rgba(40, 160, 120, 0.8)",
+      "dark": "none",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--tile-2-ink",
+      "section": "Світанок: світло екрана",
+      "light": "#be4230",
+      "dark": "#ff9e86",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--tile-2-shadow",
+      "section": "Світанок: світло екрана",
+      "light": "0 12px 28px -20px rgba(220, 140, 80, 0.8)",
+      "dark": "none",
       "palette": "",
       "paletteDark": ""
     },
@@ -5812,6 +5993,33 @@
           "shop-pick",
           "shop-pick-icon",
           "shop-pick-label"
+        ]
+      }
+    ],
+    "showcase.css": [
+      {
+        "section": "",
+        "names": [
+          "wb-showcase",
+          "wb-showcase-ask",
+          "wb-showcase-cap",
+          "wb-showcase-feat",
+          "wb-showcase-feat-label",
+          "wb-showcase-feats",
+          "wb-showcase-foot",
+          "wb-showcase-ghost",
+          "wb-showcase-go",
+          "wb-showcase-hero",
+          "wb-showcase-mark",
+          "wb-showcase-num",
+          "wb-showcase-or",
+          "wb-showcase-panel",
+          "wb-showcase-send",
+          "wb-showcase-sent",
+          "wb-showcase-sub",
+          "wb-showcase-title",
+          "wb-showcase-top",
+          "wb-showcase-word"
         ]
       }
     ],
