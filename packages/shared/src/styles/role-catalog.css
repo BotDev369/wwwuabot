@@ -14,10 +14,24 @@
  */
 
 .sc-page {
+  /* Панель тримає `overflow: hidden` на каркасі, тож сторінка дає прокрутку
+     собі — інакше довгий вміст просто обрізається (так само, як `.wb-page-scroll`). */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   gap: var(--sp-6);
-  padding-bottom: var(--sp-6);
+  padding: var(--sp-4) var(--sp-4) calc(var(--sp-6) + var(--safe-bottom));
+}
+
+/* Блоки не стискаються: у flex-колонці з прокруткою `flex-shrink: 1` різав
+   герой і картки до висоти рядка. */
+.sc-page > * {
+  flex: 0 0 auto;
 }
 
 /* ── Ролі: тон ────────────────────────────────────────────────────────────
@@ -237,6 +251,14 @@
 
 .sc-hero .sc-tone-muted {
   color: var(--hero-note);
+}
+
+/* Плитки на герої — білі на просвіт: кольорові бейджі на насиченому градієнті
+   давали 2:1 і читались як плями. */
+.sc-hero .wb-badge {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
 }
 
 .sc-hero-cap {
@@ -638,9 +660,11 @@
 
 /* ── Таблиця: скрол у всі боки, закріплені шапка й перший стовпець ────── */
 .sc-table-wrap {
-  max-height: 420px;
+  max-height: min(420px, 60vh);
   overflow: auto;
-  overscroll-behavior: contain;
+  /* Прокрутка таблиці не має замикати сторінку: коли таблиця дійшла до краю,
+     палець далі гортає саму сторінку (вимога власника). */
+  overscroll-behavior: auto;
   border-radius: var(--radius-lg);
   background: var(--bg-2);
   box-shadow: inset 0 0 0 1px var(--border-subtle);
@@ -862,8 +886,14 @@
 }
 
 @media (max-width: 720px) {
+  .sc-page {
+    gap: var(--sp-4);
+    padding: var(--sp-3) var(--sp-3) calc(var(--sp-5) + var(--safe-bottom));
+  }
+
   .sc-hero {
-    padding: var(--sp-5) var(--sp-4);
+    padding: var(--sp-4);
+    border-radius: var(--radius-lg);
   }
 
   .sc-size-display {
@@ -872,5 +902,21 @@
 
   .sc-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Картки в рядку (тема, форма) стають стовпчиком: інакше перемикач
+     від'їжджає під текст і виглядає як підпис, а не як дія. */
+  .sc-card.sc-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sc-table-wrap {
+    max-height: 58vh;
+    border-radius: var(--radius-md);
+  }
+
+  .sc-sect-note {
+    width: 100%;
   }
 }

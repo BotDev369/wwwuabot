@@ -1,5 +1,5 @@
 {
-  "version": "0ef3bdb",
+  "version": "011db18",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -194,7 +194,7 @@
     {
       "file": "role-catalog.css",
       "tokens": 5,
-      "classes": 130
+      "classes": 131
     },
     {
       "file": "shop-storefront.css",
@@ -5856,7 +5856,8 @@
           "sc-hero-lead",
           "sc-hero-row",
           "sc-tone-ink",
-          "sc-tone-muted"
+          "sc-tone-muted",
+          "wb-badge"
         ]
       },
       {
@@ -5989,6 +5990,7 @@
       {
         "section": "Статуси, навігація, порожній стан, рух",
         "names": [
+          "sc-card",
           "sc-demo-note",
           "sc-empty",
           "sc-grid",
@@ -5997,11 +5999,14 @@
           "sc-nav",
           "sc-nav-link",
           "sc-nav-link-on",
+          "sc-page",
           "sc-row",
+          "sc-sect-note",
           "sc-size-display",
           "sc-skeleton",
           "sc-skeleton-lg",
-          "sc-skeleton-sm"
+          "sc-skeleton-sm",
+          "sc-table-wrap"
         ]
       }
     ],
