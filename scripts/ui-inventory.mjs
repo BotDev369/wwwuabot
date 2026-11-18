@@ -16,7 +16,7 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { ROOT, isSource, read, walk } from "./lib/files.mjs";
-import { GROUPS, PAGE, VERDICTS } from "./ui-inventory-elements.mjs";
+import { BLOCK_WRAPPER, GROUPS, PAGE, VERDICTS } from "./ui-inventory-elements.mjs";
 
 const OUT = "web-admin-dev/src/pages/style/ui-inventory.json";
 
@@ -78,6 +78,41 @@ function iconUsage(icon) {
   return usage;
 }
 
+/* Блоки Page Builder читаються з реєстру `block-definitions`, а не зі списку,
+   написаного руками: інакше перелік відставав би від реєстру мовчки. */
+const BLOCK_MODULES = [
+  "content",
+  "layout",
+  "navigation",
+  "data",
+  "commerce",
+  "forms",
+  "bot-domain",
+  "analytics",
+  "raw",
+];
+
+/** Поле визначення блока: перше `ключ: "…"` у відрізку файлу з одним блоком. */
+function blockField(chunk, key) {
+  const match = chunk.match(new RegExp(`${key}: "((?:[^"\\\\]|\\\\.)*)"`));
+  return match ? JSON.parse(`"${match[1]}"`) : "";
+}
+
+function readBlocks() {
+  return BLOCK_MODULES.flatMap((module) =>
+    read(`packages/shared/src/constants/block-definitions/${module}.ts`)
+      .split("\n  block({")
+      .slice(1)
+      .map((chunk) => ({
+        type: blockField(chunk, "type"),
+        label: blockField(chunk, "label"),
+        icon: blockField(chunk, "icon"),
+        note: blockField(chunk, "description"),
+      }))
+      .filter((block) => block.type && block.label),
+  );
+}
+
 function build() {
   const version = JSON.parse(read("packages/shared/src/styles/catalog.json")).version;
   const groups = GROUPS.map((group) => ({
@@ -99,6 +134,32 @@ function build() {
       };
     }),
   }));
+  groups.push({
+    id: "blocks",
+    label: PAGE.blockGroup,
+    note: PAGE.blockGroupNote,
+    elements: [
+      ...readBlocks().map((block) => ({
+        id: `block-${block.type}`,
+        name: block.label,
+        /* Не клас, а тип: сторінка вживає блок саме так — у `page_data`. */
+        className: `type: "${block.type}"`,
+        sample: "icon",
+        sampleText: "",
+        note: block.note,
+        icon: block.icon || "info",
+        usage: { platform: 0, admin: 0, ui: 0, shared: 0 },
+        verdict: "builder",
+        via: "page-builder",
+      })),
+      {
+        ...BLOCK_WRAPPER,
+        usage: count(BLOCK_WRAPPER.className),
+        verdict: "builder",
+        via: "page-builder",
+      },
+    ],
+  });
   groups.push({
     id: "icons",
     label: PAGE.iconGroup,

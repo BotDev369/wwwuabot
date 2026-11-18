@@ -937,6 +937,36 @@
   gap: var(--sp-3);
 }
 
+/* Розділ переліку — розкривний заголовок: сам перелік довгий, і розділ
+   відкривають тоді, коли він потрібен, а не гортанням усього списку. */
+.ui-group-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--card-gap);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--card-pad);
+  border: 0;
+  border-radius: var(--card-radius) var(--card-radius) 0 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ui-group-caret {
+  display: inline-flex;
+  margin-left: auto;
+  color: var(--text-muted);
+}
+
+@media (hover: hover) {
+  .ui-group-toggle:hover {
+    background: var(--surface-hover);
+  }
+}
+
 .ui-intro p {
   margin: 0;
 }

@@ -1,5 +1,5 @@
 {
-  "version": "4a684d8",
+  "version": "8a01e82",
   "page": {
     "title": "Єдиний UI",
     "intro": "Структурований перелік кирпичиків продукту. Зразок — справжня розмітка платформи, а не картинка; лічильники показують, у скількох файлах кожної частини продукту вжито клас.",
@@ -9,6 +9,10 @@
     "admin": "адмінка",
     "sharedCode": "спільний код",
     "sampleBody": "Так виглядає кирпичик у продукті.",
+    "expandAll": "Розгорнути всі",
+    "collapseAll": "Згорнути всі",
+    "blockGroup": "Блоки сторінки",
+    "blockGroupNote": "Типи Page Builder: сторінка називає тип у даних, а розмітку дає спільний `PageRenderer`. Зразок — знак блока, той самий, що в галереї модулів; сам вигляд блока залежить від його даних.",
     "iconGroup": "Знаки",
     "iconGroupNote": "Один набір знаків на обидві оболонки: `Icon` із спільного коду. Присуд — у скількох файлах ужито `name=\"…\"`.",
     "emptyTitle": "Тут поки нічого немає",
@@ -49,11 +53,11 @@
     }
   },
   "summary": {
-    "total": 177,
+    "total": 218,
     "both": 49,
     "one": 78,
     "shared": 48,
-    "builder": 2,
+    "builder": 43,
     "unused": 0
   },
   "groups": [
@@ -859,19 +863,717 @@
     {
       "id": "blocks",
       "label": "Блоки сторінки",
-      "note": "Кирпичики Page Builder, які рендерить спільний код.",
+      "note": "Типи Page Builder: сторінка називає тип у даних, а розмітку дає спільний `PageRenderer`. Зразок — знак блока, той самий, що в галереї модулів; сам вигляд блока залежить від його даних.",
       "elements": [
         {
-          "id": "block-hero",
-          "name": "Банер сторінки",
-          "className": "wb-block-hero",
-          "sample": "block-hero",
-          "sampleText": "Банер",
-          "note": "Блок Page Builder: заголовок, підпис і дії сторінки.",
+          "id": "block-text",
+          "name": "Текст",
+          "className": "type: \"text\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Блок з заголовком та/або текстовим вмістом",
+          "icon": "text",
           "usage": {
             "platform": 0,
             "admin": 0,
-            "ui": 1,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-image",
+          "name": "Зображення",
+          "className": "type: \"image\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Фото або графіка з підписом",
+          "icon": "image",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-richtext",
+          "name": "Rich Text",
+          "className": "type: \"richtext\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Текст з форматуванням: жирний, курсив, посилання, код",
+          "icon": "edit",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-video",
+          "name": "Відео",
+          "className": "type: \"video\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Відео-плеєр (YouTube, Vimeo або прямий URL)",
+          "icon": "video",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-gallery",
+          "name": "Галерея",
+          "className": "type: \"gallery\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Сітка зображень з можливістю перегляду",
+          "icon": "grid",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-quote",
+          "name": "Цитата",
+          "className": "type: \"quote\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Блок-цитата з атрибуцією",
+          "icon": "quote",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-code",
+          "name": "Код",
+          "className": "type: \"code\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Блок коду з підсвіткою синтаксису",
+          "icon": "code",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-badge",
+          "name": "Бейдж",
+          "className": "type: \"badge\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Смуга бейджів/міток для статусів та тегів",
+          "icon": "badge",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-link-button",
+          "name": "Кнопка посилання",
+          "className": "type: \"link-button\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Кнопка з переходом за посиланням (URL)",
+          "icon": "link",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-buttons",
+          "name": "Кнопки",
+          "className": "type: \"buttons\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Група кнопок (посилання або дії)",
+          "icon": "buttons",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-list",
+          "name": "Список",
+          "className": "type: \"list\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Нумерований або маркірований список елементів",
+          "icon": "list",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-divider",
+          "name": "Розділювач",
+          "className": "type: \"divider\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Горизонтальна лінія-розділювач",
+          "icon": "divider",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-spacer",
+          "name": "Відступ",
+          "className": "type: \"spacer\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Вертикальний відступ між блоками",
+          "icon": "spacer",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-columns",
+          "name": "Колонки",
+          "className": "type: \"columns\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Контейнер з 2 або 3 колонками (діти блоки в кожній)",
+          "icon": "layout",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-card",
+          "name": "Картка",
+          "className": "type: \"card\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Контейнер з фоном, рамкою та заголовком",
+          "icon": "card",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-hero",
+          "name": "Hero",
+          "className": "type: \"hero\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Великий блок із заголовком, підзаголовком та CTA-кнопками",
+          "icon": "hero",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-tabs",
+          "name": "Таби",
+          "className": "type: \"tabs\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Перемикач вкладок з різним контентом",
+          "icon": "tabs",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-accordion",
+          "name": "Акордеон",
+          "className": "type: \"accordion\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Розгортувані/згортані секції",
+          "icon": "accordion",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-nav",
+          "name": "Меню",
+          "className": "type: \"nav\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Навігаційне меню з посиланнями",
+          "icon": "menu",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-theme",
+          "name": "Тема",
+          "className": "type: \"theme\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Перемикач світлої/темної теми та дизайн-системи",
+          "icon": "sun",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-stat",
+          "name": "Статистика",
+          "className": "type: \"stat\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Карточка з числом-метрикою та підписом",
+          "icon": "bar-chart",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-progress",
+          "name": "Прогрес",
+          "className": "type: \"progress\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Індикатор прогресу або рівня заповнення",
+          "icon": "progress",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-table",
+          "name": "Таблиця",
+          "className": "type: \"table\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Таблиця даних з заголовками",
+          "icon": "table",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-rating",
+          "name": "Рейтинг",
+          "className": "type: \"rating\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Відображення рейтингу зірками",
+          "icon": "star",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-shop-grid",
+          "name": "Товари магазину",
+          "className": "type: \"shop-grid\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Сітка товарів магазину — з таблиці товарів, а не з полів сторінки",
+          "icon": "shop",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-pricing",
+          "name": "Ціни",
+          "className": "type: \"pricing\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Картка з ціною та переліком можливостей",
+          "icon": "tag",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-testimonial",
+          "name": "Відгук",
+          "className": "type: \"testimonial\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Відгук клієнта з фото та підписом",
+          "icon": "message-square",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-feature-card",
+          "name": "Фіча",
+          "className": "type: \"feature-card\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Карточка з іконкою, заголовком та описом",
+          "icon": "checklist",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-faq",
+          "name": "FAQ",
+          "className": "type: \"faq\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Часто задавані питання (акордеон)",
+          "icon": "question",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-input",
+          "name": "Інпут",
+          "className": "type: \"input\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Поле введення тексту",
+          "icon": "field",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-textarea",
+          "name": "Текстове поле",
+          "className": "type: \"textarea\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Поле введення багаторядкового тексту",
+          "icon": "textarea",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-select",
+          "name": "Вибір",
+          "className": "type: \"select\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Список вибору з декількома опціями",
+          "icon": "select",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-user-profile",
+          "name": "Профіль",
+          "className": "type: \"user-profile\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Інформація про користувача Telegram (аватар, ім'я, ID)",
+          "icon": "user",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-date-card",
+          "name": "Дата",
+          "className": "type: \"date-card\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Астрологічна картка дати з розрахунками",
+          "icon": "calendar",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-date-input",
+          "name": "Ввід дати",
+          "className": "type: \"date-input\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Поле однієї дати, яке веде на сторінку аналізу",
+          "icon": "calendar",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-my-dates-table",
+          "name": "Таблиця дат",
+          "className": "type: \"my-dates-table\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Таблиця з CRUD-операціями для управління датами",
+          "icon": "my-dates",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-compare-setup",
+          "name": "Суб'єкт аналізу",
+          "className": "type: \"compare-setup\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Ім'я й дата того, кого аналізуємо: людини чи події — один крок на всі входи",
+          "icon": "compare",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-analysis-entries",
+          "name": "Входи аналізу",
+          "className": "type: \"analysis-entries\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Картки-переходи розділу: один субʼєкт чи порівняння, кожен зі своїм знаком",
+          "icon": "list",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-analysis-systems",
+          "name": "Системи аналізу",
+          "className": "type: \"analysis-systems\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Вітрина систем: назва, опис і параметри — без дат",
+          "icon": "layers",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-date-analysis",
+          "name": "Результат аналізу",
+          "className": "type: \"date-analysis\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Таблиця аналізу: параметри й значення — суб'єктів один або більше",
+          "icon": "bar-chart",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-chart",
+          "name": "Графік",
+          "className": "type: \"chart\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Стовпчики, сектори, нахил «було → стало» або теплова карта",
+          "icon": "bar-chart",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
+            "shared": 0
+          },
+          "verdict": "builder",
+          "via": "page-builder"
+        },
+        {
+          "id": "block-html",
+          "name": "HTML",
+          "className": "type: \"html\"",
+          "sample": "icon",
+          "sampleText": "",
+          "note": "Необроблений HTML-код (тільки для адміністраторів)",
+          "icon": "code",
+          "usage": {
+            "platform": 0,
+            "admin": 0,
+            "ui": 0,
             "shared": 0
           },
           "verdict": "builder",
@@ -879,19 +1581,19 @@
         },
         {
           "id": "block-section",
-          "name": "Розділ-акордеон",
+          "name": "Обгортка розділу",
           "className": "wb-block-section",
           "sample": "block-section",
           "sampleText": "Розділ",
-          "note": "Блок Page Builder: згорнутий розділ довгої сторінки.",
+          "via": "page-builder",
+          "note": "Акордеон, у який платформа складає довгу сторінку: підпис, лічильник і згорнуте тіло.",
           "usage": {
             "platform": 0,
             "admin": 0,
             "ui": 1,
             "shared": 0
           },
-          "verdict": "builder",
-          "via": "page-builder"
+          "verdict": "builder"
         }
       ]
     },

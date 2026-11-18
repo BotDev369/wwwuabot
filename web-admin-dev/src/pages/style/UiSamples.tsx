@@ -319,21 +319,6 @@ export function UiSample({
       content = <span className={element.className}>{text}</span>;
       break;
 
-    case "block-hero":
-      content = (
-        <section className="wb-block-hero wb-block-hero--left">
-          <div className="wb-block-hero__body">
-            <h2 className="wb-block-hero__title">{text}</h2>
-            <p className="wb-block-hero__subtitle">{copy.sampleBody}</p>
-            <div className="wb-block-hero__actions">
-              <button type="button" className="wb-btn wb-btn-primary">
-                {copy.sampleDone}
-              </button>
-            </div>
-          </div>
-        </section>
-      );
-      break;
     case "block-section":
       content = (
         <section className="wb-block-section">
@@ -362,7 +347,6 @@ export function UiSample({
     "modal-footer",
     "dialog",
     "cover",
-    "block-hero",
     "block-section",
   ].includes(element.sample);
 

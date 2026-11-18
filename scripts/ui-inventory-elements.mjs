@@ -22,6 +22,11 @@ export const PAGE = {
   admin: "адмінка",
   sharedCode: "спільний код",
   sampleBody: "Так виглядає кирпичик у продукті.",
+  expandAll: "Розгорнути всі",
+  collapseAll: "Згорнути всі",
+  blockGroup: "Блоки сторінки",
+  blockGroupNote:
+    "Типи Page Builder: сторінка називає тип у даних, а розмітку дає спільний `PageRenderer`. Зразок — знак блока, той самий, що в галереї модулів; сам вигляд блока залежить від його даних.",
   iconGroup: "Знаки",
   iconGroupNote:
     'Один набір знаків на обидві оболонки: `Icon` із спільного коду. Присуд — у скількох файлах ужито `name="…"`.',
@@ -499,29 +504,20 @@ export const GROUPS = [
       },
     ],
   },
-  {
-    id: "blocks",
-    label: "Блоки сторінки",
-    note: "Кирпичики Page Builder, які рендерить спільний код.",
-    elements: [
-      {
-        id: "block-hero",
-        name: "Банер сторінки",
-        className: "wb-block-hero",
-        sample: "block-hero",
-        sampleText: "Банер",
-        via: "page-builder",
-        note: "Блок Page Builder: заголовок, підпис і дії сторінки.",
-      },
-      {
-        id: "block-section",
-        name: "Розділ-акордеон",
-        className: "wb-block-section",
-        sample: "block-section",
-        sampleText: "Розділ",
-        via: "page-builder",
-        note: "Блок Page Builder: згорнутий розділ довгої сторінки.",
-      },
-    ],
-  },
 ];
+
+/**
+ * Обгортка розділу сторінки (`.wb-block-section`): не тип Page Builder, а
+ * акордеон, у який платформа складає довгі сторінки.
+ *
+ * Типи блоків тут не перелічено: їх читає генератор із `BLOCK_DEFINITIONS`.
+ */
+export const BLOCK_WRAPPER = {
+  id: "block-section",
+  name: "Обгортка розділу",
+  className: "wb-block-section",
+  sample: "block-section",
+  sampleText: "Розділ",
+  via: "page-builder",
+  note: "Акордеон, у який платформа складає довгу сторінку: підпис, лічильник і згорнуте тіло.",
+};
