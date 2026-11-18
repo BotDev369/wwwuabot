@@ -13,7 +13,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Tracker, TrackerEntryRow } from "@wwwuabot/shared/trackers";
-import { todayTrackerDay } from "@wwwuabot/shared/trackers";
+import { addTrackerDays, todayTrackerDay } from "@wwwuabot/shared/trackers";
 import { TRACKERS_PATH } from "@/app/routes";
 
 const hooks = {
@@ -125,7 +125,9 @@ describe("дані на екрані", () => {
   it("серія з учора не обіцяє запису сьогодні", () => {
     hooks.trackers = {
       trackers: [tracker(1, "Вода", 1)],
-      entries: [entry(1, "2026-11-16"), entry(1, "2026-11-15")],
+      // Дні рахуються від сьогодні, а не вписані числом: з писаними датами
+      // тест зеленів рівно до півночі, а потім падав на «серія не живе».
+      entries: [entry(1, addTrackerDays(today, -1)), entry(1, addTrackerDays(today, -2))],
       loading: false,
       error: null,
     };
