@@ -32,7 +32,7 @@ describe("buildMenuItems", () => {
     // дотик виносив би людину з меню на зовсім інший екран.
     const navigate = vi.fn();
     const open = vi.fn();
-    const [item] = build([{ key: "theme", label: "Тема", icon: "sliders", onSelect: open }], {
+    const [item] = build([{ key: "theme", label: "Тема", icon: "palette", onSelect: open }], {
       navigate,
     });
 

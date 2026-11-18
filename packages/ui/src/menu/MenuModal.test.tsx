@@ -26,7 +26,7 @@ function item(overrides: Partial<MenuItem> & { key: string }): MenuItem {
 const ITEMS: readonly MenuItem[] = [
   item({ key: "contacts", label: "Контакти", icon: "mail", status: "soon", hint: "буде" }),
   item({ key: "notes", label: "Нотатки", icon: "text" }),
-  item({ key: "theme", label: "Тема", icon: "sliders", selected: true }),
+  item({ key: "theme", label: "Тема", icon: "palette", selected: true }),
 ];
 
 function html(props: Partial<Parameters<typeof MenuModal>[0]> = {}): string {
