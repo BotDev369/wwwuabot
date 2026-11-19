@@ -80,10 +80,15 @@ export function peerPlace(snapshot: PeerSnapshot): string {
  * ближчого до одужання, про це сказано прямо, інакше рядок просто не
  * відмалювався б і виглядав би як збій.
  */
-export function peerAlongside(snapshot: PeerSnapshot): string {
+export function peerAlongside(snapshot: PeerSnapshot, trait = false): string {
   const { milderPeople, total, mine } = snapshot;
   if (!mine || total === 0) return "";
   const share = Math.round((milderPeople / total) * 100);
+  if (trait) {
+    // У рис немає «ближче до одужання»: інший бік — просто інша смуга.
+    if (milderPeople === 0) return "У цій вибірці всі, хто проходив, — у твоїй смузі.";
+    return `В інших смугах — ${peopleCount(milderPeople)} — це ${share}%.`;
+  }
   const tail = " Стан рухається: повтори тест через два тижні й порівняй.";
   if (milderPeople === 0) {
     return `У цій вибірці ні в кого немає стану, ближчого до одужання, ніж у тебе.${tail}`;
@@ -112,11 +117,11 @@ export interface PeerReading {
   readonly smallNote: string;
 }
 
-export function peerReading(snapshot: PeerSnapshot): PeerReading {
+export function peerReading(snapshot: PeerSnapshot, trait = false): PeerReading {
   return {
     headline: peerHeadline(snapshot),
     place: peerPlace(snapshot),
-    alongside: peerAlongside(snapshot),
+    alongside: peerAlongside(snapshot, trait),
     smallNote: peerSmallNote(snapshot),
   };
 }

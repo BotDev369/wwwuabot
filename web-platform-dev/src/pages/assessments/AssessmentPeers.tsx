@@ -36,7 +36,11 @@ interface AssessmentPeersProps {
 
 export function AssessmentPeers({ scale, tally, raw }: AssessmentPeersProps): ReactElement {
   const snapshot = useMemo(() => peerSnapshot(scale, tally, raw), [scale, tally, raw]);
-  const text = useMemo(() => peerReading(snapshot), [snapshot]);
+  // Риса не має боку «гірше»: «ближче до одужання» тут було б вигадкою.
+  const text = useMemo(
+    () => peerReading(snapshot, scale.attentionRaw === undefined),
+    [snapshot, scale],
+  );
 
   return (
     <section className="wb-peers">

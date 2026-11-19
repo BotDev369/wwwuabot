@@ -15,7 +15,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { MOOD_ANXIETY, peerSnapshot } from "@wwwuabot/shared/assessments";
+import { BIG_FIVE, MOOD_ANXIETY, peerSnapshot } from "@wwwuabot/shared/assessments";
 import { peerAlongside, peerHeadline, peerPlace, peerReading, peerSmallNote } from "./peer-view";
 
 /** Шкала настрою: 12 балів — помірні симптоми. */
@@ -102,6 +102,26 @@ describe("стан поруч", () => {
     for (const pattern of banned) {
       expect(said, pattern.toString()).not.toMatch(pattern);
     }
+  });
+});
+
+describe("риса, а не стан", () => {
+  const factor = BIG_FIVE.scales[0];
+  if (!factor) throw new Error("У тесті немає першої шкали.");
+
+  it("у рис немає «ближче до одужання»: інший бік — просто інша смуга", () => {
+    const snapshot = peerSnapshot(factor, { middle: 4, high: 6 }, 12);
+    const text = peerAlongside(snapshot, true);
+
+    expect(text).not.toContain("одужання");
+    expect(text).not.toContain("Стан рухається");
+    expect(text).toContain("6 людей");
+    expect(text).toContain("60%");
+  });
+
+  it("усі в одній смузі — це сказано, а не порожній рядок", () => {
+    const snapshot = peerSnapshot(factor, { middle: 5 }, 12);
+    expect(peerAlongside(snapshot, true)).toContain("у твоїй смузі");
   });
 });
 

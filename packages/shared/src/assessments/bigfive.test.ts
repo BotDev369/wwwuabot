@@ -25,6 +25,11 @@ describe("реєстр", () => {
     expect(getAssessment("bigfive")).toBe(BIG_FIVE);
   });
 
+  it("п'ять незалежних факторів не мають спільного висновку", () => {
+    // «Висновок із двох шкал» описує один стан; у п'яти факторів його немає.
+    expect(BIG_FIVE.combined).toBeUndefined();
+  });
+
   it("двадцять тверджень, по чотири на кожен із п'яти факторів", () => {
     expect(BIG_FIVE.items).toHaveLength(20);
     expect(BIG_FIVE.scales).toHaveLength(5);

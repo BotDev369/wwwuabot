@@ -44,8 +44,9 @@ export function CombinedConclusion({
   records,
 }: CombinedConclusionProps): ReactElement | null {
   // Без обох замірів висновку нема: рахувати «10 з» без знаменника означає
-  // показати число, якого не можна прочитати.
-  if (test.scales.length < 2 || records.length < 2) return null;
+  // показати число, якого не можна прочитати. `combined` каже, що шкали
+  // описують один стан: у п'яти факторів «висновку з двох» не існує.
+  if (!test.combined || test.scales.length < 2 || records.length < 2) return null;
   const [first, second] = records;
   const [firstScale, secondScale] = test.scales;
   if (!first || !second || !firstScale || !secondScale) return null;

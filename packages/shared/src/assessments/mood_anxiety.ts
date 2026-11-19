@@ -163,6 +163,8 @@ export const MOOD_ANXIETY: AssessmentTest = {
   options: OPTIONS,
   scales: SCALES,
   disclaimerInline: true,
+  // Дві шкали описують один стан, тому спільний висновок справді має сенс.
+  combined: true,
   disclaimer:
     "Це скринінговий інструмент, а не діагноз. Він не встановлює причину: діагноз ставить лише кваліфікований фахівцеві на основі бесіди та обстеження.",
   help: HELP_LINES,
