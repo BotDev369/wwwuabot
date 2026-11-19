@@ -46,6 +46,12 @@ export function DossierCalculations({ systems }: { systems: readonly SystemRead[
               <strong>Чого не знає:</strong> {system.limits.join("; ")}.
             </p>
           )}
+          {typeof system.undetermined === "number" && system.undetermined > 0 && (
+            <p className="wb-calc__scope">
+              <strong>Чого не визначає:</strong> {system.undetermined} якостей ядра — вони лишаються
+              «Не знаємо», а не отримують середину.
+            </p>
+          )}
           {system.source && <p className="wb-calc__source">Канон: {system.source}</p>}
         </details>
       ))}

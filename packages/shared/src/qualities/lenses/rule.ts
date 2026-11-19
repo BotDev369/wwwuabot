@@ -15,6 +15,26 @@ export interface LensRule {
   readonly note: string;
 }
 
+/**
+ * Одна якість — одне свідчення на систему. Різні показники тієї самої
+ * системи часто ведуть до тієї ж якості; показуємо найсильніше, щоб
+ * «скільки систем назвали» не рахувало одну систему двічі.
+ */
+export function strongestPerQuality(claims: readonly QualityClaim[]): readonly QualityClaim[] {
+  const best = new Map<string, QualityClaim>();
+  for (const claim of claims) {
+    const previous = best.get(claim.qualityId);
+    if (!previous) {
+      best.set(claim.qualityId, claim);
+      continue;
+    }
+    const stronger = claim.level > previous.level ? claim : previous;
+    const merged = [...new Set([...(previous.details ?? []), ...(claim.details ?? [])])];
+    best.set(claim.qualityId, merged.length > 0 ? { ...stronger, details: merged } : stronger);
+  }
+  return [...best.values()];
+}
+
 /** Свідчення таблиці; префікс — вихід системи, з якого взято правило. */
 export function claimsOf(
   lens: LensDefinition,

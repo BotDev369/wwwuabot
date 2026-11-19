@@ -32,7 +32,7 @@ export interface UseMyDatesReturn
   handleDelete: (id: string) => Promise<void>;
   handleBulkDelete: () => Promise<void>;
   /**
-   * Аналіз вибраних дат — однієї або більше: одразу досьє, де кожна дата
+   * Аналіз вибраних дат — однієї або більше: одразу портреті, де кожна дата
    * має свій суб'єкт.
    */
   handleBulkAnalyze: () => void;

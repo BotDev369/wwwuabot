@@ -1,214 +1,320 @@
 /**
- * Маянський Цолькін: день і тон → свідчення. День рахує сервер за кореляцією
- * GMT 584283, таблицю тримає лінза; довга лічба й пророцтва сюди не входять.
+ * Цолькін: кін, тон, печатка й хвиля з дати за кореляцією GMT 584283. Формули
+ * від юліанського дня: кін = ((дні + 159) mod 260) + 1, тон = ((дні + 3) mod 13) + 1,
+ * печатка = (дні + 19) mod 20. Довга лічба показується для звірки.
+ * Таблиці й перевірка: `specs/analysis-core/07-systems.md`.
  *
  * @module @wwwuabot/shared/qualities/lenses/mayan
  */
 
-import { claimsOf, type LensRule } from "./rule";
+import { makeClaim } from "../claims";
 import type { LensDefinition, QualityClaim } from "../types";
+import { strongestPerQuality, type LensRule } from "./rule";
 
-/** Лінза як дані: версія, шар, входи. */
 export const MAYAN: LensDefinition = {
   id: "mayan",
   name: "Маянський Цолькін",
-  version: "1",
+  version: "2",
   layer: "symbolic",
   inputs: ["date"],
-  rule: "день і тон Цолькіна",
+  rule: "кін, тон, печатка й хвиля Цолькіна",
   about:
-    "Цолькін — 260-денний цикл із 20 печаток і 13 тонів. Дата дає один із 260 днів; " +
-    "традиція читає його як характер дня й людини, народженої в ньому.",
-  gives: ["печатку дня", "тональність 1–13"],
-  limits: [
-    "довга лічба й календарне коло — окремі цикли, не прогноз",
-    "без часу народження немає години й володаря дня",
+    "Цолькін — 260-денний цикл із 20 печаток і 13 тонів. Дата дає один із 260 днів (кін), " +
+    "його тон і печатку, а також 13-денну хвилю (трецену), у якій цей день лежить.",
+  gives: [
+    "кін 1–260",
+    "тональність 1–13",
+    "печатку з 20",
+    "хвилю (трецену) і день її початку",
+    "довгу лічбу для звірки",
   ],
-  source: "Кореляція GMT 584283; 2012-12-21 = 4 Ахау; печатки й тони — класичний Цолькін.",
+  limits: [
+    "без часу народження немає володаря дня й годинного циклу",
+    "довга лічба й календарне коло — окремі цикли, не прогноз",
+    "кореляція GMT 584283: інші кореляції зсувають дату на 2 дні",
+  ],
+  source:
+    "Кореляція GMT 584283 (Томпсон): 2012-12-21 = 13.0.0.0.0 = 4 Ахау, кін 160; 2000-01-01 = 11 Ік, кін 102.",
 };
 
-interface DayRow {
-  readonly name: string;
-  readonly rules: readonly LensRule[];
+/** Канонічний профіль Цолькіна на дату. */
+export interface MayanProfile {
+  readonly date: string;
+  /** Юліанський день опівдні — основа всіх формул. */
+  readonly julianDay: number;
+  /** Днів від епохи 0.0.0.0.0. */
+  readonly days: number;
+  readonly kin: number;
+  readonly tone: number;
+  readonly toneName: string;
+  readonly seal: string;
+  readonly sealIndex: number;
+  /** Номер трецени 1…20 — у якій лежить кін. */
+  readonly trecena: number;
+  /** Перший день хвилі: «1 Кіб». */
+  readonly wave: string;
+  readonly waveKin: number;
+  /** Довга лічба: «12.19.6.15.2». */
+  readonly longCount: string;
 }
 
-/** Двадцять печаток у порядку Цолькіна; індекс — (днів від епохи + 19) % 20. */
-const TABLE: readonly DayRow[] = [
-  {
-    name: "Іміш",
-    rules: [
+const SEALS: readonly (readonly [string, readonly LensRule[]])[] = [
+  [
+    "Іміш",
+    [
       { qualityId: "care", level: 4, note: "помічає потребу" },
       { qualityId: "vitality", level: 4, note: "енергії більше, ніж планів" },
       { qualityId: "imagination", level: 3, note: "пропонує кілька варіантів" },
     ],
-  },
-  {
-    name: "Ік",
-    rules: [
+  ],
+  [
+    "Ік",
+    [
       { qualityId: "verbal", level: 4, note: "слово дається легко" },
       { qualityId: "openness", level: 4, note: "іде в незнайоме першим" },
       { qualityId: "tempo", level: 3, note: "перемикається швидко" },
     ],
-  },
-  {
-    name: "Акбаль",
-    rules: [
+  ],
+  [
+    "Акбаль",
+    [
+      { qualityId: "focus", level: 4, note: "тримає одну задачу" },
+      { qualityId: "analysis", level: 4, note: "розкладає на частини" },
+      { qualityId: "stressResilience", level: 3, note: "витримує тиск" },
+    ],
+  ],
+  [
+    "Кан",
+    [
+      { qualityId: "openness", level: 4, note: "приймає несподіване" },
+      { qualityId: "learning", level: 4, note: "вчиться з досвіду" },
+      { qualityId: "playfulness", level: 3, note: "проба без гарантії" },
+    ],
+  ],
+  [
+    "Чикчан",
+    [
+      { qualityId: "initiative", level: 4, note: "починає рух" },
+      { qualityId: "leadership", level: 4, note: "бере кермо" },
+      { qualityId: "endurance", level: 3, note: "тримає темп" },
+    ],
+  ],
+  [
+    "Кімі",
+    [
+      { qualityId: "honesty", level: 4, note: "каже як є" },
+      { qualityId: "care", level: 4, note: "не кидає напризволяще" },
+      { qualityId: "purposefulness", level: 3, note: "доводить до кінця" },
+    ],
+  ],
+  [
+    "Манік",
+    [
+      { qualityId: "precision", level: 4, note: "перевіряє деталі" },
+      { qualityId: "recovery", level: 4, note: "відновлюється після збою" },
+      { qualityId: "discipline", level: 3, note: "тримає режим" },
+    ],
+  ],
+  [
+    "Ламат",
+    [
+      { qualityId: "cooperation", level: 4, note: "збирає людей" },
+      { qualityId: "empathy", level: 4, note: "чує стан" },
+      { qualityId: "care", level: 3, note: "бере частину іншого" },
+    ],
+  ],
+  [
+    "Мулук",
+    [
+      { qualityId: "care", level: 4, note: "тримає чужу потребу" },
+      { qualityId: "honesty", level: 3, note: "не обманює" },
+      { qualityId: "endurance", level: 3, note: "витримує довго" },
+    ],
+  ],
+  [
+    "Ок",
+    [
+      { qualityId: "honesty", level: 4, note: "платить ціну за правду" },
+      { qualityId: "closeness", level: 4, note: "тримає близькість" },
+      { qualityId: "purposefulness", level: 3, note: "не зраджує напрям" },
+    ],
+  ],
+  [
+    "Чуен",
+    [
+      { qualityId: "playfulness", level: 4, note: "робить нове" },
+      { qualityId: "imagination", level: 4, note: "бачить варіанти" },
+      { qualityId: "aesthetics", level: 3, note: "має смак" },
+    ],
+  ],
+  [
+    "Еб",
+    [
+      { qualityId: "openness", level: 4, note: "іде в незнайоме" },
+      { qualityId: "verbal", level: 3, note: "домовляється" },
+      { qualityId: "tempo", level: 3, note: "швидко перемикається" },
+    ],
+  ],
+  [
+    "Бен",
+    [
+      { qualityId: "leadership", level: 4, note: "веде за собою" },
+      { qualityId: "planning", level: 4, note: "бачить послідовність" },
+      { qualityId: "purposefulness", level: 3, note: "тримає ціль" },
+    ],
+  ],
+  [
+    "Іш",
+    [
       { qualityId: "analysis", level: 4, note: "перевіряє припущення" },
-      { qualityId: "focus", level: 4, note: "глибока робота без нагадувань" },
-      { qualityId: "imagination", level: 3, note: "бачить варіанти поза наявним" },
-    ],
-  },
-  {
-    name: "Кан",
-    rules: [
-      { qualityId: "learning", level: 4, note: "засвоює нове з практики" },
-      { qualityId: "purposefulness", level: 4, note: "тримає ціль, коли стає важко" },
-      { qualityId: "care", level: 3, note: "допомагає без нагадування" },
-    ],
-  },
-  {
-    name: "Чикчан",
-    rules: [
-      { qualityId: "vitality", level: 4, note: "легко бере додаткове" },
-      { qualityId: "persuasion", level: 4, note: "веде за собою без наказу" },
-      { qualityId: "focus", level: 3, note: "годинами лишається в задачі" },
-    ],
-  },
-  {
-    name: "Кімі",
-    rules: [
-      { qualityId: "honesty", level: 4, note: "каже незручну правду" },
-      { qualityId: "stressResilience", level: 4, note: "під тиском діє спокійніше" },
-      { qualityId: "openness", level: 3, note: "пробує нове в звичних межах" },
-    ],
-  },
-  {
-    name: "Манік",
-    rules: [
-      { qualityId: "care", level: 4, note: "тримає чужу потребу в полі зору" },
-      { qualityId: "empathy", level: 4, note: "чує і те, що не сказано" },
-      { qualityId: "precision", level: 3, note: "звіряє ключові числа" },
-    ],
-  },
-  {
-    name: "Ламат",
-    rules: [
-      { qualityId: "aesthetics", level: 4, note: "бачить форму як аргумент" },
-      { qualityId: "imagination", level: 4, note: "бачить нестандартний хід" },
-      { qualityId: "playfulness", level: 3, note: "гра — спосіб думати" },
-    ],
-  },
-  {
-    name: "Мулук",
-    rules: [
-      { qualityId: "empathy", level: 4, note: "підбирає слова під стан" },
-      { qualityId: "care", level: 4, note: "бере на себе більше, ніж просять" },
-      { qualityId: "stressResilience", level: 3, note: "відновлюється після збою" },
-    ],
-  },
-  {
-    name: "Ок",
-    rules: [
-      { qualityId: "honesty", level: 4, note: "тримає слово" },
-      { qualityId: "cooperation", level: 4, note: "домовляється про ролі" },
-      { qualityId: "listening", level: 3, note: "переказує почуте так, що впізнають" },
-    ],
-  },
-  {
-    name: "Чуен",
-    rules: [
-      { qualityId: "playfulness", level: 4, note: "міняє правила гри" },
-      { qualityId: "verbal", level: 4, note: "говорить так, що слухають" },
-      { qualityId: "enterprise", level: 3, note: "пробує мале без великого ризику" },
-    ],
-  },
-  {
-    name: "Еб",
-    rules: [
-      { qualityId: "purposefulness", level: 4, note: "повертається до цілі після збою" },
-      { qualityId: "planning", level: 4, note: "планує наперед і тримає запас" },
-      { qualityId: "cooperation", level: 3, note: "тримає свою частину" },
-    ],
-  },
-  {
-    name: "Бен",
-    rules: [
-      { qualityId: "leadership", level: 4, note: "веде за собою добровільно" },
-      { qualityId: "purposefulness", level: 4, note: "тримає напрям роками" },
-      { qualityId: "verbal", level: 3, note: "легко формулює думку" },
-    ],
-  },
-  {
-    name: "Іш",
-    rules: [
-      { qualityId: "analysis", level: 4, note: "перевіряє припущення" },
-      { qualityId: "focus", level: 4, note: "не помічає часу в роботі" },
+      { qualityId: "abstraction", level: 4, note: "бачить схему" },
       { qualityId: "precision", level: 3, note: "ловить невідповідність" },
     ],
-  },
-  {
-    name: "Мен",
-    rules: [
-      { qualityId: "abstraction", level: 4, note: "будує модель і переносить її" },
-      { qualityId: "planning", level: 4, note: "бачить послідовність на місяці" },
-      { qualityId: "leadership", level: 3, note: "бере відповідальність за результат" },
+  ],
+  [
+    "Мен",
+    [
+      { qualityId: "leadership", level: 4, note: "бере відповідальність" },
+      { qualityId: "organization", level: 4, note: "ставить систему" },
+      { qualityId: "precision", level: 3, note: "тримає стандарт" },
     ],
-  },
-  {
-    name: "Кіб",
-    rules: [
-      { qualityId: "honesty", level: 4, note: "платить ціну за правду" },
-      { qualityId: "analysis", level: 4, note: "називає ціну помилки" },
-      { qualityId: "listening", level: 3, note: "чує зміст і стан" },
+  ],
+  [
+    "Кіб",
+    [
+      { qualityId: "focus", level: 4, note: "заглиблюється" },
+      { qualityId: "order", level: 4, note: "наводить лад" },
+      { qualityId: "imagination", level: 3, note: "бачить невидиме" },
     ],
-  },
-  {
-    name: "Кабан",
-    rules: [
-      { qualityId: "organization", level: 4, note: "система працює без нагадувань" },
-      { qualityId: "discipline", level: 4, note: "робить потрібне щодня" },
-      { qualityId: "planning", level: 3, note: "тримає запас на збої" },
+  ],
+  [
+    "Кабан",
+    [
+      { qualityId: "learning", level: 4, note: "шукає знання" },
+      { qualityId: "analysis", level: 3, note: "розбирає задачу" },
+      { qualityId: "openness", level: 3, note: "приймає нове" },
     ],
-  },
-  {
-    name: "Ецнаб",
-    rules: [
-      { qualityId: "precision", level: 4, note: "бачить невідповідність" },
-      { qualityId: "honesty", level: 4, note: "каже правду, коли це дорого" },
-      { qualityId: "analysis", level: 3, note: "перевіряє дані" },
+  ],
+  [
+    "Ецнаб",
+    [
+      { qualityId: "honesty", level: 4, note: "тримає слово" },
+      { qualityId: "listening", level: 4, note: "чує іншого" },
+      { qualityId: "analysis", level: 3, note: "шукає істину" },
     ],
-  },
-  {
-    name: "Кауак",
-    rules: [
-      { qualityId: "stressResilience", level: 4, note: "зберігає ясність у кризі" },
-      { qualityId: "vitality", level: 4, note: "енергії більше, ніж планів" },
-      { qualityId: "initiative", level: 3, note: "береться за невизначене" },
+  ],
+  [
+    "Кауак",
+    [
+      { qualityId: "stressResilience", level: 4, note: "тримається в бурі" },
+      { qualityId: "care", level: 4, note: "не лишає в біді" },
+      { qualityId: "vitality", level: 3, note: "відновлюється" },
     ],
-  },
-  {
-    name: "Ахау",
-    rules: [
-      { qualityId: "leadership", level: 4, note: "у кризі стає точкою опори" },
-      { qualityId: "empathy", level: 4, note: "тримає чужі межі й свої" },
-      { qualityId: "purposefulness", level: 3, note: "тримає напрям" },
+  ],
+  [
+    "Ахау",
+    [
+      { qualityId: "imagination", level: 4, note: "бачить ціле" },
+      { qualityId: "purposefulness", level: 4, note: "тримає напрям" },
+      { qualityId: "listening", level: 3, note: "чує тишу" },
     ],
-  },
+  ],
 ];
 
-const BY_NAME = new Map(TABLE.map((row) => [row.name, row]));
+const TONES: readonly (readonly [string, LensRule])[] = [
+  ["Магнітна", { qualityId: "purposefulness", level: 3, note: "тон 1 задає напрям" }],
+  ["Місячна", { qualityId: "empathy", level: 3, note: "тон 2 задає чутливість" }],
+  ["Електрична", { qualityId: "initiative", level: 3, note: "тон 3 задає рух" }],
+  ["Самосуща", { qualityId: "precision", level: 3, note: "тон 4 задає форму" }],
+  ["Панівна", { qualityId: "leadership", level: 3, note: "тон 5 задає кермо" }],
+  ["Ритмічна", { qualityId: "order", level: 3, note: "тон 6 задає рівновагу" }],
+  ["Резонансна", { qualityId: "listening", level: 3, note: "тон 7 задає налаштування" }],
+  ["Галактична", { qualityId: "honesty", level: 3, note: "тон 8 задає цілісність" }],
+  ["Сонячна", { qualityId: "vitality", level: 3, note: "тон 9 задає енергію" }],
+  ["Планетарна", { qualityId: "organization", level: 3, note: "тон 10 задає прояв" }],
+  ["Спектральна", { qualityId: "openness", level: 3, note: "тон 11 задає вивільнення" }],
+  ["Кристалічна", { qualityId: "cooperation", level: 3, note: "тон 12 задає спільність" }],
+  ["Космічна", { qualityId: "abstraction", level: 3, note: "тон 13 задає вихід за межі" }],
+];
 
-/** Печатки в порядку Цолькіна — з нього сервер бере індекс дня. */
-export const MAYAN_DAY_SIGNS: readonly string[] = TABLE.map((row) => row.name);
+export const MAYAN_DAY_SIGNS: readonly string[] = SEALS.map(([name]) => name);
 
-/** Свідчення для дня Цолькіна; тон входить у доказ, але не множить рівень. */
-export function mayanClaims(daySign: string, tone: number): readonly QualityClaim[] {
-  const row = BY_NAME.get(daySign);
-  if (!row) {
-    throw new Error(`Печатки «${daySign}» немає в таблиці Цолькіна — рівень не вигадуємо.`);
+/** Печатка за індексом 0…19; сервер бере індекс із формули. */
+export function mayanSeal(index: number): string | null {
+  return SEALS[index]?.[0] ?? null;
+}
+
+/** Перевірка, що число тональності не вигадане. */
+export function mayanTone(value: number): string | null {
+  return TONES[value - 1]?.[0] ?? null;
+}
+
+function claim(
+  profile: MayanProfile,
+  rule: LensRule,
+  evidence: string,
+  details: readonly string[],
+): QualityClaim {
+  return makeClaim({
+    qualityId: rule.qualityId,
+    level: rule.level,
+    layer: "symbolic",
+    sourceId: MAYAN.id,
+    sourceVersion: MAYAN.version,
+    method: "mapped",
+    evidence: `${evidence}: ${rule.note}`,
+    details: [`Дата: ${profile.date}`, ...details],
+  });
+}
+
+/**
+ * Свідчення печатки, тону й хвилі. Хвиля бере характер свого першого дня —
+ * це традиційне правило трецени, а не наше узагальнення.
+ */
+export function mayanClaims(profile: MayanProfile): readonly QualityClaim[] {
+  const seal = SEALS[profile.sealIndex];
+  if (!seal) throw new Error(`Печатки «${profile.seal}» немає в таблиці Цолькіна.`);
+
+  const base = `Кін ${profile.kin}: ${profile.tone} ${profile.seal}`;
+  const common = [
+    `Довга лічба: ${profile.longCount}; юліанський день ${profile.julianDay}.`,
+    `Кореляція GMT 584283, днів від епохи: ${profile.days}.`,
+  ];
+
+  const claims: QualityClaim[] = seal[1].map((rule) =>
+    claim(profile, rule, base, [
+      ...common,
+      `Правило: печатка ${profile.seal} дає «${rule.note}» → рівень ${rule.level}.`,
+    ]),
+  );
+
+  const toneRule = TONES[profile.tone - 1]?.[1];
+  if (toneRule) {
+    claims.push(
+      claim(profile, toneRule, `Тон ${profile.tone} (${profile.toneName})`, [
+        ...common,
+        `Правило: тон ${profile.tone} дає «${toneRule.note}» → рівень ${toneRule.level}.`,
+      ]),
+    );
   }
-  if (!Number.isInteger(tone) || tone < 1 || tone > 13) {
-    throw new Error(`Тон Цолькіна ${tone} поза шкалою 1…13.`);
+
+  const waveSealIndex = (profile.waveKin - 1) % 20;
+  const waveSeal = SEALS[waveSealIndex];
+  const waveRule = waveSeal?.[1][0];
+  if (waveRule) {
+    claims.push(
+      claim(
+        profile,
+        { ...waveRule, level: 2, note: `хвиля ${profile.wave}: ${waveRule.note}` },
+        `Хвиля ${profile.wave}`,
+        [
+          ...common,
+          `Трецена ${profile.trecena}: від кіна ${profile.waveKin} до ${profile.waveKin + 12}.`,
+          `Правило: характер хвилі задає її перший день «${profile.wave}» → рівень 2.`,
+        ],
+      ),
+    );
   }
-  return claimsOf(MAYAN, `День Цолькіна ${tone} ${row.name}`, row.rules);
+
+  return strongestPerQuality(claims);
 }

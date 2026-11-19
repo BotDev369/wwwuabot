@@ -19,7 +19,7 @@ import { VALUES } from "./values";
 import { WILL } from "./will";
 import type { Quality, QualityDomain } from "../types";
 
-/** Порядок доменів — це порядок показу в досьє. */
+/** Порядок доменів — це порядок показу у портреті. */
 export const QUALITY_DOMAINS: readonly QualityDomain[] = [
   ENERGY,
   MIND,

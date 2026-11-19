@@ -73,7 +73,7 @@ async function signedInitData(userId = 777): Promise<string> {
 const EMPTY_ENV = {} as Env;
 
 /**
- * Досьє без виміряного шару: дата й лінзи не торкаються бази взагалі, тож
+ * Портрет без виміряного шару: дата й лінзи не торкаються бази взагалі, тож
  * порожнє середовище — це доказ, а не зручність.
  */
 const handleDossier = (request: Request): Promise<Response> => handleDossierRaw(request, EMPTY_ENV);
@@ -205,7 +205,7 @@ describe("реєстр систем приходить з бази", () => {
   });
 });
 
-describe("досьє за датою", () => {
+describe("портрет за датою", () => {
   it("людина отримує свідчення, а подія — чесний стан без рис", async () => {
     const person = await handleDossier(
       request("/api/mydate/dossier", {
@@ -252,14 +252,14 @@ describe("досьє за датою", () => {
     expect(eventBody.dossiers[0]?.note).toBe("event-not-modelled");
   });
 
-  it("без валідних дат — 400, а не порожнє досьє", async () => {
+  it("без валідних дат — 400, а не порожній портрет", async () => {
     const response = await handleDossier(
       request("/api/mydate/dossier", { dates: ["03.03.1980", ""], lenses: ["western"] }),
     );
     expect(response.status).toBe(400);
   });
 
-  it("без вибору систем — 400: досьє не рахується саме", async () => {
+  it("без вибору систем — 400: портрет не рахується саме", async () => {
     const response = await handleDossier(request("/api/mydate/dossier", { dates: ["1980-03-03"] }));
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({ ok: false, error: "No lenses selected" });

@@ -1,5 +1,5 @@
 /**
- * Читання досьє: свідчення → домени → рівень якості. Рівень тут — **провідний
+ * Читання портрета: свідчення → домени → рівень якості. Рівень тут — **провідний
  * рівень свідчень**, а не середнє: розбіжність лишається розбіжністю (`level`
  * порожній), а якість без свідчень — порожньою, не «серединою».
  *
@@ -10,7 +10,7 @@ import { QUALITY_DOMAINS } from "./domains";
 import { hasConflict, summarizeQuality, type QualitySummary } from "./profile";
 import type { Quality, QualityClaim, QualityDomain, QualityLevel } from "./types";
 
-/** Одна якість у досьє: її свідчення, розподіл і те, що показувати. */
+/** Одна якість у портреті: її свідчення, розподіл і те, що показувати. */
 export interface QualityReading {
   readonly quality: Quality;
   readonly claims: readonly QualityClaim[];
@@ -23,7 +23,7 @@ export interface QualityReading {
   readonly divergent: boolean;
 }
 
-/** Домен досьє разом із тим, скільки його якостей мають свідчення. */
+/** Домен портрета разом із тим, скільки його якостей мають свідчення. */
 export interface DomainReading {
   readonly domain: QualityDomain;
   readonly qualities: readonly QualityReading[];
@@ -60,7 +60,7 @@ function leadingLevel(claims: readonly QualityClaim[]): QualityLevel | null {
   return best;
 }
 
-/** Читання однієї якості за свідченнями всього досьє. */
+/** Читання однієї якості за свідченнями всього портрета. */
 export function readQuality(claims: readonly QualityClaim[], quality: Quality): QualityReading {
   const own = claims.filter((claim) => claim.qualityId === quality.id);
   if (own.length === 0) {
@@ -86,7 +86,7 @@ export function readQuality(claims: readonly QualityClaim[], quality: Quality): 
   };
 }
 
-/** Усе досьє: кожен домен і кожна його якість — навіть без свідчень. */
+/** Увесь портрет: кожен домен і кожна його якість — навіть без свідчень. */
 export function readDossier(claims: readonly QualityClaim[]): readonly DomainReading[] {
   return QUALITY_DOMAINS.map((domain) => {
     const qualities = domain.qualities.map((quality) => readQuality(claims, quality));

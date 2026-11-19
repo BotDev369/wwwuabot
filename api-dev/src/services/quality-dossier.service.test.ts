@@ -1,5 +1,5 @@
 /**
- * Досьє за датою: людина отримує свідчення лише вибраних лінз, подія — чесне
+ * Портрет за датою: людина отримує свідчення лише вибраних лінз, подія — чесне
  * «ще не описано». Покриття й розбіжність перевіряються на реальній даті.
  *
  * @module api-dev/src/services/quality-dossier.service.test
@@ -29,8 +29,26 @@ describe("buildDossier", () => {
   it("чотири системи дають чотири джерела й повне покриття дати", () => {
     const dossier = buildDossier("1980-03-03", "person", ALL);
     expect(dossier.symbol).toBe("Риби");
-    expect(dossier.claims).toHaveLength(20);
+    expect(dossier.claims.length).toBeGreaterThanOrEqual(26);
     expect(dossier.systems.map((one) => one.id)).toEqual([...ALL]);
+    expect(dossier.claims.every((claim) => (claim.details ?? []).length > 0)).toBe(true);
+    const parameters = dossier.systems.flatMap((one) => one.parameters.map((row) => row.label));
+    expect(parameters).toEqual(
+      expect.arrayContaining([
+        "Градус Сонця",
+        "Життєвий шлях",
+        "Пік 1 (0–30)",
+        "Виклик 4",
+        "Стовп місяця",
+        "Сонячний термін",
+        "Кін",
+        "Хвиля (трецена)",
+      ]),
+    );
+    for (const system of dossier.systems) {
+      expect(system.undetermined).toBeGreaterThanOrEqual(0);
+      expect(system.undetermined).toBeLessThanOrEqual(36);
+    }
     expect(new Set(dossier.claims.map((claim) => claim.sourceId))).toEqual(
       new Set(["western", "numerology", "chinese", "mayan"]),
     );

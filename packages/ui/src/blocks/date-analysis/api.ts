@@ -31,6 +31,8 @@ export interface SystemRead {
   limits?: string[];
   source?: string;
   parameters: SystemParameter[];
+  /** Скільких якостей система не визначає — вони лишаються «Не знаємо». */
+  undetermined?: number;
 }
 
 /**
@@ -123,7 +125,7 @@ export async function fetchSystems(): Promise<AnalysisSystem[]> {
 }
 
 /**
- * Досьє за датами: один запит на екран, скільки б суб'єктів не було. Вид їде
+ * Портрет за датами: один запит на екран, скільки б суб'єктів не було. Вид їде
  * переліком (`person,event`) — словник у кожного суб'єкта свій.
  */
 export async function fetchDossiers(

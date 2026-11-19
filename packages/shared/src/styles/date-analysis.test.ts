@@ -1,5 +1,5 @@
 /**
- * Сторож `date-analysis.css`: таблиця вітрини систем і рядки досьє.
+ * Сторож `date-analysis.css`: таблиця вітрини систем і рядки портрета.
  *
  * Читається як текст: розбору CSS у тестовому середовищі немає
  * (`environment: node`) — так само, як у `dates.test.ts`.
@@ -71,7 +71,7 @@ describe("вітрина систем: таблиця без рамки й бе�
   });
 });
 
-describe("досьє: рядок якості й розподіл", () => {
+describe("портрет: рядок якості й розподіл", () => {
   it("старої таблиці аналізу й закріпленої шапки більше немає", () => {
     expect(css).not.toContain(".wb-analysis-views");
     expect(css).not.toContain(".wb-param-pin");
@@ -99,7 +99,7 @@ describe("досьє: рядок якості й розподіл", () => {
     expect(rule(".wb-dossier-survey__link")).toContain("min-height: 44px");
   });
 
-  it("вузький екран не розсовує досьє", () => {
+  it("вузький екран не розсовує портрет", () => {
     expect(rule(".wb-dossier")).toContain("min-width: 0");
     expect(rule(".wb-dossier__title")).toContain("overflow-wrap: anywhere");
   });

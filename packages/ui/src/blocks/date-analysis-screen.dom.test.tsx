@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * Екран аналізу рендерить **досьє**, а не таблицю параметрів. Досьє рахується
+ * Екран аналізу рендерить **портрет**, а не таблицю параметрів. Портрет рахується
  * лише після явного вибору систем; перевіряється те, що видно людині: вибір,
  * домени, рівень якорем, свідчення з джерелом і шаром, розбіжність обома
  * позиціями, чесне «не знаємо», стан опитування й подія без рис людини.
@@ -79,7 +79,7 @@ const DOSSIER = {
   note: null,
 };
 
-/** Заглушка API: досьє віддає саме те, що просив тест. */
+/** Заглушка API: портрет віддає саме те, що просив тест. */
 function stubApi(dossiers: unknown[], survey: unknown = null): { calls: string[] } {
   const calls: string[] = [];
   vi.stubGlobal(
@@ -143,7 +143,7 @@ describe("DateAnalysisBlock — без дат", () => {
 });
 
 describe("DateAnalysisBlock — вибір систем", () => {
-  it("без вибору не робить запит і не показує досьє", async () => {
+  it("без вибору не робить запит і не показує портрет", async () => {
     openAt("?dates=1980-03-03");
     const api = stubApi([DOSSIER]);
     render(<DateAnalysisBlock {...props()} />);
@@ -158,7 +158,7 @@ describe("DateAnalysisBlock — вибір систем", () => {
     expect(screen.queryByText(/мають свідчення/)).toBeNull();
   });
 
-  it("вибір системи рахує досьє і лишає вибір в адресі", async () => {
+  it("вибір системи рахує портрет і лишає вибір в адресі", async () => {
     openAt("?dates=1980-03-03");
     const api = stubApi([DOSSIER]);
     render(<DateAnalysisBlock {...props()} />);
@@ -177,7 +177,7 @@ describe("DateAnalysisBlock — вибір систем", () => {
   });
 });
 
-describe("DateAnalysisBlock — досьє", () => {
+describe("DateAnalysisBlock — портрет", () => {
   it("малює домени й рівень якорем, а не таблицею параметрів", async () => {
     openAt("?dates=1980-03-03&lenses=western");
     const api = stubApi([DOSSIER]);
@@ -282,7 +282,7 @@ describe("DateAnalysisBlock — досьє", () => {
     expect(screen.queryByText(/видно з відповідей/)).toBeNull();
   });
 
-  it("кілька дат — кілька досьє з власними підписами", async () => {
+  it("кілька дат — кілька портретів з власними підписами", async () => {
     openAt("?dates=1980-03-03,1990-05-05&labels=Мама|Я&lenses=western");
     stubApi([DOSSIER, { ...DOSSIER, date: "1990-05-05", claims: [INITIATIVE] }]);
     render(<DateAnalysisBlock {...props()} />);
@@ -294,7 +294,7 @@ describe("DateAnalysisBlock — досьє", () => {
     expect(screen.getAllByText(/5\.05\.1990/).length).toBeGreaterThan(0);
   });
 
-  it("себе показує «Ваше досьє»", async () => {
+  it("себе показує «Ваше портрет»", async () => {
     openAt("?dates=1980-03-03&self=1&lenses=western");
     stubApi([DOSSIER]);
     render(<DateAnalysisBlock {...props()} />);
