@@ -19,7 +19,7 @@ export function DossierCalculations({ systems }: { systems: readonly SystemRead[
       </p>
 
       {systems.map((system) => (
-        <details className="wb-calc__system" key={system.id}>
+        <details className="wb-calc__system" key={system.id} open>
           <summary className="wb-calc__summary">
             <span className="wb-calc__name">{system.name}</span>
             <span className="wb-calc__count">{system.parameters.length} показників</span>
