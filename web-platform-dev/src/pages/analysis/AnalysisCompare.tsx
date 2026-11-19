@@ -94,6 +94,13 @@ export function AnalysisCompare(): ReactElement {
   const survey = readSurvey(search);
   const { dossiers, loading, error } = useDossiers(dates, subject.kinds, lenses, survey);
 
+  const addHref = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set("dates", dates.join(","));
+    params.set("labels", subject.labels.join("|"));
+    return `${ANALYSIS_COMPARE_PATH}?${params.toString()}`;
+  }, [dates, subject.labels]);
+
   const result = useMemo(
     () =>
       comparePeople(
@@ -166,9 +173,9 @@ export function AnalysisCompare(): ReactElement {
 
             <Section
               title="Де картина доповнюється"
-              lead="Якість є не в усіх: один її бачить, іншому бракує систем. Це не розбіжність."
+              lead="Якість є не в усіх, або системи всередині людини розійшлися. Це не розбіжність між людьми — це межа даних."
               rows={result.partial}
-              empty="Усі якості, про які є дані, є в кожного."
+              empty="Усі якості, про які є дані, узгоджені в кожного."
             />
 
             {result.domains.length > 0 && (
@@ -207,7 +214,7 @@ export function AnalysisCompare(): ReactElement {
               </p>
               <p className="an-compare__hint">
                 Спільні якості видно тоді, коли системи обох дали рівень.{" "}
-                <a href={ANALYSIS_COMPARE_PATH}>Додати людину</a>.
+                <a href={addHref}>Додати людину</a>.
               </p>
             </section>
           </>

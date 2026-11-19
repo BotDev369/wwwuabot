@@ -165,7 +165,7 @@ const BY_CHALLENGE: Readonly<Record<number, LensRule>> = {
   1: { qualityId: "autonomy", level: 2, note: "виклик самостійності" },
   2: { qualityId: "listening", level: 2, note: "виклик чутливості до іншого" },
   3: { qualityId: "discipline", level: 2, note: "виклик розкиданості" },
-  4: { qualityId: "order", level: 2, note: "виклик рутини" },
+  4: { qualityId: "organization", level: 2, note: "виклик рутини" },
   5: { qualityId: "endurance", level: 2, note: "виклик свободи без опори" },
   6: { qualityId: "closeness", level: 2, note: "виклик надмірної турботи" },
   7: { qualityId: "openness", level: 2, note: "виклик ізоляції" },

@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 /**
  * Датові системи: таблиця повна, доказ називає показник, а кожне свідчення
  * несе ланцюг «дата → показник → правило → рівень». Тест не перевіряє
@@ -6,8 +8,9 @@
  * @module packages/shared/src/qualities/lenses/date-lenses.test
  */
 
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { QUALITY_DOMAINS } from "../domains";
+import { QUALITY_DOMAINS, getQuality } from "../domains";
 import {
   CHINESE,
   CHINESE_ANIMALS,
@@ -152,5 +155,19 @@ describe("Цолькін", () => {
     expect(claims.every((claim) => claim.details?.join(" ").includes("12.18.6.12.19"))).toBe(true);
     expect(claims.some((claim) => claim.details?.join(" ").includes("Трецена 11"))).toBe(true);
     expect(claims.some((claim) => claim.details?.join(" ").includes("тон 9"))).toBe(true);
+  });
+});
+
+describe("правила й ядро", () => {
+  it("жодне правило не посилається на якість поза ядром", () => {
+    const files = ["western", "numerology", "chinese", "mayan"];
+    const offenders = files.flatMap((file) => {
+      const source = readFileSync(new URL(`./${file}.ts`, import.meta.url), "utf8");
+      return [...source.matchAll(/qualityId: "([^"]+)"/g)]
+        .map((match) => match[1])
+        .filter((id) => getQuality(id) === null)
+        .map((id) => `${file}: ${id}`);
+    });
+    expect(offenders).toEqual([]);
   });
 });

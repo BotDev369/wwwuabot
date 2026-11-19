@@ -183,7 +183,7 @@ const SEALS: readonly (readonly [string, readonly LensRule[]])[] = [
     "Кіб",
     [
       { qualityId: "focus", level: 4, note: "заглиблюється" },
-      { qualityId: "order", level: 4, note: "наводить лад" },
+      { qualityId: "organization", level: 4, note: "наводить лад" },
       { qualityId: "imagination", level: 3, note: "бачить невидиме" },
     ],
   ],
@@ -227,7 +227,7 @@ const TONES: readonly (readonly [string, LensRule])[] = [
   ["Електрична", { qualityId: "initiative", level: 3, note: "тон 3 задає рух" }],
   ["Самосуща", { qualityId: "precision", level: 3, note: "тон 4 задає форму" }],
   ["Панівна", { qualityId: "leadership", level: 3, note: "тон 5 задає кермо" }],
-  ["Ритмічна", { qualityId: "order", level: 3, note: "тон 6 задає рівновагу" }],
+  ["Ритмічна", { qualityId: "organization", level: 3, note: "тон 6 задає рівновагу" }],
   ["Резонансна", { qualityId: "listening", level: 3, note: "тон 7 задає налаштування" }],
   ["Галактична", { qualityId: "honesty", level: 3, note: "тон 8 задає цілісність" }],
   ["Сонячна", { qualityId: "vitality", level: 3, note: "тон 9 задає енергію" }],
