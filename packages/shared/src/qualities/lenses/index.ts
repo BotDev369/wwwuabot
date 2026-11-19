@@ -9,4 +9,4 @@ import type { LensDefinition } from "../types";
 
 export const LENSES: readonly LensDefinition[] = [WESTERN];
 
-export { WESTERN, WESTERN_SIGNS, westernClaims } from "./western";
+export { WESTERN, WESTERN_SIGNS, sunInSign, westernClaims } from "./western";

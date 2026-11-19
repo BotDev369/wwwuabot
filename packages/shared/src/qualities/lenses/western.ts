@@ -91,6 +91,27 @@ const BY_SIGN: Readonly<Record<string, readonly SignRule[]>> = {
   ],
 };
 
+/** Місцевий відмінок знака: «Сонце в Овні», а не «Сонце в Овен». */
+const IN_SIGN: Readonly<Record<string, string>> = {
+  Овен: "в Овні",
+  Телець: "у Тельці",
+  Близнюки: "у Близнюках",
+  Рак: "у Раку",
+  Лев: "у Леві",
+  Діва: "у Діві",
+  Терези: "у Терезах",
+  Скорпіон: "у Скорпіоні",
+  Стрілець: "у Стрільці",
+  Козоріг: "у Козорозі",
+  Водолій: "у Водолії",
+  Риби: "у Рибах",
+};
+
+/** «Сонце …» для знака; `null` — знака немає в таблиці, і мовчазної форми немає. */
+export function sunInSign(sign: string): string | null {
+  return IN_SIGN[sign] ?? null;
+}
+
 /** Усі знаки, для яких є відображення — рівно дванадцять. */
 export const WESTERN_SIGNS: readonly string[] = Object.keys(BY_SIGN);
 
@@ -105,6 +126,10 @@ export function westernClaims(sign: string): readonly QualityClaim[] {
   if (!rules) {
     throw new Error(`Знак «${sign}» відсутній у таблиці західної лінзи — мовчазного рівня немає.`);
   }
+  const place = sunInSign(sign);
+  if (!place) {
+    throw new Error(`Знак «${sign}» не має місцевого відмінка — доказ не пишеться навмання.`);
+  }
   return rules.map((rule) =>
     makeClaim({
       qualityId: rule.qualityId,
@@ -113,7 +138,7 @@ export function westernClaims(sign: string): readonly QualityClaim[] {
       sourceId: WESTERN.id,
       sourceVersion: WESTERN.version,
       method: "mapped",
-      evidence: `Сонце в ${sign}: ${rule.note}`,
+      evidence: `Сонце ${place}: ${rule.note}`,
     }),
   );
 }

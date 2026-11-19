@@ -50,4 +50,4 @@ export {
   type QualityReading,
 } from "./reading";
 
-export { LENSES, WESTERN, WESTERN_SIGNS, westernClaims } from "./lenses";
+export { LENSES, WESTERN, WESTERN_SIGNS, sunInSign, westernClaims } from "./lenses";

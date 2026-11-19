@@ -6,7 +6,7 @@
  */
 
 import { useMemo } from "react";
-import { LENSES, claimSources, readDossier } from "@wwwuabot/shared/qualities";
+import { LENSES, claimSources, readDossier, sunInSign } from "@wwwuabot/shared/qualities";
 import type { DossierRead } from "./api";
 import { DossierQuality } from "./DossierQuality";
 
@@ -35,7 +35,7 @@ export function Dossier({ dossier, name }: { dossier: DossierRead; name: string 
         <h3 className="wb-dossier__title">{name}</h3>
         <p className="wb-dossier__meta">
           {humanDate(dossier.date)}
-          {dossier.symbol ? ` · Сонце в ${dossier.symbol}` : ""}
+          {dossier.symbol ? ` · Сонце ${sunInSign(dossier.symbol) ?? dossier.symbol}` : ""}
         </p>
 
         {modelled ? (
