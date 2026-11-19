@@ -23,7 +23,8 @@ describe("ключ екрана з адреси", () => {
   });
 
   it("сторінка контенту за slug — окремий ключ, а не чужий екран", () => {
-    expect(screenKeyOfPath("/dateanalysis")).toBe("date-analysis");
+    expect(screenKeyOfPath("/analysis")).toBe("analysis");
+    expect(screenKeyOfPath("/analysis/tests/bigfive")).toBe("analysis");
     expect(screenKeyOfPath("/some-scenario")).toBe("page");
     expect(screenKeyOfPath("/")).toBe("account");
     expect(screenKeyOfPath("/trackers/")).toBe("trackers");

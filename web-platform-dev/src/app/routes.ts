@@ -60,6 +60,34 @@ export const DAY_ROUTE = "day";
 export const DAY_PATH = `/${DAY_ROUTE}`;
 
 /**
+ * «Аналіз людей та подій» — одна фіча з двома векторами й власною головною.
+ *
+ * Адреси кроків лежать під `/analysis`, а не в рядках `scenarios`: анкета дат,
+ * вибір систем і профіль — це стан одного проходження, а не сім окремих
+ * сторінок контенту. Старі `dateanalysis/*` видалені міграцією.
+ */
+export const ANALYSIS_ROUTE = "analysis";
+export const ANALYSIS_PATH = `/${ANALYSIS_ROUTE}`;
+export const ANALYSIS_PERSON_PATH = `${ANALYSIS_PATH}/person`;
+export const ANALYSIS_EVENT_PATH = `${ANALYSIS_PATH}/event`;
+export const ANALYSIS_COMPARE_PATH = `${ANALYSIS_PATH}/compare`;
+export const ANALYSIS_SYSTEMS_PATH = `${ANALYSIS_PATH}/systems`;
+export const ANALYSIS_TESTS_PATH = `${ANALYSIS_PATH}/tests`;
+
+/** Вид проходження: один суб'єкт або кілька для співставлення. */
+export type AnalysisMode = "person" | "event" | "compare";
+
+/** Крок проходження: анкета дат → системи → профіль. */
+export function analysisStepPath(mode: AnalysisMode, step: "systems" | "result"): string {
+  return `${ANALYSIS_PATH}/${mode}/${step}`;
+}
+
+/** Проходження тесту — своя адреса під фічею, не окремий розділ. */
+export function analysisTestPath(key: string): string {
+  return `${ANALYSIS_TESTS_PATH}/${encodeURIComponent(key)}`;
+}
+
+/**
  * Акаунт — дані людини: окремо платформа (`#ім'я`), окремо Telegram (`@хендл`).
  *
  * Адреса верхня, а не під хабу: хабу немає, і акаунт — це **сам екран** людини,

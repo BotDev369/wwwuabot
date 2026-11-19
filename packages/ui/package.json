@@ -25,6 +25,9 @@
     "./store": "./src/store.ts",
     "./registry": "./src/registry.tsx",
     "./blocks": "./src/blocks/index.ts",
+    "./analysis/api": "./src/blocks/date-analysis/api.ts",
+    "./analysis/useDossiers": "./src/blocks/date-analysis/useDossiers.ts",
+    "./analysis/params": "./src/blocks/date-analysis/date-params.ts",
     "./blocks/my-dates-table": "./src/blocks/my-dates-table/index.ts",
     "./blocks/collapsible-section": "./src/blocks/collapsible-section/index.ts",
     "./blocks/*": "./src/blocks/*.tsx"

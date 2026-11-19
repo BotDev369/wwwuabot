@@ -14,10 +14,9 @@
  */
 
 import type { SideBarItem, SideBarSection } from "@wwwuabot/ui/nav";
-import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import {
   ACCOUNT_PATH,
-  ASSESSMENTS_PATH,
+  ANALYSIS_PATH,
   CONTACTS_PATH,
   DAY_PATH,
   FAVORITES_PATH,
@@ -37,9 +36,7 @@ const MAIN: readonly SideBarItem[] = [
     key: "analysis",
     label: "Аналіз людей та подій",
     icon: "my-dates",
-    href: DATE_ANALYSIS_PATH,
-    // Тести — другий вектор тієї самої фічі, тому її екран теж світить цей пункт.
-    match: [ASSESSMENTS_PATH],
+    href: ANALYSIS_PATH,
   },
   { key: "hurt", label: "Гурт", icon: "users", href: USERS_PATH },
   { key: "me", label: "Я", icon: "user-solid", href: ACCOUNT_PATH },

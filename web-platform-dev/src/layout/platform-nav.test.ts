@@ -8,9 +8,8 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import {
-  ASSESSMENTS_PATH,
+  ANALYSIS_PATH,
   ACCOUNT_PATH,
   DAY_PATH,
   ORDERS_PATH,
@@ -64,17 +63,17 @@ describe("меню платформи", () => {
     expect(main?.items.map((item) => item.label)).toContain("Аналіз людей та подій");
 
     const hrefs = PLATFORM_NAV.flatMap((section) => section.items).map((item) => item.href);
-    expect(hrefs.filter((href) => href === DATE_ANALYSIS_PATH)).toHaveLength(1);
-    expect(hrefs).not.toContain(ASSESSMENTS_PATH);
+    expect(hrefs.filter((href) => href === ANALYSIS_PATH)).toHaveLength(1);
+    // Окремого «Тестування» немає: тести живуть під /analysis/tests.
+    expect(hrefs.filter((href) => href === "/assessments")).toHaveLength(0);
     expect(hrefs).toContain(SHOPS_PATH);
   });
 
-  it("аналіз світить себе і на кроці тестів, бо це та сама фіча", () => {
+  it("головна, кроки, системи й тести світять один пункт", () => {
     expect(activeKeys(SHOPS_PATH)).toEqual(["shops"]);
-    expect(activeKeys(DATE_ANALYSIS_PATH)).toEqual(["analysis"]);
-    expect(activeKeys(ASSESSMENTS_PATH)).toEqual(["analysis"]);
-    // Проходження тесту — той самий пункт, а не порожній хвіст.
-    expect(activeKeys(`${ASSESSMENTS_PATH}/stress`)).toEqual(["analysis"]);
+    expect(activeKeys(ANALYSIS_PATH)).toEqual(["analysis"]);
+    expect(activeKeys(`${ANALYSIS_PATH}/person/systems`)).toEqual(["analysis"]);
+    expect(activeKeys(`${ANALYSIS_PATH}/tests/bigfive`)).toEqual(["analysis"]);
   });
 
   it("хибних переходів немає: пункту, який нікуди не веде, не існує", () => {

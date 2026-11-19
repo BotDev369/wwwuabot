@@ -6,11 +6,10 @@
  * @module web-platform-dev/src/app/screens
  */
 
-import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import {
   ACCOUNT_PATH,
   ADS_PATH,
-  ASSESSMENTS_PATH,
+  ANALYSIS_PATH,
   CONTACTS_PATH,
   FAVORITES_PATH,
   GAMES_PATH,
@@ -40,9 +39,10 @@ export function screenKeyOfPath(pathname: string): string {
   if (at(ADS_PATH)) return "ads";
   if (at(USERS_PATH)) return "users";
   if (at(GAMES_PATH)) return "games";
-  if (at(ASSESSMENTS_PATH)) return "assessments";
   if (at(SERVICES_PATH)) return "services";
   if (at(ACCOUNT_PATH) || path === "/") return "account";
-  if (at(DATE_ANALYSIS_PATH)) return "date-analysis";
+  // Один розділ — один ключ: головна, кроки, системи й тести світять журналу
+  // «Аналіз людей та подій», а не чотири різні екрани.
+  if (at(ANALYSIS_PATH)) return "analysis";
   return "page";
 }

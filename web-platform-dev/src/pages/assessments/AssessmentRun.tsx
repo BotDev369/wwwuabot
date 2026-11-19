@@ -19,7 +19,7 @@
  */
 
 import { useMemo, useState, type ReactElement } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import {
   scaleByKey,
@@ -40,6 +40,9 @@ interface AssessmentRunProps {
   error: string | null;
   submit: (testKey: string, answers: readonly number[]) => Promise<AssessmentRecord[]>;
   onDone: () => void;
+  /** Куди вести після результату: у профіль, а не в той самий список. */
+  resultHref?: string;
+  resultLabel?: string;
 }
 
 export function AssessmentRun({
@@ -50,6 +53,8 @@ export function AssessmentRun({
   error,
   submit,
   onDone,
+  resultHref,
+  resultLabel = "До профілю",
 }: AssessmentRunProps): ReactElement {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
@@ -102,6 +107,11 @@ export function AssessmentRun({
           <h1 className="wb-page-title">{test.title}</h1>
         </div>
         <AssessmentResultCard test={test} records={finished} history={history} peers={peers} />
+        {resultHref && (
+          <Link className="wb-btn wb-btn-primary an-result-link" to={resultHref}>
+            {resultLabel}
+          </Link>
+        )}
       </div>
     );
   }

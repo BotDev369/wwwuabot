@@ -63,11 +63,6 @@ export { SelectBlock } from "./SelectBlock";
 export { UserProfileBlock } from "./UserProfileBlock";
 export { DateCardBlock } from "./DateCardBlock";
 export { MyDatesTableBlock } from "./MyDatesTableBlock";
-export { AnalysisSystemsBlock } from "./AnalysisSystemsBlock";
-export { AnalysisEntriesBlock } from "./AnalysisEntriesBlock";
-export { CompareSetupBlock } from "./CompareSetupBlock";
-export { DateAnalysisBlock } from "./DateAnalysisBlock";
-export { DateInputBlock } from "./DateInputBlock";
 
 // --- Analytics (1) ---
 export { ChartBlock } from "./ChartBlock";
@@ -131,11 +126,6 @@ import { SelectBlock } from "./SelectBlock";
 import { UserProfileBlock } from "./UserProfileBlock";
 import { DateCardBlock } from "./DateCardBlock";
 import { MyDatesTableBlock } from "./MyDatesTableBlock";
-import { AnalysisSystemsBlock } from "./AnalysisSystemsBlock";
-import { AnalysisEntriesBlock } from "./AnalysisEntriesBlock";
-import { CompareSetupBlock } from "./CompareSetupBlock";
-import { DateAnalysisBlock } from "./DateAnalysisBlock";
-import { DateInputBlock } from "./DateInputBlock";
 
 // Analytics
 import { ChartBlock } from "./ChartBlock";
@@ -212,16 +202,6 @@ export function registerAllBlocks(): void {
   registerBlock("user-profile", UserProfileBlock);
   registerBlock("date-card", DateCardBlock);
   registerBlock("my-dates-table", MyDatesTableBlock);
-  registerBlock("analysis-systems", AnalysisSystemsBlock);
-  registerBlock("analysis-entries", AnalysisEntriesBlock);
-  registerBlock("compare-setup", CompareSetupBlock);
-  registerBlock("date-analysis", DateAnalysisBlock);
-  registerBlock("date-input", DateInputBlock);
-  // Аналіз і співставлення — один екран, тож старі адреси ведуть у нього, а не
-  // в другу реалізацію: рядки контенту з цими типами лишились у базі, і
-  // міграція їх не видаляє (AGENTS.md §7).
-  registerBlock("compare-systems", DateAnalysisBlock);
-  registerBlock("compare-table", DateAnalysisBlock);
 
   // Analytics
   registerBlock("chart", ChartBlock);

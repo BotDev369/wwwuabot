@@ -56,16 +56,12 @@ describe("validatePageConfig", () => {
     expect(at(issues, "main[0]")?.message).toContain("no-such-block");
   });
 
-  it("значення поза списком — помилка, і `mixed` у списку є", () => {
-    const broken = validatePageConfig(
-      configWith([{ type: "compare-setup", props: { kind: "nope" } }]),
-    );
-    expect(at(broken, "main[0].props.kind")).toMatchObject({ severity: "error" });
+  it("значення поза списком — помилка, а дозволене — ні", () => {
+    const broken = validatePageConfig(configWith([{ type: "chart", props: { type: "nope" } }]));
+    expect(at(broken, "main[0].props.type")).toMatchObject({ severity: "error" });
 
-    const mixed = validatePageConfig(
-      configWith([{ type: "compare-setup", props: { kind: "mixed" } }]),
-    );
-    expect(at(mixed, "main[0].props.kind")).toBeUndefined();
+    const valid = validatePageConfig(configWith([{ type: "chart", props: { type: "pie" } }]));
+    expect(at(valid, "main[0].props.type")).toBeUndefined();
   });
 
   it("поле не того типу — помилка", () => {

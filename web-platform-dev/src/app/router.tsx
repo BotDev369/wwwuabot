@@ -26,11 +26,11 @@ import { createBrowserRouter } from "react-router-dom";
 import { PlatformShell } from "@/layout/PlatformShell";
 import {
   ADS_ROUTE,
+  ANALYSIS_ROUTE,
   CONTACTS_ROUTE,
   DAY_ROUTE,
   FAVORITES_ROUTE,
   ACCOUNT_ROUTE,
-  ASSESSMENTS_ROUTE,
   GAMES_ROUTE,
   MESSAGES_PATH,
   NOTES_ROUTE,
@@ -48,7 +48,13 @@ import { AdsPage } from "@/pages/AdsPage";
 import { ContactsPage } from "@/pages/ContactsPage";
 import { FavoritesPage } from "@/pages/favorites/FavoritesPage";
 import { TrackersPage } from "@/pages/trackers/TrackersPage";
-import { AssessmentsScreen } from "@/pages/assessments/AssessmentsScreen";
+import { AnalysisHub } from "@/pages/analysis/AnalysisHub";
+import { AnalysisProfile } from "@/pages/analysis/AnalysisProfile";
+import { AnalysisSystemsPage } from "@/pages/analysis/AnalysisSystemsPage";
+import { AnalysisTestScreen } from "@/pages/analysis/AnalysisTestScreen";
+import { AnalysisTestsPage } from "@/pages/analysis/AnalysisTestsPage";
+import { SubjectStep } from "@/pages/analysis/SubjectStep";
+import { SystemsStep } from "@/pages/analysis/SystemsStep";
 import { MessagesPage } from "@/pages/MessagesPage";
 import { NotesPage } from "@/pages/NotesPage";
 import { ProfileAccountPage } from "@/pages/ProfileAccountPage";
@@ -97,11 +103,22 @@ export const router = createBrowserRouter([
       // Тема — **перемикач, а не розділ**: кнопка в хедері міняє світлу й
       // темну. Адреси тут не потрібно: вибір вигляду не мають ні посилати, ні
       // відкривати в іншому місці.
-      // «Розвиток» — самооцінка. Довший шлях проходження іде **перед**
-      // розділом: інакше `:key` зʼїсть `assessments` і відкрив би порожній
-      // список замість тесту (та сама причина, що в `:id` під сторінками).
-      { path: `${ASSESSMENTS_ROUTE}/:key`, element: <AssessmentsScreen /> },
-      { path: ASSESSMENTS_ROUTE, element: <AssessmentsScreen /> },
+      // «Аналіз людей та подій» — одна фіча з власною головною: людина, подія,
+      // співставлення. Кроки йдуть довшими шляхами **перед** коротшими, інакше
+      // `/analysis/person` з'їв би `/analysis/person/systems`.
+      { path: `${ANALYSIS_ROUTE}/person/systems`, element: <SystemsStep mode="person" /> },
+      { path: `${ANALYSIS_ROUTE}/person/result`, element: <AnalysisProfile mode="person" /> },
+      { path: `${ANALYSIS_ROUTE}/person`, element: <SubjectStep mode="person" /> },
+      { path: `${ANALYSIS_ROUTE}/event/systems`, element: <SystemsStep mode="event" /> },
+      { path: `${ANALYSIS_ROUTE}/event/result`, element: <AnalysisProfile mode="event" /> },
+      { path: `${ANALYSIS_ROUTE}/event`, element: <SubjectStep mode="event" /> },
+      { path: `${ANALYSIS_ROUTE}/compare/systems`, element: <SystemsStep mode="compare" /> },
+      { path: `${ANALYSIS_ROUTE}/compare/result`, element: <AnalysisProfile mode="compare" /> },
+      { path: `${ANALYSIS_ROUTE}/compare`, element: <SubjectStep mode="compare" /> },
+      { path: `${ANALYSIS_ROUTE}/systems`, element: <AnalysisSystemsPage /> },
+      { path: `${ANALYSIS_ROUTE}/tests/:key`, element: <AnalysisTestScreen /> },
+      { path: `${ANALYSIS_ROUTE}/tests`, element: <AnalysisTestsPage /> },
+      { path: ANALYSIS_ROUTE, element: <AnalysisHub /> },
       // Розділу-обгортки немає: «Оголошення», «Ігри» й «Користувачі» —
       // власні екрани з власними адресами, а не вкладки однієї сторінки.
       // Партія йде **перед** списком: інакше `/games` з'їв би хвіст `:key`.

@@ -1,5 +1,5 @@
 {
-  "version": "a937e12",
+  "version": "2e20950",
   "page": {
     "title": "Єдиний UI",
     "intro": "Справжній зразок, клас і присуд ужитку. Розділи згорнуті — відкривай потрібний.",
@@ -53,12 +53,12 @@
     }
   },
   "summary": {
-    "total": 217,
-    "both": 48,
-    "one": 76,
-    "shared": 48,
-    "builder": 43,
-    "unused": 2
+    "total": 212,
+    "both": 49,
+    "one": 75,
+    "shared": 47,
+    "builder": 38,
+    "unused": 3
   },
   "groups": [
     {
@@ -74,9 +74,9 @@
           "sampleText": "Кнопка",
           "note": "Базова кнопка: мірки, радіус і вага — з токенів.",
           "usage": {
-            "platform": 38,
+            "platform": 39,
             "admin": 25,
-            "ui": 20,
+            "ui": 16,
             "shared": 4
           },
           "verdict": "both"
@@ -89,9 +89,9 @@
           "sampleText": "Зберегти",
           "note": "Одна основна дія на екран.",
           "usage": {
-            "platform": 20,
+            "platform": 21,
             "admin": 14,
-            "ui": 16,
+            "ui": 13,
             "shared": 4
           },
           "verdict": "both"
@@ -106,7 +106,7 @@
           "usage": {
             "platform": 28,
             "admin": 14,
-            "ui": 15,
+            "ui": 13,
             "shared": 4
           },
           "verdict": "both"
@@ -166,7 +166,7 @@
           "usage": {
             "platform": 5,
             "admin": 3,
-            "ui": 6,
+            "ui": 5,
             "shared": 0
           },
           "verdict": "both"
@@ -181,10 +181,10 @@
           "usage": {
             "platform": 0,
             "admin": 0,
-            "ui": 1,
+            "ui": 0,
             "shared": 0
           },
-          "verdict": "shared"
+          "verdict": "unused"
         }
       ]
     },
@@ -203,7 +203,7 @@
           "usage": {
             "platform": 9,
             "admin": 12,
-            "ui": 10,
+            "ui": 8,
             "shared": 0
           },
           "verdict": "both"
@@ -248,7 +248,7 @@
           "usage": {
             "platform": 0,
             "admin": 1,
-            "ui": 2,
+            "ui": 1,
             "shared": 0
           },
           "verdict": "one"
@@ -263,7 +263,7 @@
           "usage": {
             "platform": 9,
             "admin": 5,
-            "ui": 10,
+            "ui": 8,
             "shared": 0
           },
           "verdict": "both"
@@ -709,7 +709,7 @@
           "sampleText": "Тут поки нічого немає",
           "note": "Знак, пояснення й наступний крок.",
           "usage": {
-            "platform": 21,
+            "platform": 20,
             "admin": 1,
             "ui": 5,
             "shared": 2
@@ -793,7 +793,7 @@
           "usage": {
             "platform": 0,
             "admin": 1,
-            "ui": 14,
+            "ui": 11,
             "shared": 0
           },
           "verdict": "one"
@@ -838,7 +838,7 @@
           "usage": {
             "platform": 30,
             "admin": 2,
-            "ui": 12,
+            "ui": 9,
             "shared": 1
           },
           "verdict": "both"
@@ -1444,23 +1444,6 @@
           "via": "page-builder"
         },
         {
-          "id": "block-date-input",
-          "name": "Ввід дати",
-          "className": "type: \"date-input\"",
-          "sample": "icon",
-          "sampleText": "",
-          "note": "Поле однієї дати, яке веде на сторінку аналізу",
-          "icon": "calendar",
-          "usage": {
-            "platform": 0,
-            "admin": 0,
-            "ui": 0,
-            "shared": 0
-          },
-          "verdict": "builder",
-          "via": "page-builder"
-        },
-        {
           "id": "block-my-dates-table",
           "name": "Таблиця дат",
           "className": "type: \"my-dates-table\"",
@@ -1468,74 +1451,6 @@
           "sampleText": "",
           "note": "Таблиця з CRUD-операціями для управління датами",
           "icon": "my-dates",
-          "usage": {
-            "platform": 0,
-            "admin": 0,
-            "ui": 0,
-            "shared": 0
-          },
-          "verdict": "builder",
-          "via": "page-builder"
-        },
-        {
-          "id": "block-compare-setup",
-          "name": "Суб'єкт аналізу",
-          "className": "type: \"compare-setup\"",
-          "sample": "icon",
-          "sampleText": "",
-          "note": "Ім'я й дата того, кого аналізуємо: людини чи події — один крок на всі входи",
-          "icon": "compare",
-          "usage": {
-            "platform": 0,
-            "admin": 0,
-            "ui": 0,
-            "shared": 0
-          },
-          "verdict": "builder",
-          "via": "page-builder"
-        },
-        {
-          "id": "block-analysis-entries",
-          "name": "Входи аналізу",
-          "className": "type: \"analysis-entries\"",
-          "sample": "icon",
-          "sampleText": "",
-          "note": "Картки-переходи розділу: один субʼєкт чи порівняння, кожен зі своїм знаком",
-          "icon": "list",
-          "usage": {
-            "platform": 0,
-            "admin": 0,
-            "ui": 0,
-            "shared": 0
-          },
-          "verdict": "builder",
-          "via": "page-builder"
-        },
-        {
-          "id": "block-analysis-systems",
-          "name": "Системи аналізу",
-          "className": "type: \"analysis-systems\"",
-          "sample": "icon",
-          "sampleText": "",
-          "note": "Вітрина систем: назва, опис і параметри — без дат",
-          "icon": "layers",
-          "usage": {
-            "platform": 0,
-            "admin": 0,
-            "ui": 0,
-            "shared": 0
-          },
-          "verdict": "builder",
-          "via": "page-builder"
-        },
-        {
-          "id": "block-date-analysis",
-          "name": "Результат аналізу",
-          "className": "type: \"date-analysis\"",
-          "sample": "icon",
-          "sampleText": "",
-          "note": "Таблиця аналізу: параметри й значення — суб'єктів один або більше",
-          "icon": "bar-chart",
           "usage": {
             "platform": 0,
             "admin": 0,
@@ -1691,12 +1606,12 @@
           "note": "",
           "icon": "compare",
           "usage": {
-            "platform": 0,
+            "platform": 2,
             "admin": 1,
             "ui": 0,
             "shared": 1
           },
-          "verdict": "one"
+          "verdict": "both"
         },
         {
           "id": "icon-settings",
@@ -1837,7 +1752,7 @@
           "usage": {
             "platform": 2,
             "admin": 0,
-            "ui": 4,
+            "ui": 3,
             "shared": 2
           },
           "verdict": "one"
@@ -2091,7 +2006,7 @@
           "note": "",
           "icon": "check",
           "usage": {
-            "platform": 11,
+            "platform": 12,
             "admin": 1,
             "ui": 4,
             "shared": 2
@@ -2107,9 +2022,9 @@
           "note": "",
           "icon": "close",
           "usage": {
-            "platform": 2,
+            "platform": 3,
             "admin": 12,
-            "ui": 13,
+            "ui": 12,
             "shared": 3
           },
           "verdict": "both"
@@ -2171,7 +2086,7 @@
           "note": "",
           "icon": "plus",
           "usage": {
-            "platform": 12,
+            "platform": 14,
             "admin": 1,
             "ui": 2,
             "shared": 1
@@ -2315,7 +2230,7 @@
           "note": "",
           "icon": "sparkles",
           "usage": {
-            "platform": 2,
+            "platform": 3,
             "admin": 0,
             "ui": 0,
             "shared": 2
@@ -2427,7 +2342,7 @@
           "note": "",
           "icon": "arrow-left",
           "usage": {
-            "platform": 7,
+            "platform": 12,
             "admin": 1,
             "ui": 2,
             "shared": 2
@@ -2445,7 +2360,7 @@
           "usage": {
             "platform": 1,
             "admin": 0,
-            "ui": 2,
+            "ui": 1,
             "shared": 2
           },
           "verdict": "one"
@@ -2459,9 +2374,9 @@
           "note": "",
           "icon": "chevron-down",
           "usage": {
-            "platform": 10,
+            "platform": 11,
             "admin": 2,
-            "ui": 8,
+            "ui": 5,
             "shared": 2
           },
           "verdict": "both"
@@ -2475,9 +2390,9 @@
           "note": "",
           "icon": "chevron-right",
           "usage": {
-            "platform": 9,
+            "platform": 11,
             "admin": 3,
-            "ui": 3,
+            "ui": 2,
             "shared": 3
           },
           "verdict": "both"
@@ -2493,7 +2408,7 @@
           "usage": {
             "platform": 0,
             "admin": 0,
-            "ui": 6,
+            "ui": 4,
             "shared": 2
           },
           "verdict": "shared"
@@ -2555,9 +2470,9 @@
           "note": "",
           "icon": "text",
           "usage": {
-            "platform": 4,
+            "platform": 5,
             "admin": 0,
-            "ui": 4,
+            "ui": 3,
             "shared": 5
           },
           "verdict": "one"
@@ -2891,7 +2806,7 @@
           "note": "",
           "icon": "book",
           "usage": {
-            "platform": 2,
+            "platform": 3,
             "admin": 0,
             "ui": 0,
             "shared": 2
@@ -3547,7 +3462,7 @@
           "note": "",
           "icon": "user",
           "usage": {
-            "platform": 1,
+            "platform": 2,
             "admin": 5,
             "ui": 1,
             "shared": 1

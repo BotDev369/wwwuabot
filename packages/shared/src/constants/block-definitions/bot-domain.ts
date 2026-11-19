@@ -2,9 +2,8 @@
  * BOT-DOMAIN — специфічні для бота блоки (профіль, дати, «Аналіз дат»).
  */
 
-import { DATE_ANALYSIS_PATH, DATE_ANALYSIS_RESULT_PATH } from "../../content/sections";
 import type { BlockDefinition } from "../../types/page-config";
-import { block, s, n, b, e, oa } from "./helpers";
+import { block, s, b, e } from "./helpers";
 
 export const botDomainBlocks: BlockDefinition[] = [
   block({
@@ -54,29 +53,6 @@ export const botDomainBlocks: BlockDefinition[] = [
     },
   }),
   block({
-    type: "date-input",
-    label: "Ввід дати",
-    icon: "calendar",
-    category: "bot-domain",
-    description: "Поле однієї дати, яке веде на сторінку аналізу",
-    props: {
-      label: s("Підпис поля", { default: "Дата народження" }),
-      buttonLabel: s("Напис кнопки", { default: "Показати аналіз" }),
-      basePath: s("Адреса сторінки-власника", { default: DATE_ANALYSIS_PATH }),
-      targetPath: s("Сегмент сторінки аналізу", { default: "analysis" }),
-      min: s("Найраніша дата", { default: "1900-01-01" }),
-      max: s("Найпізніша дата", { default: "2100-12-31" }),
-    },
-    defaultProps: {
-      label: "Дата народження",
-      buttonLabel: "Показати аналіз",
-      basePath: DATE_ANALYSIS_PATH,
-      targetPath: "analysis",
-      min: "1900-01-01",
-      max: "2100-12-31",
-    },
-  }),
-  block({
     type: "my-dates-table",
     label: "Таблиця дат",
     icon: "my-dates",
@@ -93,79 +69,6 @@ export const botDomainBlocks: BlockDefinition[] = [
       showTypeFilter: true,
       showBulkActions: true,
       showCreateButton: true,
-    },
-  }),
-  block({
-    type: "compare-setup",
-    label: "Суб'єкт аналізу",
-    icon: "compare",
-    category: "bot-domain",
-    description: "Ім'я й дата того, кого аналізуємо: людини чи події — один крок на всі входи",
-    props: {
-      title: s("Заголовок", { default: "Аналіз людини" }),
-      description: s("Опис"),
-      /* `mixed` — аналіз і людей, і подій: компонент це вміє (`isMixedScope`),
-         а список значень його не знав і робив справжню сторінку «порушенням». */
-      kind: e("Що аналізуємо", ["person", "event", "mixed"], { default: "person" }),
-      selfMode: b("Аналіз себе"),
-      maxDates: n("Максимум суб'єктів", { default: 1 }),
-      nextUrl: s("URL наступного кроку", { default: DATE_ANALYSIS_RESULT_PATH }),
-    },
-    defaultProps: {
-      title: "Аналіз людини",
-      kind: "person",
-      selfMode: false,
-      maxDates: 1,
-      nextUrl: DATE_ANALYSIS_RESULT_PATH,
-    },
-  }),
-  block({
-    type: "analysis-entries",
-    label: "Входи аналізу",
-    icon: "list",
-    category: "bot-domain",
-    description: "Картки-переходи розділу: один субʼєкт чи порівняння, кожен зі своїм знаком",
-    props: {
-      title: s("Заголовок"),
-      items: oa("Входи", {
-        group: s("Група"),
-        title: s("Назва"),
-        url: s("Адреса"),
-        icon: s("Знак"),
-        tone: s("Тон 1–6"),
-        badge: s("Плашка стану"),
-      }),
-    },
-    defaultProps: { items: [] },
-  }),
-  block({
-    type: "analysis-systems",
-    label: "Системи аналізу",
-    icon: "layers",
-    category: "bot-domain",
-    description: "Вітрина систем: назва, опис і параметри — без дат",
-    props: {
-      title: s("Заголовок", { default: "Системи аналізу" }),
-    },
-    defaultProps: {
-      title: "Системи аналізу",
-    },
-  }),
-  block({
-    type: "date-analysis",
-    label: "Результат аналізу",
-    icon: "bar-chart",
-    category: "bot-domain",
-    description: "Таблиця аналізу: параметри й значення — суб'єктів один або більше",
-    props: {
-      title: s("Підпис над таблицею", { default: "Результат аналізу:" }),
-      backUrl: s("URL назад", { default: DATE_ANALYSIS_PATH }),
-      targetUrl: s("URL вибору систем", { default: DATE_ANALYSIS_RESULT_PATH }),
-    },
-    defaultProps: {
-      title: "Результат аналізу:",
-      backUrl: DATE_ANALYSIS_PATH,
-      targetUrl: DATE_ANALYSIS_RESULT_PATH,
     },
   }),
 ];

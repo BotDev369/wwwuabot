@@ -1,5 +1,5 @@
 {
-  "version": "a937e12",
+  "version": "2e20950",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -92,9 +92,9 @@
       "classes": 16
     },
     {
-      "file": "analysis-entries.css",
-      "tokens": 7,
-      "classes": 9
+      "file": "analysis.css",
+      "tokens": 0,
+      "classes": 99
     },
     {
       "file": "app-chrome.css",
@@ -125,11 +125,6 @@
       "file": "contextbar.css",
       "tokens": 1,
       "classes": 6
-    },
-    {
-      "file": "date-analysis.css",
-      "tokens": 1,
-      "classes": 107
     },
     {
       "file": "dates.css",
@@ -2058,55 +2053,6 @@
       "section": ""
     },
     {
-      "name": "--entry-tone",
-      "file": "analysis-entries.css",
-      "selector": ".wb-entry",
-      "value": "var(--data-1)",
-      "section": ""
-    },
-    {
-      "name": "--entry-tone",
-      "file": "analysis-entries.css",
-      "selector": ".wb-entry[data-tone=\"1\"]",
-      "value": "var(--data-1)",
-      "section": ""
-    },
-    {
-      "name": "--entry-tone",
-      "file": "analysis-entries.css",
-      "selector": ".wb-entry[data-tone=\"2\"]",
-      "value": "var(--data-2)",
-      "section": ""
-    },
-    {
-      "name": "--entry-tone",
-      "file": "analysis-entries.css",
-      "selector": ".wb-entry[data-tone=\"3\"]",
-      "value": "var(--data-3)",
-      "section": ""
-    },
-    {
-      "name": "--entry-tone",
-      "file": "analysis-entries.css",
-      "selector": ".wb-entry[data-tone=\"4\"]",
-      "value": "var(--data-4)",
-      "section": ""
-    },
-    {
-      "name": "--entry-tone",
-      "file": "analysis-entries.css",
-      "selector": ".wb-entry[data-tone=\"5\"]",
-      "value": "var(--data-5)",
-      "section": ""
-    },
-    {
-      "name": "--entry-tone",
-      "file": "analysis-entries.css",
-      "selector": ".wb-entry[data-tone=\"6\"]",
-      "value": "var(--data-6)",
-      "section": ""
-    },
-    {
       "name": "--game-accent",
       "file": "games.css",
       "selector": ".wb-game-stage",
@@ -3050,13 +2996,6 @@
       "selector": ".wb-table-scroll",
       "value": "var(--bg-2)",
       "section": "Таблиця"
-    },
-    {
-      "name": "--wb-table-surface",
-      "file": "date-analysis.css",
-      "selector": ".wb-param-frame",
-      "value": "var(--bg-page, var(--bg-0))",
-      "section": ""
     }
   ],
   "classes": {
@@ -3785,19 +3724,150 @@
         ]
       }
     ],
-    "analysis-entries.css": [
+    "analysis.css": [
       {
         "section": "",
         "names": [
-          "wb-block-entries",
-          "wb-block-entries__title",
-          "wb-entries-group",
-          "wb-entries-group__title",
-          "wb-entry",
-          "wb-entry__badge",
-          "wb-entry__chevron",
-          "wb-entry__icon",
-          "wb-entry__title"
+          "an-hub",
+          "an-profile",
+          "an-setup"
+        ]
+      },
+      {
+        "section": "Hero головної",
+        "names": [
+          "an-hero",
+          "an-hero--slim",
+          "an-hero__kicker",
+          "an-hero__lead",
+          "an-hero__title"
+        ]
+      },
+      {
+        "section": "Три входи",
+        "names": [
+          "an-entries",
+          "an-entry",
+          "an-entry__body",
+          "an-entry__icon",
+          "an-entry__lead",
+          "an-entry__title"
+        ]
+      },
+      {
+        "section": "Секції, люди, кроки",
+        "names": [
+          "an-back",
+          "an-empty",
+          "an-foot",
+          "an-people",
+          "an-person",
+          "an-person__date",
+          "an-person__name",
+          "an-section",
+          "an-section__title",
+          "an-step",
+          "an-step__body",
+          "an-step__num",
+          "an-step__text",
+          "an-step__title",
+          "an-steps",
+          "an-tool",
+          "an-tools"
+        ]
+      },
+      {
+        "section": "Крок даних",
+        "names": [
+          "an-add",
+          "an-date",
+          "an-field",
+          "an-field--inline",
+          "an-field__label",
+          "an-input",
+          "an-row",
+          "an-row__remove",
+          "an-rows",
+          "an-setup",
+          "an-setup__head",
+          "an-setup__lead",
+          "an-setup__names",
+          "an-setup__title",
+          "an-submit"
+        ]
+      },
+      {
+        "section": "Крок систем",
+        "names": [
+          "an-system",
+          "an-system--on",
+          "an-system__body",
+          "an-system__check",
+          "an-system__name",
+          "an-system__rule",
+          "an-systems"
+        ]
+      },
+      {
+        "section": "Довідка систем",
+        "names": [
+          "an-param",
+          "an-param__label",
+          "an-param__value",
+          "an-params",
+          "an-system-card",
+          "an-system-card__about",
+          "an-system-card__count",
+          "an-system-card__gives",
+          "an-system-card__head",
+          "an-system-card__name",
+          "an-system-list"
+        ]
+      },
+      {
+        "section": "Профіль",
+        "names": [
+          "an-card",
+          "an-claim",
+          "an-claim__details",
+          "an-claim__evidence",
+          "an-claim__source",
+          "an-claim__steps",
+          "an-domain",
+          "an-domain__count",
+          "an-domain__title",
+          "an-lead",
+          "an-lead__anchor",
+          "an-lead__level",
+          "an-lead__name",
+          "an-leads",
+          "an-profile__head",
+          "an-profile__kicker",
+          "an-profile__meta",
+          "an-profile__name",
+          "an-qualities",
+          "an-quality",
+          "an-quality--empty",
+          "an-quality__anchor",
+          "an-quality__body",
+          "an-quality__caret",
+          "an-quality__details",
+          "an-quality__level",
+          "an-quality__name",
+          "an-quality__summary"
+        ]
+      },
+      {
+        "section": "Тести",
+        "names": [
+          "an-result-link",
+          "an-test-card",
+          "an-test-card__body",
+          "an-test-card__icon",
+          "an-test-card__lead",
+          "an-test-card__meta",
+          "an-test-card__title",
+          "an-test-list"
         ]
       }
     ],
@@ -5140,125 +5210,6 @@
           "wb-contextbar-inner",
           "wb-contextbar-label",
           "wb-tabbar-layout"
-        ]
-      }
-    ],
-    "date-analysis.css": [
-      {
-        "section": "",
-        "names": [
-          "wb-analysis-systems__desc",
-          "wb-analysis-systems__head",
-          "wb-analysis-systems__history",
-          "wb-analysis-systems__name",
-          "wb-analysis-systems__soon",
-          "wb-block-date-analysis",
-          "wb-block-date-analysis__error",
-          "wb-block-date-analysis__lead",
-          "wb-block-date-analysis__title",
-          "wb-param-cell--toggle",
-          "wb-param-detail",
-          "wb-param-empty",
-          "wb-param-frame",
-          "wb-param-group",
-          "wb-param-label",
-          "wb-param-note",
-          "wb-param-table",
-          "wb-param-toggle",
-          "wb-param-toggle--open",
-          "wb-param-toggle__caret",
-          "wb-system-body",
-          "wb-system-params"
-        ]
-      },
-      {
-        "section": "Портрет: домени, якості, свідчення",
-        "names": [
-          "wb-calc",
-          "wb-calc__about",
-          "wb-calc__count",
-          "wb-calc__label",
-          "wb-calc__lead",
-          "wb-calc__list",
-          "wb-calc__name",
-          "wb-calc__row",
-          "wb-calc__scope",
-          "wb-calc__source",
-          "wb-calc__summary",
-          "wb-calc__system",
-          "wb-calc__title",
-          "wb-calc__value",
-          "wb-dossier",
-          "wb-dossier-claim",
-          "wb-dossier-claim__details",
-          "wb-dossier-claim__evidence",
-          "wb-dossier-claim__head",
-          "wb-dossier-claim__layer",
-          "wb-dossier-claim__layer--measured",
-          "wb-dossier-claim__layer--narrative",
-          "wb-dossier-claim__layer--symbolic",
-          "wb-dossier-claim__level",
-          "wb-dossier-claim__source",
-          "wb-dossier-claim__steps",
-          "wb-dossier-claims",
-          "wb-dossier-domain",
-          "wb-dossier-domain__count",
-          "wb-dossier-domain__title",
-          "wb-dossier-domains",
-          "wb-dossier-lenses",
-          "wb-dossier-lenses__apply",
-          "wb-dossier-lenses__change",
-          "wb-dossier-lenses__head",
-          "wb-dossier-lenses__list",
-          "wb-dossier-lenses__name",
-          "wb-dossier-lenses__option",
-          "wb-dossier-lenses__rule",
-          "wb-dossier-lenses__selected",
-          "wb-dossier-lenses__text",
-          "wb-dossier-lenses__title",
-          "wb-dossier-list",
-          "wb-dossier-quality",
-          "wb-dossier-quality--conflict",
-          "wb-dossier-quality--empty",
-          "wb-dossier-quality__anchor",
-          "wb-dossier-quality__body",
-          "wb-dossier-quality__caret",
-          "wb-dossier-quality__definition",
-          "wb-dossier-quality__details",
-          "wb-dossier-quality__level",
-          "wb-dossier-quality__name",
-          "wb-dossier-quality__positions",
-          "wb-dossier-quality__summary",
-          "wb-dossier-quality__text",
-          "wb-dossier-survey",
-          "wb-dossier-survey__head",
-          "wb-dossier-survey__hint",
-          "wb-dossier-survey__link",
-          "wb-dossier-survey__status",
-          "wb-dossier-survey__text",
-          "wb-dossier-survey__title",
-          "wb-dossier-survey__toggle",
-          "wb-dossier__coverage",
-          "wb-dossier__head",
-          "wb-dossier__kicker",
-          "wb-dossier__meta",
-          "wb-dossier__note",
-          "wb-dossier__title",
-          "wb-dossiers",
-          "wb-measured",
-          "wb-measured-domain",
-          "wb-measured-domain__title",
-          "wb-measured-domains",
-          "wb-measured-list",
-          "wb-measured-quality",
-          "wb-measured-quality__evidence",
-          "wb-measured-quality__level",
-          "wb-measured-quality__name",
-          "wb-measured__coverage",
-          "wb-measured__head",
-          "wb-measured__kicker",
-          "wb-measured__note",
-          "wb-measured__title"
         ]
       }
     ],
