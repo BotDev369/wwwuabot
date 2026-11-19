@@ -197,7 +197,7 @@ describe("DateAnalysisBlock — портрет", () => {
     expect(api.calls[0]).toContain("1980-03-03");
   });
 
-  it("свідчення розкривають джерело, шар і впевненість", async () => {
+  it("свідчення розкривають джерело, шар і сам розрахунок", async () => {
     openAt("?dates=1980-03-03&lenses=western");
     stubApi([DOSSIER]);
     render(<DateAnalysisBlock {...props()} />);
@@ -206,9 +206,10 @@ describe("DateAnalysisBlock — портрет", () => {
     expect(screen.getAllByText("Західна астрологія").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Традиція").length).toBeGreaterThan(0);
     expect(screen.getByText(/Сонце в Овні: початок без дозволу/)).toBeTruthy();
-    expect(screen.getAllByText(/Наскільки це певно: низько/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Скільки систем назвали кожен рівень").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Як ми це визначили").length).toBeGreaterThan(0);
+    // Ніяких лічильників і слова «певно»: людина читає про себе, а не звіт.
+    expect(screen.queryByText(/Наскільки це певно/)).toBeNull();
+    expect(screen.queryByText("Скільки систем назвали кожен рівень")).toBeNull();
   });
 
   it("розбіжність показує обидві позиції, а не середнє", async () => {
@@ -217,23 +218,23 @@ describe("DateAnalysisBlock — портрет", () => {
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    expect(screen.getByText("Системи не згодні")).toBeTruthy();
+    expect(screen.getByText("Різні відповіді")).toBeTruthy();
     expect(screen.getByText(/Західна астрологія — Високий/)).toBeTruthy();
     expect(screen.getByText(/Нумерологія — Середній/)).toBeTruthy();
-    expect(screen.getByText(/Різні системи читають дату по-своєму/)).toBeTruthy();
     // Якір є в кожного свідчення, навіть коли вони розходяться.
     expect(screen.getByText("Підбирає слова під стан іншого без нагадування.")).toBeTruthy();
     expect(screen.getByText("Помічає зміну настрою й питає.")).toBeTruthy();
   });
 
-  it("якості без свідчень кажуть «не знаємо», а не показують середину", async () => {
+  it("якості без свідчень лишаються назвою, без вигаданого рівня", async () => {
     openAt("?dates=1980-03-03&lenses=western");
     stubApi([DOSSIER]);
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    // 36 якостей, свідчення мають дві — решта чесно невідома.
-    expect(screen.getAllByText("Не знаємо")).toHaveLength(34);
+    // 36 якостей, свідчення мають дві — решта без рівня й без сентенцій.
+    expect(document.querySelectorAll(".wb-dossier-quality--empty")).toHaveLength(34);
+    expect(screen.queryByText("Не знаємо")).toBeNull();
     expect(screen.queryByText("Середній")).toBeNull();
   });
 
@@ -268,7 +269,7 @@ describe("DateAnalysisBlock — портрет", () => {
     expect(screen.getByText(/Опитування: Велика п'ятірка/)).toBeTruthy();
     expect(screen.getByText("1 з 36 якостей видно з відповідей")).toBeTruthy();
     expect(screen.getByText("Сумлінність — 18 з 20")).toBeTruthy();
-    expect(screen.getByText(/не підвищує впевненості/)).toBeTruthy();
+    expect(screen.getByText(/рівень тут виміряний/)).toBeTruthy();
   });
 
   it("згода без жодного проходження каже це прямо й веде до тестів", async () => {
@@ -311,7 +312,7 @@ describe("DateAnalysisBlock — портрет", () => {
     await settle();
 
     expect(screen.getByRole("heading", { level: 3, name: "Подія" })).toBeTruthy();
-    expect(screen.getByText(/Якостей події ми ще не описуємо/)).toBeTruthy();
+    expect(screen.getByText(/Подія читається символом дня/)).toBeTruthy();
     expect(screen.queryByText("Не знаємо")).toBeNull();
     expect(screen.queryByText(/мають свідчення/)).toBeNull();
   });

@@ -14,12 +14,5 @@ export const LAYER_LABELS: Readonly<Record<ClaimLayer, string>> = {
   symbolic: "Традиція",
 };
 
-/** Наскільки певно — словом, без відсотків: відсоток читався б як точність. */
-export function confidenceWord(confidence: number): string {
-  if (confidence >= 0.6) return "високо";
-  if (confidence >= 0.35) return "помірно";
-  return "низько";
-}
-
-export const UNKNOWN_LABEL = "Не знаємо";
-export const CONFLICT_LABEL = "Системи не згодні";
+/** Коли системи розійшлися — факт, а не оцінка: обидві відповіді видно поруч. */
+export const CONFLICT_LABEL = "Різні відповіді";

@@ -1,5 +1,5 @@
 /**
- * «Розвиток» — екран і проходження в одному місці.
+ * «Тести» — каталог і проходження в одному місці.
  *
  * **Стан — у хуку, перемикання — за адресою.** Відкрита теста `/assessments`,
  * а відкрита `/assessments/who5` — проходження; тож «назад» у Telegram повертає
@@ -11,7 +11,6 @@
 
 import { useMemo, useState, type ReactElement } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import { assessmentRunPath } from "@/app/routes";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { AssessmentsPage } from "./AssessmentsPage";
@@ -19,7 +18,7 @@ import { AssessmentRun } from "./AssessmentRun";
 import { useAssessments } from "./useAssessments";
 
 export function AssessmentsScreen(): ReactElement {
-  useScreenChrome({ title: "Розвиток" });
+  useScreenChrome({ title: "Тести" });
   const { key } = useParams();
   const navigate = useNavigate();
   const { tests, results, peers, loading, saving, error, submit, clearError } = useAssessments();
@@ -56,7 +55,6 @@ export function AssessmentsScreen(): ReactElement {
         setStarted(testKey);
         navigate(assessmentRunPath(testKey));
       }}
-      onOpenDates={() => navigate(DATE_ANALYSIS_PATH)}
     />
   );
 }

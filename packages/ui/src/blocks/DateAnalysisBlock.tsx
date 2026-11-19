@@ -82,8 +82,8 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
     <div className="wb-block-date-analysis">
       <h2 className="wb-block-date-analysis__title">{heading}</h2>
       <p className="wb-text-sm wb-text-muted wb-block-date-analysis__lead">
-        Тридцять шість якостей, розкладених по доменах. Дата дає традиційний погляд; опитування
-        додає другий вектор окремо.
+        Тридцять шість якостей у дванадцяти доменах: дата дає традиційний погляд, ваші відповіді —
+        виміряний.
       </p>
 
       <DossierLensPicker
@@ -128,11 +128,6 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
           )}
         </div>
       )}
-
-      <p className="wb-text-sm wb-text-muted wb-block-date-analysis__foot">
-        Портрет не ставить діагнозів і не дає відсотків: рівень тут — мова поведінкових якорів, а не
-        бал.
-      </p>
     </div>
   );
 }

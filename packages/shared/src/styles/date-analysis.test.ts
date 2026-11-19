@@ -71,7 +71,7 @@ describe("вітрина систем: таблиця без рамки й бе�
   });
 });
 
-describe("портрет: рядок якості й розподіл", () => {
+describe("портрет: рядок якості й розрахунок", () => {
   it("старої таблиці аналізу й закріпленої шапки більше немає", () => {
     expect(css).not.toContain(".wb-analysis-views");
     expect(css).not.toContain(".wb-param-pin");
@@ -85,13 +85,12 @@ describe("портрет: рядок якості й розподіл", () => {
     expect(summary).toContain("list-style: none");
   });
 
-  it("розбіжність показується п'ятьма комірками рівнів", () => {
-    expect(rule(".wb-dossier-distribution")).toContain("repeat(5, 1fr)");
+  it("лічильників рівнів більше немає: жодних п'яти цифр під свідченням", () => {
+    expect(css).not.toContain(".wb-dossier-distribution");
   });
 
   it("якість без свідчень лишається видимим рядком, а не зникає", () => {
-    expect(rule(".wb-dossier-quality--unknown")).toContain("min-height: 40px");
-    expect(rule(".wb-dossier-quality__unknown")).toContain("white-space: nowrap");
+    expect(rule(".wb-dossier-quality--empty")).toContain("min-height: 40px");
   });
 
   it("опитування — окремий стан на екрані", () => {

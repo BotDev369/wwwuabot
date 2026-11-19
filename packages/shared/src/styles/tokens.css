@@ -194,39 +194,39 @@
   --display-weight: var(--weight-black);
   --display-tracking: -0.045em;
   --display-leading: 1;
-  --h1-size: 1.625rem; /* 26px */
+  --h1-size: 1.875rem; /* 30px */
   --h1-weight: var(--weight-extrabold);
   --h1-tracking: -0.04em;
-  --h2-size: 1.375rem; /* 22px */
+  --h2-size: 1.625rem; /* 26px */
   --h2-weight: var(--weight-extrabold);
-  --h3-size: 1.125rem; /* 18px */
+  --h3-size: 1.25rem; /* 20px */
   --h3-weight: var(--weight-bold);
 
   /* Капс — окремий рівень, а не «дрібний текст»: 11px, 900, розріджений на
      0.16em. Він тримає підписи груп і мітки станів, і без власних токенів
      кожен екран вигадував свій трекінг. */
-  --cap-size: 0.6875rem; /* 11px */
+  --cap-size: 0.75rem; /* 12px */
   --cap-weight: var(--weight-black);
-  --cap-tracking: 0.16em;
+  --cap-tracking: 0.14em;
 
-  --text-xs: 0.6875rem; /* 11px — label small */
-  --text-sm: 0.75rem; /* 12px — label medium */
-  --text-base: 0.8125rem; /* 13px — body medium */
-  --text-md: 1rem; /* 16px — body large; нижче не опускаємо: iOS зумлює поля */
-  --text-lg: 1.0625rem; /* 17px — title medium */
-  --text-xl: 1.375rem; /* 22px — title large */
-  --text-2xl: 1.625rem; /* 26px — headline medium */
-  --text-3xl: 1.875rem; /* 30px — число в картці */
-  --text-4xl: 2.125rem; /* 34px — бал результату */
-  --text-5xl: 2.375rem; /* 38px — велике число */
-  --text-6xl: 2.75rem; /* 44px — екран помилки */
+  --text-xs: 0.75rem; /* 12px — label small */
+  --text-sm: 0.8125rem; /* 13px — label medium */
+  --text-base: 0.9375rem; /* 15px — body medium */
+  --text-md: 1.0625rem; /* 17px — body large; нижче не опускаємо: iOS зумлює поля */
+  --text-lg: 1.25rem; /* 20px — title medium */
+  --text-xl: 1.625rem; /* 26px — title large */
+  --text-2xl: 1.875rem; /* 30px — headline medium */
+  --text-3xl: 2.125rem; /* 34px — число в картці */
+  --text-4xl: 2.5rem; /* 40px — бал результату */
+  --text-5xl: 2.75rem; /* 44px — велике число */
+  --text-6xl: 3.25rem; /* 52px — екран помилки */
 
   /* Пара «підпис поля → значення» — один рівень на весь продукт: підпис
      дрібніший і тихіший, значення більше й головне. Поки обидва брали
      `--text-base`, рядок профілю читався як два рівні тексту й нічим не
      виділяв те, заради чого в нього дивляться. */
   --label-size: var(--text-sm); /* 13px */
-  --value-size: 0.9375rem; /* 15px */
+  --value-size: 1.0625rem; /* 17px */
   --tracking-title: -0.02em; /* великий кегль — тугіше, як у дисплейному нарізанні Onest */
 
   /* Клавіатурний фокус: одна рамка на продукт, щоб Tab було видно скрізь,

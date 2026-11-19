@@ -1,5 +1,5 @@
 /**
- * «Розвиток» — список входів: аналіз дат і тести самооцінки.
+ * «Тести» — каталог опитувань, які живлять ядро якостей.
  *
  * **Рядок — це акордеон, і більше нічого.** Власник 28.10.2026 сказав прямо: на
  * сторінці не має бути ані балів, ані трендів, ані розбору — тільки згорнуті
@@ -16,7 +16,9 @@
  *
  * Шлях власний (`/assessments`), а не `slug` рядка `scenarios`: список
  * складається з реєстру тестів і даних людини (таблиця `assessment_results`), а
- * не з `page_data` (AGENTS.md §7).
+ * не з `page_data` (AGENTS.md §7). «Аналіз людей та подій» тут **не** окремий
+ * рядок: це батьківська фіча, і в меню вона — один пункт, а не картка всередині
+ * списку тестів.
  *
  * @module web-platform-dev/src/pages/assessments/AssessmentsPage
  */
@@ -36,7 +38,6 @@ interface AssessmentsPageProps {
   results: readonly AssessmentRecord[];
   loading: boolean;
   onOpen: (testKey: string) => void;
-  onOpenDates: () => void;
 }
 
 /** Рядок списку: усе, що потрібне акордеону, і нічого понад те. */
@@ -77,41 +78,28 @@ export function AssessmentsPage({
   results,
   loading,
   onOpen,
-  onOpenDates,
 }: AssessmentsPageProps): ReactElement {
   const latest = useMemo(() => latestByScale(results), [results]);
 
-  const entries: Entry[] = [
-    {
-      key: "dates",
-      title: "Аналіз людей та подій",
-      icon: "my-dates",
-      lead: "Люди, події та їхнє порівняння — за датами, які ви вже зберегли.",
-      note: null,
-      tone: 1,
-      open: onOpenDates,
-    },
-    ...tests.map((test, index) => {
-      const passed = lastPassed(latest, test);
-      const questions = `${questionCount(test)} ${plural(questionCount(test), QUESTIONS)}`;
-      return {
-        key: test.key,
-        title: test.title,
-        icon: test.icon,
-        lead: test.lead,
-        note: passed ? `${questions} · востаннє ${passed}` : questions,
-        // Перший тест бере другий голос: перший уже зайняв аналіз людей і подій.
-        tone: (index % 6) + 2,
-        open: () => onOpen(test.key),
-      };
-    }),
-  ];
+  const entries: Entry[] = tests.map((test, index) => {
+    const passed = lastPassed(latest, test);
+    const questions = `${questionCount(test)} ${plural(questionCount(test), QUESTIONS)}`;
+    return {
+      key: test.key,
+      title: test.title,
+      icon: test.icon,
+      lead: test.lead,
+      note: passed ? `${questions} · востаннє ${passed}` : questions,
+      // Сусідні рядки мусять різнитись на око.
+      tone: (index % 6) + 1,
+      open: () => onOpen(test.key),
+    };
+  });
 
   return (
     <div className="wb-page wb-page-scroll">
-      {/* Список є завжди: аналіз дат не залежить від реєстру тестів, тож
-          чекати на нього людина не мусить. Контейнер і рядок — ті самі
-          кирпичики, що в «Сервісах»: екран не має власної геометрії списку. */}
+      {/* Контейнер і рядок — ті самі кирпичики, що в «Сервісах»: екран не має
+          власної геометрії списку. */}
       <div className="wb-menu-list">
         {entries.map((entry) => (
           <CollapsibleSection

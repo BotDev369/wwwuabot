@@ -5,9 +5,10 @@
  * світить лише «Я», а вкладки магазину (`/scenarios/7/products`) — нічого: вони
  * не пункт меню, а сторінка всередині магазину.
  *
- * **Магазини, аналіз і тестування стоять у меню навмисно.** Це три речі, заради
- * яких людина приходить: без пункту вони існували тільки для того, кому колись
- * надіслали посилання.
+ * **«Аналіз людей та подій» — один пункт головного меню, і в ньому тести.**
+ * Це одна фіча з двома векторами (дата й опитування), тож окремий пункт
+ * «Тестування» був би другим входом у те саме. Магазини лишаються пунктом з тієї
+ * ж причини: без нього вони існували б лише для того, кому надіслали посилання.
  *
  * @module web-platform-dev/src/layout/platform-nav
  */
@@ -32,6 +33,14 @@ import {
 /** Головне меню: щоденна робота людини, у порядку ранку. */
 const MAIN: readonly SideBarItem[] = [
   { key: "day", label: "Мій день", icon: "home", href: DAY_PATH },
+  {
+    key: "analysis",
+    label: "Аналіз людей та подій",
+    icon: "my-dates",
+    href: DATE_ANALYSIS_PATH,
+    // Тести — другий вектор тієї самої фічі, тому її екран теж світить цей пункт.
+    match: [ASSESSMENTS_PATH],
+  },
   { key: "hurt", label: "Гурт", icon: "users", href: USERS_PATH },
   { key: "me", label: "Я", icon: "user-solid", href: ACCOUNT_PATH },
 ];
@@ -39,8 +48,6 @@ const MAIN: readonly SideBarItem[] = [
 /** «Ще»: усе інше одним списком. */
 const MORE: readonly SideBarItem[] = [
   { key: "shops", label: "Магазини", icon: "cart", href: SHOPS_PATH },
-  { key: "analysis", label: "Аналіз людей", icon: "my-dates", href: DATE_ANALYSIS_PATH },
-  { key: "assessments", label: "Тестування", icon: "growth", href: ASSESSMENTS_PATH },
   { key: "favorites", label: "Обране", icon: "thumbs-up", href: FAVORITES_PATH },
   { key: "trackers", label: "Трекери", icon: "bar-chart", href: TRACKERS_PATH },
   { key: "notes", label: "Нотатки", icon: "list", href: NOTES_PATH },
@@ -62,11 +69,12 @@ function normalize(pathname: string): string {
   return trimmed === "" ? "/" : trimmed;
 }
 
-/** Чи адреса належить пунктові: або він сам, або глибше за нього. */
-function belongs(pathname: string, href: string | undefined): boolean {
-  if (href === undefined) return false;
-  if (href === "/") return pathname === "/";
-  return pathname === href || pathname.startsWith(`${href}/`);
+/** Чи адреса належить пунктові: сам пункт, глибше за нього або його `match`. */
+function belongs(pathname: string, item: SideBarItem): boolean {
+  if (item.href === undefined) return false;
+  return [item.href, ...(item.match ?? [])].some((href) =>
+    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`),
+  );
 }
 
 /**
@@ -79,7 +87,7 @@ export function platformNav(pathname: string): SideBarSection[] {
   const path = normalize(pathname);
   const all = PLATFORM_NAV.flatMap((section) => section.items);
   const winner = all
-    .filter((item) => belongs(path, item.href))
+    .filter((item) => belongs(path, item))
     .sort((a, b) => (b.href?.length ?? 0) - (a.href?.length ?? 0))[0];
 
   return PLATFORM_NAV.map((section) => ({

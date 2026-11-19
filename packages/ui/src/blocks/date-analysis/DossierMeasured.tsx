@@ -1,8 +1,7 @@
 /**
  * Виміряні якості окремим блоком: другий вектор ядра поруч із датою.
  *
- * Показуємо тільки виміряне — «Не знаємо» людина вже бачить у портреті за датою.
- * Шар названий уголос: рівень тут виміряний, і з символічним він не змішується.
+ * Показуємо тільки виміряне — це рівень, який дали відповіді, а не традиція.
  * @module packages/ui/src/blocks/date-analysis/DossierMeasured
  */
 
@@ -19,10 +18,7 @@ export function DossierMeasured({ survey }: { survey: SurveyRead }) {
         <p className="wb-measured__kicker">Другий шлях · ваші відповіді</p>
         <h3 className="wb-measured__title">Опитування: {MEASURED_NAME}</h3>
         <p className="wb-measured__coverage">{known} з 36 якостей видно з відповідей</p>
-        <p className="wb-measured__note">
-          Це ваші відповіді, а не дата. Рівень тут виміряний, і він не підвищує впевненості того, що
-          каже традиція — ці дві частини не змішуються.
-        </p>
+        <p className="wb-measured__note">Це ваші відповіді, а не дата: рівень тут виміряний.</p>
       </header>
 
       <div className="wb-measured-domains">

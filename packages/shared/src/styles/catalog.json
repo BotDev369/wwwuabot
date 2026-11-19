@@ -1,5 +1,5 @@
 {
-  "version": "8ca4221",
+  "version": "a937e12",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -129,7 +129,7 @@
     {
       "file": "date-analysis.css",
       "tokens": 1,
-      "classes": 114
+      "classes": 107
     },
     {
       "file": "dates.css",
@@ -409,7 +409,7 @@
     {
       "name": "--cap-size",
       "section": "Typography",
-      "light": "0.6875rem",
+      "light": "0.75rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -417,7 +417,7 @@
     {
       "name": "--cap-tracking",
       "section": "Typography",
-      "light": "0.16em",
+      "light": "0.14em",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -881,7 +881,7 @@
     {
       "name": "--h1-size",
       "section": "Typography",
-      "light": "1.625rem",
+      "light": "1.875rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -905,7 +905,7 @@
     {
       "name": "--h2-size",
       "section": "Typography",
-      "light": "1.375rem",
+      "light": "1.625rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -921,7 +921,7 @@
     {
       "name": "--h3-size",
       "section": "Typography",
-      "light": "1.125rem",
+      "light": "1.25rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1577,7 +1577,7 @@
     {
       "name": "--text-2xl",
       "section": "Typography",
-      "light": "1.625rem",
+      "light": "1.875rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1585,7 +1585,7 @@
     {
       "name": "--text-3xl",
       "section": "Typography",
-      "light": "1.875rem",
+      "light": "2.125rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1593,7 +1593,7 @@
     {
       "name": "--text-4xl",
       "section": "Typography",
-      "light": "2.125rem",
+      "light": "2.5rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1601,7 +1601,7 @@
     {
       "name": "--text-5xl",
       "section": "Typography",
-      "light": "2.375rem",
+      "light": "2.75rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1609,7 +1609,7 @@
     {
       "name": "--text-6xl",
       "section": "Typography",
-      "light": "2.75rem",
+      "light": "3.25rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1617,7 +1617,7 @@
     {
       "name": "--text-base",
       "section": "Typography",
-      "light": "0.8125rem",
+      "light": "0.9375rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1633,7 +1633,7 @@
     {
       "name": "--text-lg",
       "section": "Typography",
-      "light": "1.0625rem",
+      "light": "1.25rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1641,7 +1641,7 @@
     {
       "name": "--text-md",
       "section": "Typography",
-      "light": "1rem",
+      "light": "1.0625rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1681,7 +1681,7 @@
     {
       "name": "--text-sm",
       "section": "Typography",
-      "light": "0.75rem",
+      "light": "0.8125rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1689,7 +1689,7 @@
     {
       "name": "--text-xl",
       "section": "Typography",
-      "light": "1.375rem",
+      "light": "1.625rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1697,7 +1697,7 @@
     {
       "name": "--text-xs",
       "section": "Typography",
-      "light": "0.6875rem",
+      "light": "0.75rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1777,7 +1777,7 @@
     {
       "name": "--value-size",
       "section": "Typography",
-      "light": "0.9375rem",
+      "light": "1.0625rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -5174,7 +5174,6 @@
       {
         "section": "Портрет: домени, якості, свідчення",
         "names": [
-          "wb-block-date-analysis__foot",
           "wb-calc",
           "wb-calc__about",
           "wb-calc__count",
@@ -5191,7 +5190,6 @@
           "wb-calc__value",
           "wb-dossier",
           "wb-dossier-claim",
-          "wb-dossier-claim__confidence",
           "wb-dossier-claim__details",
           "wb-dossier-claim__evidence",
           "wb-dossier-claim__head",
@@ -5203,10 +5201,6 @@
           "wb-dossier-claim__source",
           "wb-dossier-claim__steps",
           "wb-dossier-claims",
-          "wb-dossier-distribution",
-          "wb-dossier-distribution__caption",
-          "wb-dossier-distribution__cell",
-          "wb-dossier-distribution__count",
           "wb-dossier-domain",
           "wb-dossier-domain__count",
           "wb-dossier-domain__title",
@@ -5225,7 +5219,7 @@
           "wb-dossier-list",
           "wb-dossier-quality",
           "wb-dossier-quality--conflict",
-          "wb-dossier-quality--unknown",
+          "wb-dossier-quality--empty",
           "wb-dossier-quality__anchor",
           "wb-dossier-quality__body",
           "wb-dossier-quality__caret",
@@ -5236,7 +5230,6 @@
           "wb-dossier-quality__positions",
           "wb-dossier-quality__summary",
           "wb-dossier-quality__text",
-          "wb-dossier-quality__unknown",
           "wb-dossier-survey",
           "wb-dossier-survey__head",
           "wb-dossier-survey__hint",

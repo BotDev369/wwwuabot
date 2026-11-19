@@ -34,8 +34,8 @@ export function DossierSurvey({ enabled, measured, onChange }: DossierSurveyProp
         <span className="wb-dossier-survey__status">{statusOf(enabled, measured)}</span>
       </div>
       <p className="wb-dossier-survey__text">
-        Дата показує, що каже традиція. Другий шлях — ваші відповіді на питання: вони живуть окремо,
-        не змішуються з датою й не роблять її точнішою.
+        Дата показує, що каже традиція. Ваші відповіді додають другу половину картини — виміряні
+        якості з тестів.
       </p>
 
       <label className="wb-dossier-survey__toggle">

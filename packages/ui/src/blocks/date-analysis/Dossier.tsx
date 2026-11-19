@@ -45,16 +45,13 @@ export function Dossier({ dossier, name }: { dossier: DossierRead; name: string 
             <p className="wb-dossier__coverage">
               {known} з {total} якостей уже видно
             </p>
-            <p className="wb-dossier__note">
-              Системи: {sourceNames(dossier.claims)}. Рівень — це те, що каже система, а не оцінка
-              людини; якщо система про якість мовчить, вона лишається невідомою.
-            </p>
+            <p className="wb-dossier__note">Системи: {sourceNames(dossier.claims)}.</p>
           </>
         ) : (
           <p className="wb-dossier__note">
             {dossier.note === "symbol-missing"
-              ? "Для цієї дати системи не дали жодного показника, тож і якостей немає."
-              : "Якостей події ми ще не описуємо — і не переносимо на неї риси людини. Лишається символ дня."}
+              ? "Для цієї дати немає показників."
+              : "Подія читається символом дня."}
           </p>
         )}
       </header>

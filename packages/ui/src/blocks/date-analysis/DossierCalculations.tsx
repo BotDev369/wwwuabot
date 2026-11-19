@@ -1,6 +1,6 @@
 /**
- * «Розрахунки й системи»: показники, які можна звірити самостійно, і межі
- * системи — без них традиція виглядала б як прилад.
+ * «Розрахунки й системи»: показники, які можна звірити самостійно, і звідки
+ * взялися рівні якостей. Кожен показник розкривається разом із правилом.
  *
  * @module packages/ui/src/blocks/date-analysis/DossierCalculations
  */
@@ -39,17 +39,6 @@ export function DossierCalculations({ systems }: { systems: readonly SystemRead[
           {system.gives && system.gives.length > 0 && (
             <p className="wb-calc__scope">
               <strong>Що бере з дати:</strong> {system.gives.join("; ")}.
-            </p>
-          )}
-          {system.limits && system.limits.length > 0 && (
-            <p className="wb-calc__scope">
-              <strong>Чого не знає:</strong> {system.limits.join("; ")}.
-            </p>
-          )}
-          {typeof system.undetermined === "number" && system.undetermined > 0 && (
-            <p className="wb-calc__scope">
-              <strong>Чого не визначає:</strong> {system.undetermined} якостей ядра — вони лишаються
-              «Не знаємо», а не отримують середину.
             </p>
           )}
           {system.source && <p className="wb-calc__source">Канон: {system.source}</p>}

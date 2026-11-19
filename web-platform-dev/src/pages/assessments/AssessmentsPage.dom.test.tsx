@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 /**
- * «Розвиток» — список згорнутих акордеонів, а не карток із балами.
+ * «Тести» — список згорнутих акордеонів, а не карток із балами.
  *
  * Перевіряється те, що ламається мовчки: рядок типово **згорнутий** (тільки
  * знак і назва), розгортання дає опис і одну кнопку, а кожен рядок веде на
- * **свій** екран — аналіз дат на власний, тест на проходження саме цього тесту.
+ * проходження **свого** тесту. «Аналіз людей та подій» тут рядком не стоїть:
+ * це батьківська фіча з власним пунктом меню.
  *
  * @module web-platform-dev/src/pages/assessments/AssessmentsPage.dom.test
  */
@@ -15,23 +16,23 @@ import userEvent from "@testing-library/user-event";
 import { ASSESSMENTS } from "@wwwuabot/shared/assessments";
 import { AssessmentsPage } from "./AssessmentsPage";
 
-function page(props: { onOpen?: (key: string) => void; onOpenDates?: () => void } = {}) {
+function page(props: { onOpen?: (key: string) => void } = {}) {
   return render(
     <AssessmentsPage
       tests={ASSESSMENTS}
       results={[]}
       loading={false}
       onOpen={props.onOpen ?? (() => {})}
-      onOpenDates={props.onOpenDates ?? (() => {})}
     />,
   );
 }
 
-describe("екран «Розвиток»", () => {
+describe("екран «Тести»", () => {
   it("рядки згорнуті за замовчуванням: видно лише назву, без опису й кнопки", () => {
     page();
 
-    for (const entry of ["Аналіз людей та подій", ...ASSESSMENTS.map((test) => test.title)]) {
+    expect(screen.queryByRole("button", { name: "Аналіз людей та подій" })).toBeNull();
+    for (const entry of ASSESSMENTS.map((test) => test.title)) {
       expect(screen.getByRole("button", { name: entry }).getAttribute("aria-expanded")).toBe(
         "false",
       );
@@ -54,22 +55,14 @@ describe("екран «Розвиток»", () => {
     expect(screen.getAllByRole("button", { name: "Відкрити" })).toHaveLength(1);
   });
 
-  it("кожен рядок веде на свій екран", async () => {
+  it("кожен рядок веде на проходження свого тесту", async () => {
     const onOpen = vi.fn();
-    const onOpenDates = vi.fn();
-    page({ onOpen, onOpenDates });
+    page({ onOpen });
 
-    await userEvent.click(screen.getByRole("button", { name: "Аналіз людей та подій" }));
     await userEvent.click(screen.getByRole("button", { name: ASSESSMENTS[1].title }));
 
-    // Обидва рядки розгорнуті: кнопки йдуть у порядку списку.
-    const openButtons = screen.getAllByRole("button", { name: "Відкрити" });
-    expect(openButtons).toHaveLength(2);
+    await userEvent.click(screen.getByRole("button", { name: "Відкрити" }));
 
-    await userEvent.click(openButtons[0]);
-    expect(onOpenDates).toHaveBeenCalledTimes(1);
-
-    await userEvent.click(openButtons[1]);
     expect(onOpen).toHaveBeenCalledWith(ASSESSMENTS[1].key);
   });
 
@@ -92,7 +85,6 @@ describe("екран «Розвиток»", () => {
         ]}
         loading={false}
         onOpen={() => {}}
-        onOpenDates={() => {}}
       />,
     );
 

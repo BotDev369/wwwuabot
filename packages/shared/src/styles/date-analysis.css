@@ -593,64 +593,17 @@
   line-height: var(--leading-normal);
 }
 
-.wb-dossier-claim__confidence {
-  color: var(--text-muted);
-  font-size: var(--text-xs);
-}
-
-/* Розподіл — п'ять комірок за рівнями: розбіжність видно як два стовпчики, а
-   не як одне згладжене число. */
-.wb-dossier-distribution {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 2px;
-}
-
-.wb-dossier-distribution__cell {
+/* Якість без свідчень — сама назва: жодного слова про те, чого ми не знаємо. */
+.wb-dossier-quality--empty {
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 28px;
-  border-radius: var(--radius-xs);
-  background: var(--accent-soft);
-  font-size: var(--text-xs);
-}
-
-.wb-dossier-distribution__cell[data-empty="true"] {
-  background: var(--bg-2);
-  color: var(--text-muted);
-}
-
-.wb-dossier-distribution__count {
-  font-variant-numeric: tabular-nums;
-}
-
-.wb-dossier-distribution__caption {
-  color: var(--text-muted);
-  font-size: var(--text-xs);
-}
-
-/* Якість без свідчень — не порожній рядок і не середина: ім'я лишається, стан
-   сказано словом. */
-.wb-dossier-quality--unknown {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
   min-height: 40px;
   padding: var(--sp-1) 0;
   border-top: 1px solid var(--border-subtle);
 }
 
-.wb-dossier-quality--unknown .wb-dossier-quality__name {
+.wb-dossier-quality--empty .wb-dossier-quality__name {
   color: var(--text-secondary);
-}
-
-.wb-dossier-quality__unknown {
-  flex: none;
-  color: var(--text-muted);
-  font-size: var(--text-xs);
-  white-space: nowrap;
 }
 
 /* Вибір систем — крок перед аналізом: людина сама каже, хто читає дату. */
@@ -884,12 +837,6 @@
 .wb-measured-quality__evidence {
   color: var(--text-muted);
   font-size: var(--text-xs);
-}
-
-.wb-block-date-analysis__foot {
-  max-width: 62ch;
-  margin-top: var(--sp-4);
-  line-height: var(--leading-relaxed);
 }
 
 /* Розрахунки: показники системи, які можна звірити самостійно. */

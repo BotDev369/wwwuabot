@@ -57,21 +57,24 @@ describe("меню платформи", () => {
     expect(activeKeys("/research")).toEqual([]);
   });
 
-  it("магазини, аналіз і тестування мають пункт, а не лише адресу", () => {
-    // Це три речі, заради яких людина приходить: без пункту вони існували
-    // тільки для того, кому колись надіслали посилання.
+  it("«Аналіз людей та подій» — один пункт головного меню, і в ньому тести", () => {
+    // Два входи в одну фічу (окремо аналіз і окремо тести) читались як два
+    // різні розділи, хоч у них спільне ядро якостей.
+    const main = PLATFORM_NAV.find((section) => section.key === "main");
+    expect(main?.items.map((item) => item.label)).toContain("Аналіз людей та подій");
+
     const hrefs = PLATFORM_NAV.flatMap((section) => section.items).map((item) => item.href);
+    expect(hrefs.filter((href) => href === DATE_ANALYSIS_PATH)).toHaveLength(1);
+    expect(hrefs).not.toContain(ASSESSMENTS_PATH);
     expect(hrefs).toContain(SHOPS_PATH);
-    expect(hrefs).toContain(DATE_ANALYSIS_PATH);
-    expect(hrefs).toContain(ASSESSMENTS_PATH);
   });
 
-  it("кожен із трьох входів світить саме себе", () => {
+  it("аналіз світить себе і на кроці тестів, бо це та сама фіча", () => {
     expect(activeKeys(SHOPS_PATH)).toEqual(["shops"]);
     expect(activeKeys(DATE_ANALYSIS_PATH)).toEqual(["analysis"]);
-    expect(activeKeys(ASSESSMENTS_PATH)).toEqual(["assessments"]);
+    expect(activeKeys(ASSESSMENTS_PATH)).toEqual(["analysis"]);
     // Проходження тесту — той самий пункт, а не порожній хвіст.
-    expect(activeKeys(`${ASSESSMENTS_PATH}/stress`)).toEqual(["assessments"]);
+    expect(activeKeys(`${ASSESSMENTS_PATH}/stress`)).toEqual(["analysis"]);
   });
 
   it("хибних переходів немає: пункту, який нікуди не веде, не існує", () => {
