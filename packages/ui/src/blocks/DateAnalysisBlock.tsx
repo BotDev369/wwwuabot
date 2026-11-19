@@ -75,14 +75,14 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
 
   const heading =
     subject.self && subject.scope === "person"
-      ? "Ваше досьє:"
+      ? "Ваш портрет:"
       : analysisScreenTitle("analysis", storedTitle);
 
   return (
     <div className="wb-block-date-analysis">
       <h2 className="wb-block-date-analysis__title">{heading}</h2>
       <p className="wb-text-sm wb-text-muted wb-block-date-analysis__lead">
-        Домени якостей, свідчення джерел і чесні порожнечі. Дата дає символічний шар; опитування
+        Тридцять шість якостей, розкладених по доменах. Дата дає традиційний погляд; опитування
         додає другий вектор окремо.
       </p>
 
@@ -124,13 +124,13 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
           ))}
 
           {dossiers.length === 0 && (
-            <p className="wb-text-sm wb-text-muted">Не вдалося скласти досьє для цих дат.</p>
+            <p className="wb-text-sm wb-text-muted">Не вдалося скласти портрет для цих дат.</p>
           )}
         </div>
       )}
 
       <p className="wb-text-sm wb-text-muted wb-block-date-analysis__foot">
-        Досьє не ставить діагнозів і не дає відсотків: рівень тут — мова поведінкових якорів, а не
+        Портрет не ставить діагнозів і не дає відсотків: рівень тут — мова поведінкових якорів, а не
         бал.
       </p>
     </div>

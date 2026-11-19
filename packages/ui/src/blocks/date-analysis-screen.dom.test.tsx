@@ -31,6 +31,7 @@ const INITIATIVE = {
   method: "mapped",
   temporal: "trait",
   confidence: 0.16,
+  details: ["Дата: 1980-03-03", "Сонце в Овні, 13°02′ (12:00 UTC) — знак Овен"],
 };
 
 const DISCIPLINE = {
@@ -60,6 +61,21 @@ const DOSSIER = {
   kind: "person",
   symbol: "Овен",
   claims: [INITIATIVE, DISCIPLINE],
+  systems: [
+    {
+      id: "western",
+      name: "Західна астрологія",
+      version: "2",
+      about: "Тропічна астрологія читає положення Сонця.",
+      gives: ["знак Сонця"],
+      limits: ["Місяць — потрібен час народження"],
+      source: "Птолемей, «Тетрабіблос»",
+      parameters: [
+        { label: "Знак Сонця", value: "Овен" },
+        { label: "Градус Сонця", value: "13°02′ Овна (12:00 UTC)" },
+      ],
+    },
+  ],
   note: null,
 };
 
@@ -134,9 +150,9 @@ describe("DateAnalysisBlock — вибір систем", () => {
     await settle();
 
     expect(screen.getByText("Системи аналізу")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Порахувати досьє" }).hasAttribute("disabled")).toBe(
-      true,
-    );
+    expect(
+      screen.getByRole("button", { name: "Порахувати портрет" }).hasAttribute("disabled"),
+    ).toBe(true);
     expect(api.calls).toHaveLength(0);
     expect(screen.queryByText("Не знаємо")).toBeNull();
     expect(screen.queryByText(/мають свідчення/)).toBeNull();
@@ -149,7 +165,7 @@ describe("DateAnalysisBlock — вибір систем", () => {
     await settle();
 
     fireEvent.click(screen.getByLabelText(/Західна астрологія/));
-    fireEvent.click(screen.getByRole("button", { name: "Порахувати досьє" }));
+    fireEvent.click(screen.getByRole("button", { name: "Порахувати портрет" }));
     await settle();
 
     expect(api.calls).toHaveLength(1);
@@ -157,7 +173,7 @@ describe("DateAnalysisBlock — вибір систем", () => {
     expect(api.calls[0]).toContain('"lenses":["western"]');
     expect(window.location.search).toContain("lenses=western");
     expect(screen.getByRole("heading", { level: 3, name: "3.03.1980" })).toBeTruthy();
-    expect(screen.getByText("2 з 36 якостей мають свідчення")).toBeTruthy();
+    expect(screen.getByText("2 з 36 якостей уже видно")).toBeTruthy();
   });
 });
 
@@ -168,7 +184,7 @@ describe("DateAnalysisBlock — досьє", () => {
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    expect(screen.getByRole("heading", { level: 2, name: "Досьє:" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 2, name: "Портрет:" })).toBeTruthy();
     expect(screen.getByRole("heading", { level: 4, name: /Воля/ })).toBeTruthy();
     expect(screen.getAllByText("Ініціатива").length).toBeGreaterThan(0);
     // Рівень показаний підписом смуги й поведінковим якорем, а не числом.
@@ -188,10 +204,11 @@ describe("DateAnalysisBlock — досьє", () => {
     await settle();
 
     expect(screen.getAllByText("Західна астрологія").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Символічне").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Традиція").length).toBeGreaterThan(0);
     expect(screen.getByText(/Сонце в Овні: початок без дозволу/)).toBeTruthy();
-    expect(screen.getAllByText(/Впевненість: низька/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Свідчення за рівнями 1–5").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Наскільки це певно: низько/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Скільки систем назвали кожен рівень").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Як ми це визначили").length).toBeGreaterThan(0);
   });
 
   it("розбіжність показує обидві позиції, а не середнє", async () => {
@@ -200,10 +217,10 @@ describe("DateAnalysisBlock — досьє", () => {
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    expect(screen.getByText("Розбіжність")).toBeTruthy();
+    expect(screen.getByText("Системи не згодні")).toBeTruthy();
     expect(screen.getByText(/Західна астрологія — Високий/)).toBeTruthy();
     expect(screen.getByText(/Нумерологія — Середній/)).toBeTruthy();
-    expect(screen.getByText(/Різні лінзи читають різні мови дати/)).toBeTruthy();
+    expect(screen.getByText(/Різні системи читають дату по-своєму/)).toBeTruthy();
     // Якір є в кожного свідчення, навіть коли вони розходяться.
     expect(screen.getByText("Підбирає слова під стан іншого без нагадування.")).toBeTruthy();
     expect(screen.getByText("Помічає зміну настрою й питає.")).toBeTruthy();
@@ -229,9 +246,7 @@ describe("DateAnalysisBlock — досьє", () => {
 
     expect(screen.getByText("Опитування")).toBeTruthy();
     expect(screen.getByText("не додано")).toBeTruthy();
-    expect((screen.getByLabelText(/Додати мої виміряні якості/) as HTMLInputElement).checked).toBe(
-      false,
-    );
+    expect((screen.getByLabelText(/Додати мої відповіді/) as HTMLInputElement).checked).toBe(false);
     expect(screen.getByRole("link", { name: /Пройти тести/ }).getAttribute("href")).toBe(
       "/assessments",
     );
@@ -251,7 +266,7 @@ describe("DateAnalysisBlock — досьє", () => {
 
     expect(api.calls[0]).toContain('"survey":true');
     expect(screen.getByText(/Опитування: Велика п'ятірка/)).toBeTruthy();
-    expect(screen.getByText("1 з 36 якостей мають вимір")).toBeTruthy();
+    expect(screen.getByText("1 з 36 якостей видно з відповідей")).toBeTruthy();
     expect(screen.getByText("Сумлінність — 18 з 20")).toBeTruthy();
     expect(screen.getByText(/не підвищує впевненості/)).toBeTruthy();
   });
@@ -262,9 +277,9 @@ describe("DateAnalysisBlock — досьє", () => {
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    expect(screen.getByText("ще не виміряно")).toBeTruthy();
-    expect(screen.getByText(/Проходження ще немає/)).toBeTruthy();
-    expect(screen.queryByText(/мають вимір/)).toBeNull();
+    expect(screen.getByText("ще немає")).toBeTruthy();
+    expect(screen.getByText(/Ви ще не проходили опитування/)).toBeTruthy();
+    expect(screen.queryByText(/видно з відповідей/)).toBeNull();
   });
 
   it("кілька дат — кілька досьє з власними підписами", async () => {
@@ -285,7 +300,7 @@ describe("DateAnalysisBlock — досьє", () => {
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    expect(screen.getByRole("heading", { level: 2, name: "Ваше досьє:" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 2, name: "Ваш портрет:" })).toBeTruthy();
     expect(screen.getByRole("heading", { level: 3, name: "Ви" })).toBeTruthy();
   });
 
@@ -296,7 +311,7 @@ describe("DateAnalysisBlock — досьє", () => {
     await settle();
 
     expect(screen.getByRole("heading", { level: 3, name: "Подія" })).toBeTruthy();
-    expect(screen.getByText(/Якісного профілю події ядро ще не описує/)).toBeTruthy();
+    expect(screen.getByText(/Якостей події ми ще не описуємо/)).toBeTruthy();
     expect(screen.queryByText("Не знаємо")).toBeNull();
     expect(screen.queryByText(/мають свідчення/)).toBeNull();
   });

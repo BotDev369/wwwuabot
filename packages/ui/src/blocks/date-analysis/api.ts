@@ -15,9 +15,27 @@ export type AnalysisSystem = Omit<MyDateSystem, "parameters"> & {
   parameters?: MyDateSystem["parameters"];
 };
 
+/** Один показник системи — те, що вона справді взяла з дати. */
+export interface SystemParameter {
+  label: string;
+  value: string;
+}
+
+/** Система на екрані: опис, межі, канон і повний перелік показників. */
+export interface SystemRead {
+  id: string;
+  name: string;
+  version: string;
+  about?: string;
+  gives?: string[];
+  limits?: string[];
+  source?: string;
+  parameters: SystemParameter[];
+}
+
 /**
- * Досьє одного суб'єкта: те, що сервер знає про дату. Домени, рівні й якорі
- * добирає екран із ядра — сервер віддає лише свідчення.
+ * Портрет одного суб'єкта: те, що сервер знає про дату. Домени, рівні й якорі
+ * добирає екран із ядра — сервер віддає свідчення й розрахунки.
  */
 export interface DossierRead {
   date: string;
@@ -25,6 +43,7 @@ export interface DossierRead {
   /** Символічний знак дати; `null` — калькулятор його не дав. */
   symbol: string | null;
   claims: QualityClaim[];
+  systems: SystemRead[];
   /** Чому якостей немає: подія в ядрі ще не описана. */
   note: "event-not-modelled" | "symbol-missing" | null;
 }

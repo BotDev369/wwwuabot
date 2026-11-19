@@ -9,17 +9,17 @@
 import type { ClaimLayer } from "@wwwuabot/shared/qualities";
 
 export const LAYER_LABELS: Readonly<Record<ClaimLayer, string>> = {
-  measured: "Виміряне",
-  narrative: "Наративне",
-  symbolic: "Символічне",
+  measured: "Ваші відповіді",
+  narrative: "Опис",
+  symbolic: "Традиція",
 };
 
-/** Шар джерела — це межа доказовості, тож підпис каже її, а не «тип». */
+/** Наскільки певно — словом, без відсотків: відсоток читався б як точність. */
 export function confidenceWord(confidence: number): string {
-  if (confidence >= 0.6) return "висока";
-  if (confidence >= 0.35) return "помірна";
-  return "низька";
+  if (confidence >= 0.6) return "високо";
+  if (confidence >= 0.35) return "помірно";
+  return "низько";
 }
 
 export const UNKNOWN_LABEL = "Не знаємо";
-export const CONFLICT_LABEL = "Розбіжність";
+export const CONFLICT_LABEL = "Системи не згодні";

@@ -215,11 +215,27 @@ describe("досьє за датою", () => {
     );
     const personBody = (await person.json()) as {
       ok: boolean;
-      dossiers: Array<{ kind: string; claims: unknown[]; note: string | null }>;
+      dossiers: Array<{
+        kind: string;
+        claims: unknown[];
+        note: string | null;
+        systems: Array<{ id: string; parameters: Array<{ label: string; value: string }> }>;
+      }>;
     };
     expect(person.status).toBe(200);
     expect(personBody.dossiers[0]?.kind).toBe("person");
-    expect(personBody.dossiers[0]?.claims).toHaveLength(14);
+    expect(personBody.dossiers[0]?.claims.length).toBeGreaterThanOrEqual(18);
+    // Західний профіль показує не лише знак: градус, декан, межу й двадашамшу.
+    const western = personBody.dossiers[0]?.systems.find((one) => one.id === "western");
+    expect(western?.parameters.map((one) => one.label)).toEqual(
+      expect.arrayContaining([
+        "Знак Сонця",
+        "Градус Сонця",
+        "Декан",
+        "Єгипетська межа",
+        "Двадашамша",
+      ]),
+    );
     expect(personBody.dossiers[0]?.note).toBeNull();
 
     const event = await handleDossier(

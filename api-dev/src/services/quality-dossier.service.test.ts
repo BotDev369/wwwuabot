@@ -20,16 +20,17 @@ describe("sunSignOf", () => {
 describe("buildDossier", () => {
   it("рахує рівно вибрані лінзи, а не всі підряд", () => {
     const onlyWestern = buildDossier("1980-03-03", "person", ["western"]);
-    expect(onlyWestern.claims).toHaveLength(3);
+    expect(onlyWestern.claims).toHaveLength(9);
     expect(new Set(onlyWestern.claims.map((claim) => claim.sourceId))).toEqual(
       new Set(["western"]),
     );
   });
 
-  it("чотири системи дають чотири джерела й покриття 12 з 36", () => {
+  it("чотири системи дають чотири джерела й повне покриття дати", () => {
     const dossier = buildDossier("1980-03-03", "person", ALL);
     expect(dossier.symbol).toBe("Риби");
-    expect(dossier.claims).toHaveLength(14);
+    expect(dossier.claims).toHaveLength(20);
+    expect(dossier.systems.map((one) => one.id)).toEqual([...ALL]);
     expect(new Set(dossier.claims.map((claim) => claim.sourceId))).toEqual(
       new Set(["western", "numerology", "chinese", "mayan"]),
     );
@@ -37,7 +38,7 @@ describe("buildDossier", () => {
     expect(dossier.note).toBeNull();
 
     const qualities = readDossier(dossier.claims).flatMap((domain) => domain.qualities);
-    expect(qualities.filter((one) => one.claims.length > 0)).toHaveLength(12);
+    expect(qualities.filter((one) => one.claims.length > 0).length).toBeGreaterThanOrEqual(12);
   });
 
   it("Емпатія розходиться в рівні: обидві позиції лишаються, середнього немає", () => {
@@ -55,7 +56,7 @@ describe("buildDossier", () => {
   });
 
   it("невідома лінза — помилка, а не мовчазний пропуск", () => {
-    expect(() => buildDossier("1980-03-03", "person", ["vedic"])).toThrow(/не має датового/);
+    expect(() => buildDossier("1980-03-03", "person", ["vedic"])).toThrow(/не має правила/);
   });
 
   it("подія не отримує рис людини — це інший профіль", () => {

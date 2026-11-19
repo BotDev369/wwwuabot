@@ -1,7 +1,7 @@
 /**
- * Одна якість досьє: рівень — якорем, розкриття — свідченнями. Якість без
- * свідчень лишається рядком «не знаємо», а розбіжність — розподілом, не
- * середнім.
+ * Одна якість портрета: рівень — людським описом, розкриття — тим, що каже
+ * кожна система, і **як саме вона це порахувала**. Якість без відповідей
+ * лишається рядком «не знаємо», а розбіжність — двома позиціями, не середнім.
  *
  * @module packages/ui/src/blocks/date-analysis/DossierQuality
  */
@@ -37,7 +37,7 @@ export function DossierQuality({ reading }: { reading: QualityReading }) {
 
   const label = spread ? CONFLICT_LABEL : levelLabel(level ?? 3);
   const anchor = spread
-    ? "Свідчення розходяться — показуємо обидва, без середнього."
+    ? "Системи кажуть різне — показуємо обидві відповіді, без середнього."
     : anchorOf(quality, level ?? 3);
 
   return (
@@ -62,14 +62,14 @@ export function DossierQuality({ reading }: { reading: QualityReading }) {
               {claims
                 .map((claim) => `${sourceName(claim.sourceId)} — ${levelLabel(claim.level)}`)
                 .join(" · ")}
-              . Різні лінзи читають різні мови дати, тому розбіжність не усереднюється.
+              . Різні системи читають дату по-своєму, тому ми не усереднюємо.
             </p>
           )}
 
           <ul className="wb-dossier-claims">
             {claims.map((claim) => (
               <li
-                key={`${claim.sourceId}:${claim.qualityId}:${claim.level}`}
+                key={`${claim.sourceId}:${claim.qualityId}:${claim.level}:${claim.evidence}`}
                 className="wb-dossier-claim"
               >
                 <p className="wb-dossier-claim__head">
@@ -81,11 +81,23 @@ export function DossierQuality({ reading }: { reading: QualityReading }) {
                   </span>
                   <span className="wb-dossier-claim__level">{levelLabel(claim.level)}</span>
                 </p>
-                <p className="wb-dossier-claim__evidence">{anchorOf(quality, claim.level)}</p>
                 <p className="wb-dossier-claim__evidence">{claim.evidence}</p>
+                {!claim.evidence.includes(anchorOf(quality, claim.level)) && (
+                  <p className="wb-dossier-claim__evidence">{anchorOf(quality, claim.level)}</p>
+                )}
                 <p className="wb-dossier-claim__confidence">
-                  Впевненість: {confidenceWord(claim.confidence)}
+                  Наскільки це певно: {confidenceWord(claim.confidence)}
                 </p>
+                {claim.details && claim.details.length > 0 && (
+                  <details className="wb-dossier-claim__details">
+                    <summary>Як ми це визначили</summary>
+                    <ol className="wb-dossier-claim__steps">
+                      {claim.details.map((step) => (
+                        <li key={step}>{step}</li>
+                      ))}
+                    </ol>
+                  </details>
+                )}
               </li>
             ))}
           </ul>
@@ -101,7 +113,7 @@ export function DossierQuality({ reading }: { reading: QualityReading }) {
               </span>
             ))}
           </div>
-          <p className="wb-dossier-distribution__caption">Свідчення за рівнями 1–5</p>
+          <p className="wb-dossier-distribution__caption">Скільки систем назвали кожен рівень</p>
         </div>
       </details>
     </li>

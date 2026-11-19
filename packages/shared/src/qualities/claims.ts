@@ -57,6 +57,7 @@ export interface ClaimDraft {
   readonly method?: ClaimMethod;
   readonly temporal?: QualityTemporal;
   readonly confidence?: number;
+  readonly details?: readonly string[];
 }
 
 const DIRECTNESS: Readonly<Record<ClaimMethod, number>> = {
@@ -111,5 +112,6 @@ export function makeClaim(draft: ClaimDraft): QualityClaim {
     method,
     temporal,
     confidence,
+    ...(draft.details && draft.details.length > 0 ? { details: draft.details } : {}),
   };
 }

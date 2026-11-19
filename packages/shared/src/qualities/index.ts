@@ -76,4 +76,5 @@ export {
   sunInSign,
   westernClaims,
   type LensRule,
+  type WesternProfile,
 } from "./lenses";

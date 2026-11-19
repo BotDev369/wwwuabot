@@ -891,3 +891,105 @@
   margin-top: var(--sp-4);
   line-height: var(--leading-relaxed);
 }
+
+/* Розрахунки: показники системи, які можна звірити самостійно. */
+.wb-calc {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+  padding: var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.wb-calc__title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-calc__lead {
+  max-width: 62ch;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.wb-calc__system {
+  border-top: 1px solid var(--border);
+  padding-top: var(--sp-2);
+}
+
+.wb-calc__summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  cursor: pointer;
+  list-style: none;
+}
+
+.wb-calc__name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-calc__count {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.wb-calc__about,
+.wb-calc__scope,
+.wb-calc__source {
+  margin-top: var(--sp-2);
+  max-width: 62ch;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.wb-calc__source {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.wb-calc__list {
+  display: grid;
+  gap: 2px;
+  margin-top: var(--sp-2);
+}
+
+.wb-calc__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  border-bottom: 1px dashed var(--border);
+  padding: var(--sp-1) 0;
+  font-size: var(--text-sm);
+}
+
+.wb-calc__label {
+  color: var(--text-muted);
+}
+
+.wb-calc__value {
+  font-weight: var(--weight-medium);
+  text-align: right;
+}
+
+.wb-dossier-claim__details {
+  margin-top: var(--sp-1);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.wb-dossier-claim__details summary {
+  cursor: pointer;
+}
+
+.wb-dossier-claim__steps {
+  display: grid;
+  gap: 2px;
+  margin: var(--sp-1) 0 0;
+  padding-left: var(--sp-3);
+}

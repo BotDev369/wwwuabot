@@ -52,8 +52,8 @@ export function DossierLensPicker({ selected, open, onToggle, onApply }: PickerP
       {open ? (
         <form onSubmit={submit}>
           <p className="wb-dossier-lenses__text">
-            Оберіть системи, які читатимуть дату. Кожна дає свій рівень і власне правило; без вибору
-            досьє не рахується.
+            Оберіть системи, які читатимуть дату. Кожна має власні правила, показує свої розрахунки
+            й може сказати «не знаю». Без вашого вибору ми нічого не рахуємо.
           </p>
           <ul className="wb-dossier-lenses__list">
             {LENSES.map((lens) => (
@@ -75,7 +75,7 @@ export function DossierLensPicker({ selected, open, onToggle, onApply }: PickerP
             className="wb-btn wb-btn-primary wb-dossier-lenses__apply"
             disabled={draft.length === 0}
           >
-            Порахувати досьє
+            Порахувати портрет
           </button>
         </form>
       ) : (

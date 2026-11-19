@@ -23,7 +23,7 @@ interface DossierSurveyProps {
 function statusOf(enabled: boolean, measured: boolean | null): string {
   if (!enabled) return "не додано";
   if (measured === null) return "перевіряємо";
-  return measured ? "додано" : "ще не виміряно";
+  return measured ? "додано" : "ще немає";
 }
 
 export function DossierSurvey({ enabled, measured, onChange }: DossierSurveyProps) {
@@ -34,8 +34,8 @@ export function DossierSurvey({ enabled, measured, onChange }: DossierSurveyProp
         <span className="wb-dossier-survey__status">{statusOf(enabled, measured)}</span>
       </div>
       <p className="wb-dossier-survey__text">
-        Дата описує символічний шар. Другий вектор — ваші відповіді на питання: він додає виміряний
-        шар окремо, не змішується з датою й не підвищує її впевненості.
+        Дата показує, що каже традиція. Другий шлях — ваші відповіді на питання: вони живуть окремо,
+        не змішуються з датою й не роблять її точнішою.
       </p>
 
       <label className="wb-dossier-survey__toggle">
@@ -44,13 +44,13 @@ export function DossierSurvey({ enabled, measured, onChange }: DossierSurveyProp
           checked={enabled}
           onChange={(event) => onChange(event.target.checked)}
         />
-        Додати мої виміряні якості
+        Додати мої відповіді
       </label>
 
       {enabled && measured === false && (
         <p className="wb-dossier-survey__hint">
-          Проходження ще немає — досьє лишається тільки з дати. Пройдіть «Велику п'ятірку», і якості
-          з'являться тут окремим шаром.
+          Ви ще не проходили опитування — портрет лишається тільки з дати. Пройдіть «Велику
+          п'ятірку», і ваші відповіді з'являться тут окремо.
         </p>
       )}
 

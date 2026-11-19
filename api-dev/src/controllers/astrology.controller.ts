@@ -139,6 +139,7 @@ export async function handleSystems(env: Env): Promise<Response> {
 // ── POST /api/mydate/dossier ────────────────────────────────────────
 // Досьє — не таблиця: назовні йдуть свідчення ядра, а домени, рівні й якорі
 // добирає екран. Тому тут немає ні D1, ні реєстру систем: дата й лінза.
+/** Те саме, але з повними розрахунками кожної системи — див. сервіс. */
 export async function handleDossier(request: Request, env: Env): Promise<Response> {
   try {
     const parsed = await readBody(request, dossierBody);

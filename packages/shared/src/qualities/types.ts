@@ -69,6 +69,8 @@ export interface QualityClaim {
   readonly temporal: QualityTemporal;
   /** 0…1; стеля шару задана в `claims.ts`, а не в адаптері. */
   readonly confidence: number;
+  /** Як саме вийшов рівень — кроки, які людина може перевірити. */
+  readonly details?: readonly string[];
 }
 
 /** Джерело аналізу як адаптер, а не окремий екран. */
@@ -81,6 +83,14 @@ export interface LensDefinition {
   readonly inputs: readonly LensInput[];
   /** Що саме система бере з дати — для вибору й прозорості правила. */
   readonly rule: string;
+  /** Про систему людською: що це і звідки. */
+  readonly about?: string;
+  /** Що система справді бере з дати — перелік для екрана «Розрахунки». */
+  readonly gives?: readonly string[];
+  /** Чого вона не може знати — без цього будь-яка традиція виглядає всемогутньою. */
+  readonly limits?: readonly string[];
+  /** Канон, за яким рахуємо: джерело таблиць і формул, а не «так кажуть». */
+  readonly source?: string;
 }
 
 /** Підписи смуг — єдині для всього продукту. */

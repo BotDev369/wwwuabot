@@ -16,12 +16,12 @@ export function DossierMeasured({ survey }: { survey: SurveyRead }) {
   return (
     <article className="wb-measured">
       <header className="wb-measured__head">
-        <p className="wb-measured__kicker">Другий вектор · виміряне</p>
+        <p className="wb-measured__kicker">Другий шлях · ваші відповіді</p>
         <h3 className="wb-measured__title">Опитування: {MEASURED_NAME}</h3>
-        <p className="wb-measured__coverage">{known} з 36 якостей мають вимір</p>
+        <p className="wb-measured__coverage">{known} з 36 якостей видно з відповідей</p>
         <p className="wb-measured__note">
-          Це ваші відповіді, а не дата. Рівень тут виміряний, і він не підвищує впевненості
-          символічних свідчень — шари лишаються окремими.
+          Це ваші відповіді, а не дата. Рівень тут виміряний, і він не підвищує впевненості того, що
+          каже традиція — ці дві частини не змішуються.
         </p>
       </header>
 
@@ -38,7 +38,7 @@ export function DossierMeasured({ survey }: { survey: SurveyRead }) {
                     <li className="wb-measured-quality" key={reading.quality.id}>
                       <span className="wb-measured-quality__name">{reading.quality.name}</span>
                       <span className="wb-measured-quality__level">
-                        {reading.level === null ? "Розбіжність" : levelLabel(reading.level)}
+                        {reading.level === null ? "Різні відповіді" : levelLabel(reading.level)}
                       </span>
                       <span className="wb-measured-quality__evidence">
                         {reading.claims.map((claim) => claim.evidence).join("; ")}

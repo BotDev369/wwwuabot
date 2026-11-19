@@ -1,6 +1,7 @@
 /**
- * Досьє суб'єкта: шапка з покриттям і дванадцять доменів. Подія не маскується
- * під людину — вона каже, що якісного профілю події в ядрі ще немає.
+ * Портрет людини: шапка з тим, наскільки повна картина, дванадцять доменів і
+ * розрахунки кожної системи. Подія не маскується під людину — вона каже, що
+ * якісного профілю події ще немає.
  *
  * @module packages/ui/src/blocks/date-analysis/Dossier
  */
@@ -8,6 +9,7 @@
 import { useMemo } from "react";
 import { LENSES, claimSources, readDossier, sunInSign } from "@wwwuabot/shared/qualities";
 import type { DossierRead } from "./api";
+import { DossierCalculations } from "./DossierCalculations";
 import { DossierQuality } from "./DossierQuality";
 
 /** Дата людини, а не машинний рядок: `1980-03-03` → `3.03.1980`. */
@@ -41,21 +43,23 @@ export function Dossier({ dossier, name }: { dossier: DossierRead; name: string 
         {modelled ? (
           <>
             <p className="wb-dossier__coverage">
-              {known} з {total} якостей мають свідчення
+              {known} з {total} якостей уже видно
             </p>
             <p className="wb-dossier__note">
-              Джерела: {sourceNames(dossier.claims)}. Рівень — це свідчення джерела, а не оцінка
-              людини; без свідчень якість лишається невідомою.
+              Системи: {sourceNames(dossier.claims)}. Рівень — це те, що каже система, а не оцінка
+              людини; якщо система про якість мовчить, вона лишається невідомою.
             </p>
           </>
         ) : (
           <p className="wb-dossier__note">
             {dossier.note === "symbol-missing"
-              ? "Калькулятор не дав символічного знака для цієї дати, тож свідчень немає."
-              : "Якісного профілю події ядро ще не описує, і риси людини до події не переносяться. Лишається лише символ дня."}
+              ? "Для цієї дати системи не дали жодного показника, тож і якостей немає."
+              : "Якостей події ми ще не описуємо — і не переносимо на неї риси людини. Лишається символ дня."}
           </p>
         )}
       </header>
+
+      {modelled && <DossierCalculations systems={dossier.systems} />}
 
       {modelled && (
         <div className="wb-dossier-domains">
