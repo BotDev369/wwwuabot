@@ -136,8 +136,7 @@ describe("useMyDates", () => {
     act(() => {
       result.current.handleBulkAnalyze();
     });
-    // Аналіз — один екран, і вибір систем стоїть уже на ньому: окремого
-    // процесу для кількох дат немає.
+    // Аналіз — один екран досьє: окремого процесу для кількох дат немає.
     expect(href).toBe("/dateanalysis/analysis?dates=1980-03-03");
     expect(href).not.toContain("compare");
 

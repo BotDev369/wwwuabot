@@ -41,4 +41,13 @@ export {
   type QualitySummary,
 } from "./profile";
 
+export {
+  anchorOf,
+  claimSources,
+  readDossier,
+  readQuality,
+  type DomainReading,
+  type QualityReading,
+} from "./reading";
+
 export { LENSES, WESTERN, WESTERN_SIGNS, westernClaims } from "./lenses";

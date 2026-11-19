@@ -1555,60 +1555,6 @@
   font-size: var(--text-xs);
 }
 
-/* ── Крок вибору систем ───────────────────────────────────────────────────── */
-
-.wb-block-systems-picker {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-}
-
-.wb-block-systems-picker__title {
-  margin: 0;
-}
-
-.wb-block-systems-picker__lead {
-  margin: 0;
-}
-
-.wb-block-systems-picker__list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
-}
-
-.wb-block-systems-picker__card {
-  padding: var(--sp-4);
-  background: var(--card-bg);
-  border-radius: var(--radius-md);
-}
-
-.wb-block-systems-picker__system {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  cursor: pointer;
-}
-
-.wb-block-systems-picker__params {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-3);
-  margin-top: var(--sp-3);
-  padding-left: var(--sp-6);
-}
-
-.wb-block-systems-picker__param {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-1);
-  cursor: pointer;
-}
-
-.wb-block-systems-picker__action {
-  width: 100%;
-}
-
 /* ── Корені блоків ────────────────────────────────────────────────────────
    Корінь блока — теж кирпичик, а не порожній хук: саме він тримає просвіт між
    частинами. Без правила клас у розмітці нічого не робив, і гейт цього не
@@ -1741,11 +1687,6 @@
   gap: var(--sp-1);
 }
 
-/* Обрана система на кроці вибору: стан, а не колір у розмітці. */
-.wb-block-systems-picker__card--on {
-  background: var(--accent-soft);
-}
-
 /* ══ Дизайн-прохід ═════════════════════════════════════════════════════════
    Три речі, які роблять сторінку схожою на продукт, а не на набір блоків:
    один рівень заголовка блока, одна глибина картки й один стан контрола. */
@@ -1758,8 +1699,7 @@
 .wb-block-faq__title,
 .wb-block-video__title,
 .wb-block-chart__title,
-.wb-block-compare-setup__title,
-.wb-block-systems-picker__title {
+.wb-block-compare-setup__title {
   margin: 0 0 var(--sp-3);
   color: var(--text-primary);
   font-size: var(--text-lg);
@@ -1771,8 +1711,7 @@
 
 /* Підпис під заголовком блока — один рядок, не абзац: міра обмежена, щоб
    око не бігло на всю ширину екрана. */
-.wb-block-compare-setup__lead,
-.wb-block-systems-picker__lead {
+.wb-block-compare-setup__lead {
   max-width: 60ch;
   text-wrap: pretty;
 }

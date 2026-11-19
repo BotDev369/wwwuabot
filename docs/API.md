@@ -17,6 +17,7 @@
 | `ANY` | `/api/mydate/analysis/<…>` | `handleAnalysisRead` |
 | `POST` | `/api/mydate/analyze` | `handleAnalyze` |
 | `POST` | `/api/mydate/compare` | `handleCompare` |
+| `POST` | `/api/mydate/dossier` | `handleDossier` |
 | `ANY` | `/api/mydate/systems` | `handleSystems` |
 | `GET` | `/api/public/ads` | `handlePublicAds` |
 | `GET` | `/api/public/redirect` | `handlePublicRedirect` |
@@ -129,4 +130,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **100**.
+Усього шляхів: **101**.

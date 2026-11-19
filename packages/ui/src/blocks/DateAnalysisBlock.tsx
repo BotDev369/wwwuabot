@@ -1,42 +1,25 @@
 /**
- * Page Builder — DateAnalysisBlock: екран результату аналізу. Суб'єктів може
- * бути кілька: вибір систем спільний, а кожен суб'єкт має свій стовпець. Дати й
- * підписи їдуть `?dates=` / `?labels=`, вид — `?kind=`, а порожній `?sys=` — це
- * ще крок вибору систем.
+ * Page Builder — DateAnalysisBlock: екран досьє. Суб'єктів може бути кілька —
+ * кожен має своє досьє; дати й підписи їдуть `?dates=` / `?labels=`, вид —
+ * `?kind=`. Таблиці параметрів тут більше немає: якість, її рівень і свідчення
+ * описують людину, а не матрицю систем.
  *
  * @module packages/ui/src/blocks/DateAnalysisBlock
  */
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
-import {
-  DATE_ANALYSIS_PATH,
-  DATE_ANALYSIS_RESULT_PATH,
-  SUBJECT_LABELS_QUERY,
-  SUBJECT_QUERY,
-  SELF_QUERY,
-  encodeLabels,
-  encodeScopes,
-  scopeLead,
-  scopePlural,
-  scopeTitle,
-} from "@wwwuabot/shared/content";
-import { SystemsPicker } from "./systems-picker";
+import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import { analysisScreenTitle } from "./date-analysis/screen-title";
-import { AnalysisTable, type AnalysisView } from "./date-analysis/AnalysisTable";
-import { AnalysisViewSwitch } from "./date-analysis/AnalysisViewSwitch";
-import { listFrom, readDates, readSubject } from "./date-analysis/date-params";
-import { useAnalysisTable } from "./date-analysis/useAnalysisTable";
+import { readDates, readSubject } from "./date-analysis/date-params";
+import { useDossiers } from "./date-analysis/useDossiers";
+import { Dossier, humanDate } from "./date-analysis/Dossier";
+import { DossierSurvey } from "./date-analysis/DossierSurvey";
 
 export function DateAnalysisBlock({ block }: BlockComponentProps) {
-  const {
-    title: storedTitle,
-    backUrl = DATE_ANALYSIS_PATH,
-    targetUrl = DATE_ANALYSIS_RESULT_PATH,
-  } = block.props as {
+  const { title: storedTitle, backUrl = DATE_ANALYSIS_PATH } = block.props as {
     title?: string;
     backUrl?: string;
-    targetUrl?: string;
   };
 
   // Адреса читається один раз за прохід екрана: крок змінюється переходом на
@@ -44,12 +27,7 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
   const search = window.location.search;
   const dates = useMemo(() => readDates(search), [search]);
   const subject = useMemo(() => readSubject(search, dates.length), [search, dates.length]);
-  const systemIds = useMemo(() => listFrom(new URLSearchParams(search).get("sys")), [search]);
-  const parameterKeys = useMemo(() => listFrom(new URLSearchParams(search).get("p")), [search]);
-
-  const kindParam = encodeScopes(subject.kinds);
-  const table = useAnalysisTable(dates, systemIds, parameterKeys, kindParam);
-  const [view, setView] = useState<AnalysisView>("params");
+  const { dossiers, loading, error } = useDossiers(dates, subject.kinds);
 
   if (dates.length === 0) {
     return (
@@ -62,70 +40,51 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
     );
   }
 
-  const values = dates.join(",");
-
-  if (systemIds.length === 0) {
-    return (
-      <div className="wb-block-date-analysis">
-        <SystemsPicker
-          className="wb-block-systems-picker"
-          title="Оберіть системи та параметри"
-          lead={`${scopePlural(subject.scope)} в аналізі: ${dates.length}. ${scopeLead(
-            subject.scope,
-            subject.self,
-          )}`}
-          confirmLabel="Аналізувати"
-          emptyText="Немає суб'єктів для аналізу."
-          valueParam="dates"
-          values={values}
-          targetUrl={targetUrl}
-          forward={{
-            [SUBJECT_QUERY]: kindParam,
-            [SUBJECT_LABELS_QUERY]: encodeLabels(subject.labels),
-            ...(subject.self ? { [SELF_QUERY]: "1" } : {}),
-          }}
-        />
-      </div>
-    );
-  }
-
   const heading =
     subject.self && subject.scope === "person"
-      ? "Ваш аналіз:"
+      ? "Ваше досьє:"
       : analysisScreenTitle("analysis", storedTitle);
-
-  // Імена суб'єктів перекривають назви зі збережених дат: людина щойно написала
-  // їх сама, і саме вони пояснюють, кого читають.
-  const names = { ...table.names };
-  subject.labels.forEach((label, index) => {
-    if (label && dates[index]) names[dates[index]] = label;
-  });
 
   return (
     <div className="wb-block-date-analysis">
       <h2 className="wb-block-date-analysis__title">{heading}</h2>
       <p className="wb-text-sm wb-text-muted wb-block-date-analysis__lead">
-        {scopeTitle(subject.scope)}. {scopeLead(subject.scope, subject.self)}
+        Домени якостей, свідчення джерел і чесні порожнечі. Дата дає символічний шар; опитування
+        додає другий вектор окремо.
       </p>
 
-      {table.error && <p className="wb-text-sm wb-block-date-analysis__error">{table.error}</p>}
+      <DossierSurvey />
 
-      {table.loading && <p className="wb-text-sm wb-text-muted">Аналізуємо...</p>}
+      {loading && <p className="wb-text-sm wb-text-muted">Аналізуємо...</p>}
+      {error && <p className="wb-text-sm wb-block-date-analysis__error">{error}</p>}
 
-      {!table.error && (
-        <>
-          <AnalysisViewSwitch view={view} onChange={setView} scope={subject.scope} />
-          <AnalysisTable
-            view={view}
-            dates={dates}
-            kinds={subject.kinds}
-            rows={table.rows}
-            matrix={table.matrix}
-            details={table.details}
-            names={names}
-          />
-        </>
+      {!loading && !error && (
+        <div className="wb-dossiers">
+          {dossiers.map((dossier, index) => (
+            <Dossier
+              key={dossier.date}
+              dossier={dossier}
+              name={
+                subject.labels[index] ||
+                (subject.self && subject.scope === "person"
+                  ? "Ви"
+                  : dossier.kind === "event"
+                    ? "Подія"
+                    : humanDate(dossier.date))
+              }
+            />
+          ))}
+
+          {dossiers.length === 0 && (
+            <p className="wb-text-sm wb-text-muted">Не вдалося скласти досьє для цих дат.</p>
+          )}
+        </div>
       )}
+
+      <p className="wb-text-sm wb-text-muted wb-block-date-analysis__foot">
+        Досьє не ставить діагнозів і не дає відсотків: рівень тут — мова поведінкових якорів, а не
+        бал.
+      </p>
     </div>
   );
 }

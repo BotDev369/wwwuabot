@@ -28,6 +28,7 @@ vi.mock("../controllers/astrology.controller", () => {
     handleAnalyze: record("analyze"),
     handleSystems: record("systems"),
     handleCompare: record("compare"),
+    handleDossier: record("dossier"),
   };
 });
 
@@ -62,7 +63,9 @@ describe("matchMyDateRoute", () => {
     expect(await matchMyDateRoute(request("POST"), env, "/api/mydate/analyze")).not.toBeNull();
     expect(await matchMyDateRoute(request("GET"), env, "/api/mydate/compare")).toBeNull();
     expect(await matchMyDateRoute(request("POST"), env, "/api/mydate/compare")).not.toBeNull();
-    expect(calls.seen).toEqual(["analyze", "compare"]);
+    expect(await matchMyDateRoute(request("GET"), env, "/api/mydate/dossier")).toBeNull();
+    expect(await matchMyDateRoute(request("POST"), env, "/api/mydate/dossier")).not.toBeNull();
+    expect(calls.seen).toEqual(["analyze", "compare", "dossier"]);
   });
 
   it("чужі шляхи не зачіпаються", () => {

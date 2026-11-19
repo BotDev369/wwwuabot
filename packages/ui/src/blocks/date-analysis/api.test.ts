@@ -1,15 +1,16 @@
 /**
  * Клієнт аналізу: що саме йде на сервер і що повертається назад.
- * Екран аналізу й екран дат користуються ним обидва, тож перевіряється спільна
+ * Екран досьє й екран дат користуються ним обидва, тож перевіряється спільна
  * угода: маршрут, тіло запиту і — головне — що помилка сервера не губиться.
+ *
  * @module packages/ui/src/blocks/date-analysis/api.test
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  compareDates,
   deleteMyDate,
   deleteMyDates,
+  fetchDossiers,
   fetchMyDates,
   fetchSystems,
   saveMyDate,
@@ -30,6 +31,18 @@ function lastCall(): { url: string; init?: RequestInit } {
   return { url: String(call[0]), init: call[1] };
 }
 
+const CLAIM = {
+  qualityId: "initiative",
+  level: 4,
+  layer: "symbolic",
+  sourceId: "western",
+  sourceVersion: "1",
+  evidence: "Сонце в Овні: початок без дозволу",
+  method: "mapped",
+  temporal: "trait",
+  confidence: 0.16,
+};
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });
@@ -48,50 +61,33 @@ describe("fetchSystems", () => {
   });
 });
 
-describe("compareDates", () => {
-  it("надсилає дати разом з фільтрами і повертає матрицю з текстами", async () => {
-    const matrix = { "1980-03-03": { western: { sign: "Овен" } } };
-    const details = { "1980-03-03": { western: { sign: { about: "Що це", meaning: "Що дає" } } } };
-    respond({ ok: true, matrix, details });
-    await expect(compareDates(["1980-03-03"], ["western"], ["sign"])).resolves.toEqual({
-      matrix,
-      details,
-      names: {},
-    });
+describe("fetchDossiers", () => {
+  it("надсилає дати й вид та повертає свідчення", async () => {
+    const dossiers = [
+      { date: "1980-03-03", kind: "person", symbol: "Риби", claims: [CLAIM], note: null },
+    ];
+    respond({ ok: true, dossiers });
+    await expect(fetchDossiers(["1980-03-03"], "person")).resolves.toEqual(dossiers);
     const call = lastCall();
-    expect(call.url).toBe("/api/mydate/compare");
+    expect(call.url).toBe("/api/mydate/dossier");
+    expect(call.init?.method).toBe("POST");
     expect(JSON.parse(String(call.init?.body))).toEqual({
       dates: ["1980-03-03"],
-      systemIds: ["western"],
-      parameterKeys: ["sign"],
-    });
-  });
-
-  // Старий сервер без текстів не має лишати таблицю без пояснень узагалі:
-  // порожні мапи — це той самий екран, лише без розкриття рядка.
-  it("без `details` у відповіді матриця все одно приходить", async () => {
-    const matrix = { "1980-03-03": { western: { sign: "Овен" } } };
-    respond({ ok: true, matrix });
-    await expect(compareDates(["1980-03-03"])).resolves.toEqual({
-      matrix,
-      details: {},
-      names: {},
-    });
-  });
-
-  // Назва дати — те, чим людина її знає: без неї в шапці лишається число.
-  it("назви дат приходять разом із матрицею", async () => {
-    respond({ ok: true, matrix: {}, details: {}, names: { "1980-03-03": "Мама" } });
-    await expect(compareDates(["1980-03-03"])).resolves.toEqual({
-      matrix: {},
-      details: {},
-      names: { "1980-03-03": "Мама" },
+      kind: "person",
     });
   });
 
   it("помилку сервера показує людині", async () => {
-    respond({ ok: false });
-    await expect(compareDates(["1980-03-03"])).rejects.toThrow("Помилка аналізу");
+    respond({ ok: false, error: "Немає свідчень" });
+    await expect(fetchDossiers(["1980-03-03"])).rejects.toThrow("Немає свідчень");
+  });
+
+  it("без тіла лишається зрозумілий текст із кодом", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("", { status: 503 })),
+    );
+    await expect(fetchDossiers(["1980-03-03"])).rejects.toThrow(/Помилка аналізу.*503/);
   });
 });
 
@@ -141,8 +137,6 @@ describe("дати: CRUD", () => {
   it("масове видалення переносить усі номери", async () => {
     respond({ ok: true });
     await deleteMyDates(["1", "2"]);
-    // Кома в значенні query легальна, тож `encodeURIComponent` її не змінює —
-    // важливо, що номери не злипаються з іншими параметрами.
     expect(lastCall().url).toBe("/api/my-dates?ids=1,2");
   });
 

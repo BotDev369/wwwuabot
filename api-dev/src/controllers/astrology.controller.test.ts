@@ -17,6 +17,7 @@ import {
   handleAnalysisRead,
   handleAnalyze,
   handleCompare,
+  handleDossier,
   handleSystems,
 } from "./astrology.controller";
 
@@ -195,6 +196,45 @@ describe("реєстр систем приходить з бази", () => {
     const body = (await res.json()) as { systems: Array<{ id: string }> };
 
     expect(body.systems.map((s) => s.id)).toEqual(["western"]);
+  });
+});
+
+describe("досьє за датою", () => {
+  it("людина отримує свідчення, а подія — чесний стан без рис", async () => {
+    const person = await handleDossier(request("/api/mydate/dossier", { dates: ["1980-03-03"] }));
+    const personBody = (await person.json()) as {
+      ok: boolean;
+      dossiers: Array<{ kind: string; claims: unknown[]; note: string | null }>;
+    };
+    expect(person.status).toBe(200);
+    expect(personBody.dossiers[0]?.kind).toBe("person");
+    expect(personBody.dossiers[0]?.claims).toHaveLength(3);
+    expect(personBody.dossiers[0]?.note).toBeNull();
+
+    const event = await handleDossier(
+      request("/api/mydate/dossier", { dates: ["1980-03-03"], kind: "event" }),
+    );
+    const eventBody = (await event.json()) as {
+      dossiers: Array<{ claims: unknown[]; note: string | null }>;
+    };
+    expect(eventBody.dossiers[0]?.claims).toEqual([]);
+    expect(eventBody.dossiers[0]?.note).toBe("event-not-modelled");
+  });
+
+  it("без валідних дат — 400, а не порожнє досьє", async () => {
+    const response = await handleDossier(
+      request("/api/mydate/dossier", { dates: ["03.03.1980", ""] }),
+    );
+    expect(response.status).toBe(400);
+  });
+
+  it("понад 30 дат — відмова, а не запит на пів хвилини", async () => {
+    const dates = Array.from(
+      { length: 31 },
+      (_, index) => `1980-03-${String(index + 1).padStart(2, "0")}`,
+    );
+    const response = await handleDossier(request("/api/mydate/dossier", { dates }));
+    expect(response.status).toBe(400);
   });
 });
 

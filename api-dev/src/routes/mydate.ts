@@ -12,6 +12,7 @@ import {
   handleAnalyze,
   handleAnalysisRead,
   handleCompare,
+  handleDossier,
   handleSystems,
 } from "../controllers/astrology.controller";
 
@@ -30,6 +31,9 @@ export function matchMyDateRoute(
     return handleAnalyze(request, env);
   }
   if (pathname === "/api/mydate/systems") return handleSystems(env);
+  if (pathname === "/api/mydate/dossier" && request.method === "POST") {
+    return handleDossier(request);
+  }
   if (pathname === "/api/mydate/compare" && request.method === "POST") {
     return handleCompare(request, env);
   }

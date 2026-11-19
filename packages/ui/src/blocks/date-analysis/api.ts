@@ -6,6 +6,8 @@
  */
 
 import { telegramAuthHeaders } from "@wwwuabot/shared/security/telegram";
+import type { SubjectKind } from "@wwwuabot/shared/content";
+import type { QualityClaim } from "@wwwuabot/shared/qualities";
 import type { MyDate, MyDateSystem } from "@wwwuabot/shared/types/mydate";
 
 /** Система аналізу з реєстру: параметри можуть бути відсутні (система без них). */
@@ -14,27 +16,17 @@ export type AnalysisSystem = Omit<MyDateSystem, "parameters"> & {
 };
 
 /**
- * Значення під своєю датою: `matrix[date][systemId][parameterKey]`. Дат може
- * бути одна або більше — від цього ширини таблиці, а не кількості екранів.
+ * Досьє одного суб'єкта: те, що сервер знає про дату. Домени, рівні й якорі
+ * добирає екран із ядра — сервер віддає лише свідчення.
  */
-export type CompareMatrix = Record<string, Record<string, Record<string, string>>>;
-
-/**
- * Тексти під тим самим ключем, що й матриця: `details[date][systemId][key]`.
- * Обидва дописує сервер: `about` — що визначає сам параметр, `meaning` — що
- * означає конкретне значення. Трактують **значення своєї дати**, тож живуть
- * поруч із нею, а не в окремому запиті на кожну дату.
- */
-export type CompareDetails = Record<
-  string,
-  Record<string, Record<string, { about?: string; meaning?: string }>>
->;
-
-export interface CompareResult {
-  matrix: CompareMatrix;
-  details: CompareDetails;
-  /** Назви дат (`my_dates.name`) під датою в шапці; без назви ключа немає. */
-  names: Record<string, string>;
+export interface DossierRead {
+  date: string;
+  kind: SubjectKind;
+  /** Символічний знак дати; `null` — калькулятор його не дав. */
+  symbol: string | null;
+  claims: QualityClaim[];
+  /** Чому якостей немає: подія в ядрі ще не описана. */
+  note: "event-not-modelled" | "symbol-missing" | null;
 }
 
 function json(response: Response): Promise<Record<string, unknown>> {
@@ -103,27 +95,17 @@ export async function fetchSystems(): Promise<AnalysisSystem[]> {
 }
 
 /**
- * Аналіз дат: сервер рахує те, чого ще немає в базі, і повертає матрицю
- * значень разом із текстами до них.
+ * Досьє за датами: один запит на екран, скільки б суб'єктів не було. Вид їде
+ * переліком (`person,event`) — словник у кожного суб'єкта свій.
  */
-export async function compareDates(
-  dates: string[],
-  systemIds?: string[],
-  parameterKeys?: string[],
-  /** Вид на кожну дату: одне слово або перелік `person,event`. */
-  kind?: string,
-): Promise<CompareResult> {
-  const data = await json(
-    await fetch("/api/mydate/compare", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...telegramAuthHeaders() },
-      body: JSON.stringify({ dates, systemIds, parameterKeys, kind }),
-    }),
-  );
+export async function fetchDossiers(dates: string[], kind?: string): Promise<DossierRead[]> {
+  const response = await fetch("/api/mydate/dossier", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...telegramAuthHeaders() },
+    body: JSON.stringify({ dates, kind }),
+  });
+  if (!response.ok) throw await failure(response, "Помилка аналізу");
+  const data = await json(response);
   if (!data.ok) throw new Error((data.error as string) ?? "Помилка аналізу");
-  return {
-    matrix: (data.matrix ?? {}) as CompareMatrix,
-    details: (data.details ?? {}) as CompareDetails,
-    names: (data.names ?? {}) as Record<string, string>,
-  };
+  return (data.dossiers ?? []) as DossierRead[];
 }

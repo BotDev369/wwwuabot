@@ -32,8 +32,8 @@ export interface UseMyDatesReturn
   handleDelete: (id: string) => Promise<void>;
   handleBulkDelete: () => Promise<void>;
   /**
-   * Аналіз вибраних дат — однієї або більше: спершу вибір систем і параметрів,
-   * а вже звідти таблиця, де кожна дата має свій стовпець.
+   * Аналіз вибраних дат — однієї або більше: одразу досьє, де кожна дата
+   * має свій суб'єкт.
    */
   handleBulkAnalyze: () => void;
 }

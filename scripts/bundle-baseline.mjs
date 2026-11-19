@@ -28,7 +28,8 @@ export const BASELINE = {
    */
   "web-admin-dev": {
     jsKb: 215,
-    cssKb: 48,
-    reason: "те саме: панель відкривають з телефона через WebView",
+    cssKb: 50,
+    reason:
+      "те саме: панель відкривають з телефона через WebView; +2 КБ — спільні стилі досьє аналізу",
   },
 };

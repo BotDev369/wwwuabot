@@ -1,31 +1,18 @@
 // @vitest-environment jsdom
 /**
- * Екран «Аналіз дат» рендериться, а не тільки компілюється.
+ * Екран аналізу рендерить **досьє**, а не таблицю параметрів.
  *
- * Аналіз і співставлення — один екран: дат може бути одна або більше, а крок
- * вибору систем стоїть на тій самій адресі. Регресія тут не падає в тестах, а
- * просто зникає з екрана, тож перевіряється саме те, що видно людині: крок,
- * порожній стан, помилка й таблиця з одним і двома стовпцями.
+ * Перевіряється те, що видно людині: домени, рівень якорем, свідчення з
+ * джерелом і шаром, чесне «не знаємо», стан опитування й подія, яка не
+ * прикидається людиною.
  *
  * @module packages/ui/src/blocks/date-analysis-screen.dom.test
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, render, screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { act, render, screen } from "@testing-library/react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { DateAnalysisBlock } from "./DateAnalysisBlock";
-
-const SYSTEM = {
-  id: "western",
-  name: "Західна астрологія",
-  description: "Знак, стихія",
-  implemented: true,
-  parameters: [
-    { key: "sunSign", label: "Знак Сонця" },
-    { key: "element", label: "Стихія" },
-  ],
-};
 
 function props(over: Record<string, unknown> = {}): BlockComponentProps {
   return {
@@ -35,88 +22,60 @@ function props(over: Record<string, unknown> = {}): BlockComponentProps {
   };
 }
 
-/** Заглушка API: реєстр систем плюс усе, що має приїхати на крок результатів. */
-function stubApi(
-  result: {
-    ok?: boolean;
-    error?: string;
-    matrix?: Record<string, Record<string, Record<string, string>>>;
-    details?: Record<string, Record<string, Record<string, { about?: string; meaning?: string }>>>;
-    names?: Record<string, string>;
-  } = {},
-  systems: unknown[] = [SYSTEM],
-): { calls: string[] } {
+const INITIATIVE = {
+  qualityId: "initiative",
+  level: 4,
+  layer: "symbolic",
+  sourceId: "western",
+  sourceVersion: "1",
+  evidence: "Сонце в Овні: початок без дозволу",
+  method: "mapped",
+  temporal: "trait",
+  confidence: 0.16,
+};
+
+const DISCIPLINE = {
+  ...INITIATIVE,
+  qualityId: "discipline",
+  level: 5,
+  evidence: "Сонце в Овні: ритм тримає під зовнішньою вимогою",
+};
+
+const DOSSIER = {
+  date: "1980-03-03",
+  kind: "person",
+  symbol: "Овен",
+  claims: [INITIATIVE, DISCIPLINE],
+  note: null,
+};
+
+/** Заглушка API: досьє віддає саме те, що просив тест. */
+function stubApi(dossiers: unknown[]): { calls: string[] } {
   const calls: string[] = [];
   vi.stubGlobal(
     "fetch",
-    vi.fn(async (url: string) => {
-      calls.push(String(url));
-      const body = String(url).includes("/api/mydate/systems")
-        ? { ok: true, systems }
-        : { ok: true, ...result };
-      return new Response(JSON.stringify(body), { status: 200 });
+    vi.fn(async (url: string, init?: RequestInit) => {
+      calls.push(`${String(url)} ${(init?.body as string) ?? ""}`);
+      return new Response(JSON.stringify({ ok: true, dossiers }), { status: 200 });
     }),
   );
   return { calls };
 }
 
-/** Порожній реєстр: екран має сказати «нема чого показувати», а не мовчати. */
-function stubEmptyRegistry(): void {
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async () => new Response(JSON.stringify({ ok: true, systems: [] }), { status: 200 })),
-  );
-}
-
-/**
- * Дочекатися, поки запит з `useEffect` відпрацює: інакше він переживе тест,
- * і заглушка зніметься вже під ним — справжній `fetch` не приймає відносний URL.
- */
+/** Дочекатися, поки запит з `useEffect` відпрацює. */
 async function settle(): Promise<void> {
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
   });
 }
 
-/**
- * Адреса, на яку пішов блок: `pushState` тут не працює — це інший екран.
- * `location` підмінюється, тож оригінал зберігається: інакше наступний тест не
- * прочитав би `search` і вважав, що дат немає.
- */
 let savedLocation: PropertyDescriptor | undefined;
 
-function captureNavigation(): { value: () => string } {
-  savedLocation ??= Object.getOwnPropertyDescriptor(window, "location");
-  const real = window.location;
-  let href = "";
-  Object.defineProperty(window, "location", {
-    configurable: true,
-    value: {
-      get search() {
-        return real.search;
-      },
-      get pathname() {
-        return real.pathname;
-      },
-      get href() {
-        return href;
-      },
-      set href(next: string) {
-        href = next;
-      },
-    },
-  });
-  return { value: () => href };
-}
-
 beforeEach(() => {
-  window.history.replaceState({}, "", "/dateanalysis/analysis?dates=1980-03-03");
+  savedLocation ??= Object.getOwnPropertyDescriptor(window, "location");
 });
 
 afterEach(async () => {
-  // `useEffect`.fetch` може ще летіти, коли тест уже скінчився: зняття
-  // заглушки перетворило б його на справжній `fetch` з відносним URL, тобто
-  // на «Invalid URL» поза тестом. Спершу даємо ланцюжку обіцянок дійти кінця.
   await new Promise((resolve) => setTimeout(resolve, 0));
   vi.unstubAllGlobals();
   if (!savedLocation) return;
@@ -124,9 +83,13 @@ afterEach(async () => {
   savedLocation = undefined;
 });
 
+function openAt(search: string): void {
+  window.history.replaceState({}, "", `/dateanalysis/analysis${search}`);
+}
+
 describe("DateAnalysisBlock — без дат", () => {
   it("каже, що дат немає, і дає шлях до їхнього списку", () => {
-    window.history.replaceState({}, "", "/dateanalysis/analysis");
+    openAt("");
     render(<DateAnalysisBlock {...props({ backUrl: "/dateanalysis" })} />);
     expect(screen.getByText("Немає суб'єктів для аналізу.")).toBeTruthy();
     expect(
@@ -136,309 +99,110 @@ describe("DateAnalysisBlock — без дат", () => {
   });
 });
 
-describe("DateAnalysisBlock — крок вибору систем", () => {
-  it("без `?sys=` показує вибір, а не готовий результат", async () => {
-    window.history.replaceState({}, "", "/dateanalysis/analysis?dates=1980-03-03,2004-10-07");
-    stubApi();
+describe("DateAnalysisBlock — досьє", () => {
+  it("малює домени й рівень якорем, а не таблицею параметрів", async () => {
+    openAt("?dates=1980-03-03");
+    const api = stubApi([DOSSIER]);
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    expect(screen.getByText("Оберіть системи та параметри")).toBeTruthy();
-    // Дат може бути більше однієї — крок каже, скільки їх насправді.
-    expect(screen.getByText(/Люди в аналізі: 2/)).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Аналізувати" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 2, name: "Досьє:" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 4, name: /Воля/ })).toBeTruthy();
+    expect(screen.getAllByText("Ініціатива").length).toBeGreaterThan(0);
+    // Рівень показаний підписом смуги й поведінковим якорем, а не числом.
+    expect(screen.getAllByText("Високий").length).toBeGreaterThan(0);
+    expect(screen.getByText(/початок без дозволу/)).toBeTruthy();
     expect(screen.queryByRole("table")).toBeNull();
+    // Один запит на екран: ані матриці, ані вибору систем.
+    expect(api.calls).toHaveLength(1);
+    expect(api.calls[0]).toContain("/api/mydate/dossier");
+    expect(api.calls[0]).toContain("1980-03-03");
   });
 
-  it("не питає аналіз, поки систем не обрано: рахувати ще нема чого", async () => {
-    window.history.replaceState({}, "", "/dateanalysis/analysis?dates=1980-03-03");
-    const api = stubApi();
+  it("свідчення розкривають джерело, шар і впевненість", async () => {
+    openAt("?dates=1980-03-03");
+    stubApi([DOSSIER]);
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    expect(api.calls.some((url) => url.includes("/api/mydate/compare"))).toBe(false);
+    expect(screen.getAllByText("Західна астрологія").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Символічне").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Сонце в Овні: початок без дозволу/)).toBeTruthy();
+    expect(screen.getAllByText(/Впевненість: низька/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Свідчення за рівнями 1–5").length).toBeGreaterThan(0);
   });
 
-  it("веде на ту саму адресу і несе вибір параметрами", async () => {
-    window.history.replaceState({}, "", "/dateanalysis/analysis?dates=1980-03-03");
-    stubApi();
-    const user = userEvent.setup();
+  it("якості без свідчень кажуть «не знаємо», а не показують середину", async () => {
+    openAt("?dates=1980-03-03");
+    stubApi([DOSSIER]);
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    const nav = captureNavigation();
-    await user.click(screen.getByRole("button", { name: "Аналізувати" }));
+    // 36 якостей, свідчення мають дві — решта чесно невідома.
+    expect(screen.getAllByText("Не знаємо")).toHaveLength(34);
+    expect(screen.queryByText("Середній")).toBeNull();
+  });
 
-    // Дати — параметром, а не сегментом: `ScenarioPage` бере весь splat як slug.
-    // `kind` їде разом із вибором: без нього результат читався б як людина,
-    // навіть коли питали про подію.
-    expect(nav.value()).toBe(
-      "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign%2Celement&kind=person",
+  it("опитування стоїть на тому ж екрані як «ще не виміряно» з переходом до тестів", async () => {
+    openAt("?dates=1980-03-03");
+    stubApi([DOSSIER]);
+    render(<DateAnalysisBlock {...props()} />);
+    await settle();
+
+    expect(screen.getByText("Опитування")).toBeTruthy();
+    expect(screen.getByText("ще не виміряно")).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Пройти тести/ }).getAttribute("href")).toBe(
+      "/assessments",
     );
   });
 
-  it("адреса однієї дати (`?date=`) веде тим самим шляхом", async () => {
-    window.history.replaceState({}, "", "/dateanalysis/analysis?date=1980-03-03");
-    stubApi();
+  it("кілька дат — кілька досьє з власними підписами", async () => {
+    openAt("?dates=1980-03-03,1990-05-05&labels=Мама|Я");
+    stubApi([DOSSIER, { ...DOSSIER, date: "1990-05-05", claims: [INITIATIVE] }]);
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    expect(screen.getByText(/Люди в аналізі: 1/)).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 3, name: "Мама" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 3, name: "Я" })).toBeTruthy();
+    expect(screen.getAllByText(/3\.03\.1980/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/5\.05\.1990/).length).toBeGreaterThan(0);
   });
-});
 
-describe("DateAnalysisBlock — таблиця", () => {
-  it("з однією датою малює параметр у рядку, а значення — у стовпці", async () => {
-    window.history.replaceState(
-      {},
-      "",
-      "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign",
+  it("себе показує «Ваше досьє»", async () => {
+    openAt("?dates=1980-03-03&self=1");
+    stubApi([DOSSIER]);
+    render(<DateAnalysisBlock {...props()} />);
+    await settle();
+
+    expect(screen.getByRole("heading", { level: 2, name: "Ваше досьє:" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 3, name: "Ви" })).toBeTruthy();
+  });
+
+  it("подія не прикидається людиною: лише символ дня й чесний стан", async () => {
+    openAt("?dates=1980-03-03&kind=event");
+    stubApi([{ ...DOSSIER, kind: "event", claims: [], note: "event-not-modelled" }]);
+    render(<DateAnalysisBlock {...props()} />);
+    await settle();
+
+    expect(screen.getByRole("heading", { level: 3, name: "Подія" })).toBeTruthy();
+    expect(screen.getByText(/Якісного профілю події ядро ще не описує/)).toBeTruthy();
+    expect(screen.queryByText("Не знаємо")).toBeNull();
+    expect(screen.queryByText(/мають свідчення/)).toBeNull();
+  });
+
+  it("помилку сервера видно, і вона не лишає порожніх доменів", async () => {
+    openAt("?dates=1980-03-03");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ ok: false, error: "Немає доступу" }), { status: 200 }),
+      ),
     );
-    stubApi({ matrix: { "1980-03-03": { western: { sunSign: "Риби" } } } });
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    expect(screen.getByRole("heading", { name: "Результат аналізу:" })).toBeTruthy();
-    expect(screen.getByRole("columnheader", { name: /03\.03\.1980/ })).toBeTruthy();
-    expect(screen.getByText("03.03.1980")).toBeTruthy();
-    expect(screen.getByText("Західна астрологія")).toBeTruthy();
-    expect(screen.getByText("Риби")).toBeTruthy();
-    // `?p=` звузив перелік: другого параметра на екрані немає.
-    expect(screen.queryByText("Стихія")).toBeNull();
-  });
-
-  it("дві дати — два стовпці, і під датою стоїть її назва", async () => {
-    window.history.replaceState(
-      {},
-      "",
-      "/dateanalysis/analysis?dates=1980-03-03,2004-10-07&sys=western&p=sunSign",
-    );
-    stubApi({
-      matrix: {
-        "1980-03-03": { western: { sunSign: "Риби" } },
-        "2004-10-07": { western: { sunSign: "Терези" } },
-      },
-      names: { "2004-10-07": "Донька" },
-    });
-    render(<DateAnalysisBlock {...props()} />);
-    await settle();
-
-    expect(screen.getByText("03.03.1980")).toBeTruthy();
-    expect(screen.getByText("07.10.2004")).toBeTruthy();
-    expect(screen.getByText("Донька")).toBeTruthy();
-    expect(screen.getByText("Риби")).toBeTruthy();
-    expect(screen.getByText("Терези")).toBeTruthy();
-  });
-
-  it("перемикач ставить дати рядками, а системи й параметри — стовпцями", async () => {
-    window.history.replaceState(
-      {},
-      "",
-      "/dateanalysis/analysis?dates=1980-03-03,2004-10-07&sys=western&p=sunSign",
-    );
-    stubApi({
-      matrix: {
-        "1980-03-03": { western: { sunSign: "Риби" } },
-        "2004-10-07": { western: { sunSign: "Терези" } },
-      },
-      names: { "2004-10-07": "Донька" },
-    });
-    const user = userEvent.setup();
-    render(<DateAnalysisBlock {...props()} />);
-    await settle();
-
-    // Типово рядками йдуть параметри: шапка підписує стовпець-дату.
-    expect(screen.getByRole("columnheader", { name: "Параметр" })).toBeTruthy();
-
-    await user.click(screen.getByRole("button", { name: "Люди" }));
-
-    // Суб'єкти стали рядками, а системи й параметри — стовпцями.
-    expect(screen.getByRole("columnheader", { name: "Людина" })).toBeTruthy();
-    expect(screen.queryByRole("columnheader", { name: "Параметр" })).toBeNull();
-    expect(screen.getByText("Знак Сонця")).toBeTruthy();
-  });
-
-  it("у вигляді «Люди» трактування стоїть у стовпці свого параметра", async () => {
-    window.history.replaceState(
-      {},
-      "",
-      "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign,element",
-    );
-    stubApi({
-      matrix: { "1980-03-03": { western: { sunSign: "Риби", element: "Вода" } } },
-      details: {
-        "1980-03-03": {
-          western: {
-            sunSign: { about: "Сонце в знаку", meaning: "Дія, старт." },
-            element: { about: "Стихія", meaning: "Чутливість." },
-          },
-        },
-      },
-    });
-    const user = userEvent.setup();
-    render(<DateAnalysisBlock {...props()} />);
-    await settle();
-
-    await user.click(screen.getByRole("button", { name: "Люди" }));
-    expect(screen.queryByText("Дія, старт.")).toBeNull();
-
-    await user.click(screen.getByRole("button", { name: /03\.03\.1980/ }));
-
-    // Кожна комірка несе своє значення, як і у вигляді «Параметри»: два
-    // трактування лежать у спільному рядку, а не одним полотном.
-    const detail = screen.getByText("Дія, старт.").closest("tr");
-    expect(detail).not.toBeNull();
-    expect(within(detail as HTMLElement).getByText("Чутливість.")).toBeTruthy();
-  });
-
-  it("рядки згруповано за системами: назва системи стоїть перед своїми параметрами", async () => {
-    window.history.replaceState(
-      {},
-      "",
-      "/dateanalysis/analysis?dates=1980-03-03&sys=western,vedic",
-    );
-    stubApi({ matrix: { "1980-03-03": { western: { sunSign: "Риби" } } } }, [
-      SYSTEM,
-      { ...SYSTEM, id: "vedic", name: "Ведична астрологія" },
-    ]);
-    render(<DateAnalysisBlock {...props()} />);
-    await settle();
-
-    // Обидві назви — по одному разу: група стоїть перед своїми параметрами, а
-    // не перед кожним рядком.
-    expect(screen.getAllByText("Західна астрологія")).toHaveLength(1);
-    expect(screen.getAllByText("Ведична астрологія")).toHaveLength(1);
-  });
-
-  it("`?dates=` з тим самим номером двічі дає один стовпець", async () => {
-    window.history.replaceState(
-      {},
-      "",
-      "/dateanalysis/analysis?dates=1980-03-03,1980-03-03&sys=western&p=sunSign",
-    );
-    stubApi({ matrix: { "1980-03-03": { western: { sunSign: "Риби" } } } });
-    render(<DateAnalysisBlock {...props()} />);
-    await settle();
-
-    expect(screen.getAllByText("03.03.1980")).toHaveLength(1);
-  });
-
-  it("шапка стоїть окремою смугою — поза тим, що гортається вбік", async () => {
-    window.history.replaceState(
-      {},
-      "",
-      "/dateanalysis/analysis?dates=1980-03-03,2004-10-07&sys=western&p=sunSign",
-    );
-    stubApi({
-      matrix: {
-        "1980-03-03": { western: { sunSign: "Риби" } },
-        "2004-10-07": { western: { sunSign: "Терези" } },
-      },
-    });
-    const { container } = render(<DateAnalysisBlock {...props()} />);
-    await settle();
-
-    // Закріпленому всередині смуги скролу триматись ні за що: воно липне до
-    // краю того, хто скролить, а тіло гортає себе вбік (AGENTS.md §3, §27
-    // `DESIGN_SYSTEM`) — тож шапка живе над тілом, а не в ньому.
-    const head = container.querySelector(".wb-param-head thead");
-    const scroll = container.querySelector(".wb-param-scroll");
-    expect(head).not.toBeNull();
-    expect(scroll).not.toBeNull();
-    expect(scroll?.contains(head as Node)).toBe(false);
-
-    // Стовпці ті самі: інакше шапка стояла б над чужими стовпцями.
-    const columns = head?.querySelectorAll("th").length ?? 0;
-    const cells = scroll?.querySelector("tbody tr")?.children.length ?? 0;
-    // Підпис рядка плюс по стовпцю на кожну дату.
-    expect(columns).toBe(3);
-    expect(cells).toBe(columns);
-  });
-
-  it("рядок розкривається: пояснення параметра й трактування значення", async () => {
-    window.history.replaceState(
-      {},
-      "",
-      "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign",
-    );
-    stubApi({
-      matrix: { "1980-03-03": { western: { sunSign: "Риби" } } },
-      details: {
-        "1980-03-03": { western: { sunSign: { about: "Сонце в знаку", meaning: "Дія, старт." } } },
-      },
-    });
-    const user = userEvent.setup();
-    render(<DateAnalysisBlock {...props()} />);
-    await settle();
-
-    // Згорнутий рядок каже рівно два факти — параметр і значення.
-    expect(screen.queryByText("Сонце в знаку")).toBeNull();
-    expect(screen.queryByText("Дія, старт.")).toBeNull();
-
-    await user.click(screen.getByRole("button", { name: "Знак Сонця" }));
-
-    expect(screen.getByText("Сонце в знаку")).toBeTruthy();
-    expect(screen.getByText("Дія, старт.")).toBeTruthy();
-  });
-
-  it("пустий реєстр не малює систем, а таблиця каже, що даних немає", async () => {
-    window.history.replaceState({}, "", "/dateanalysis/analysis?dates=1980-03-03&sys=western");
-    stubEmptyRegistry();
-    render(<DateAnalysisBlock {...props()} />);
-    await settle();
-
-    expect(screen.queryByText("Західна астрологія")).toBeNull();
-    expect(screen.getByText("Немає даних для відображення")).toBeTruthy();
-  });
-
-  it("помилку сервера показує людині, а не лишає порожню таблицю", async () => {
-    window.history.replaceState({}, "", "/dateanalysis/analysis?dates=1980-03-03&sys=western");
-    stubApi({ ok: false, error: "Немає дат" });
-    render(<DateAnalysisBlock {...props()} />);
-    await settle();
-
-    expect(screen.getByText("Немає дат")).toBeTruthy();
-    expect(screen.queryByRole("table")).toBeNull();
-  });
-
-  it("не показує кнопки «Змінити системи» — результат лишається чистим", async () => {
-    window.history.replaceState(
-      {},
-      "",
-      "/dateanalysis/analysis?dates=1980-03-03,2004-10-07&sys=western&p=sunSign",
-    );
-    stubApi({ matrix: { "1980-03-03": { western: { sunSign: "Риби" } } } });
-    render(<DateAnalysisBlock {...props()} />);
-    await settle();
-
-    expect(screen.queryByRole("link", { name: "Змінити системи" })).toBeNull();
-  });
-});
-
-describe("DateAnalysisBlock — підпис екрана", () => {
-  const TABLE_URL = "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign";
-
-  // Стара обіцянка лишилась у `page_data` рядків, створених до зміни тексту, а
-  // міграцію в дев-базі запускає людина: без нормалізації екран показував би її.
-  it.each(["Порівняння дат", "Аналіз Дат"])(
-    "старий підпис `%s` показує текстом, який у коді",
-    async (stored) => {
-      window.history.replaceState({}, "", TABLE_URL);
-      stubApi({ matrix: { "1980-03-03": { western: { sunSign: "Риби" } } } });
-      render(<DateAnalysisBlock {...props({ title: stored })} />);
-      await settle();
-
-      expect(screen.getByRole("heading", { name: "Результат аналізу:" })).toBeTruthy();
-      expect(screen.queryByText(stored)).toBeNull();
-    },
-  );
-
-  it("підпис, який людина написала сама, лишається як є", async () => {
-    window.history.replaceState({}, "", TABLE_URL);
-    stubApi({ matrix: { "1980-03-03": { western: { sunSign: "Риби" } } } });
-    render(<DateAnalysisBlock {...props({ title: "  Що каже моя дата  " })} />);
-    await settle();
-
-    expect(screen.getByRole("heading", { name: "Що каже моя дата" })).toBeTruthy();
+    expect(screen.getByText("Немає доступу")).toBeTruthy();
+    expect(screen.queryByText("Не знаємо")).toBeNull();
   });
 });

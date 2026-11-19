@@ -7,6 +7,7 @@ import { SYSTEM_CALCULATORS, getAnalysis, saveAnalysis } from "../shared/mydate-
 import { withMeanings, withSystemAbout } from "../shared/mydate-interpretation-helpers";
 import { listAnalysisSystems, listImplementedSystems } from "../services/analysis-systems.service";
 import { dateNamesFor } from "../services/my-dates.service";
+import { buildDossier } from "../services/quality-dossier.service";
 import { tryResolveUserId } from "../shared/identity";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -19,6 +20,11 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
  */
 const analyzeBody = z
   .object({ date: z.string().optional(), systemId: z.string().optional() })
+  .passthrough();
+
+/** Досьє: ті самі дати, що й порівняння, без вибору систем — лінза одна. */
+const dossierBody = z
+  .object({ dates: z.array(z.string()).optional(), kind: z.string().optional() })
   .passthrough();
 
 /** Порівняння: усі три переліки — рядки, і порожні лишаються порожніми. */
@@ -111,6 +117,32 @@ export async function handleSystems(env: Env): Promise<Response> {
     return json({ ok: true, systems });
   } catch (e: unknown) {
     apiLog.error("Systems registry error", e);
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return json({ ok: false, error: msg }, 500);
+  }
+}
+
+// ── POST /api/mydate/dossier ────────────────────────────────────────
+// Досьє — не таблиця: назовні йдуть свідчення ядра, а домени, рівні й якорі
+// добирає екран. Тому тут немає ні D1, ні реєстру систем: дата й лінза.
+export async function handleDossier(request: Request): Promise<Response> {
+  try {
+    const parsed = await readBody(request, dossierBody);
+    if (!parsed.ok) return parsed.response;
+
+    const validDates = (parsed.body.dates ?? []).filter((date) => DATE_RE.test(date));
+    if (validDates.length === 0) {
+      return json({ ok: false, error: "No valid dates provided" }, 400);
+    }
+    if (validDates.length > 30) {
+      return json({ ok: false, error: "Too many dates, max 30" }, 400);
+    }
+
+    const kinds = parseScopes(parsed.body.kind, validDates.length);
+    const dossiers = validDates.map((date, index) => buildDossier(date, kinds[index] ?? "person"));
+    return json({ ok: true, dossiers });
+  } catch (e: unknown) {
+    apiLog.error("Dossier error", e);
     const msg = e instanceof Error ? e.message : "Unknown error";
     return json({ ok: false, error: msg }, 500);
   }

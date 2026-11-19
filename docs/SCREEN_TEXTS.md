@@ -21,7 +21,8 @@
 приходять із даних.
 
 **Що вже в базі.** `services`, `favorites`, `research`, `contacts`. Решта екранів («Повідомлення»,
-«Нотатки») ще тримають слова в коді — саме вони й творять число в `scripts/texts-baseline.mjs`.
+«Нотатки», досьє `dateanalysis/analysis`) ще тримають слова в коді — саме вони й творять число в
+`scripts/texts-baseline.mjs`.
 Розподіл боргу по шарах, слова в кирпичиках `@wwwuabot/ui` і те, що гейт не бачить
 (`public/*.html`, латиниця), — у `docs/TEXT_AUDIT.md`.
 

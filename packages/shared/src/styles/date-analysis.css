@@ -1,5 +1,6 @@
-/* ── Аналіз дати: таблиця параметрів із акордеонами ────────────────────
-   Кожен параметр — рядок-акордеон, а список лежить у рамці.
+/* ── Аналіз дати: досьє якостей і вітрина систем ───────────────────────
+   Досьє малює домени й рядки якостей; вітрина систем лишається таблицею
+   параметрів з акордеонами. Обидва екрани ділять одні класи рядків.
    Тло — у **рядків**, а не в полотна під ними: поверхню несе рядок (назва
    системи чи підпис параметра), а не рамка. Причина не в смаку: опис системи
    лежить між рядками, і коли сірим залите все полотно, він читається ще одним
@@ -60,7 +61,13 @@
   vertical-align: middle;
 }
 
-/* Підпис над таблицею — **окреме правило на клас**, а не `h2` усередині рамки:
+/* Досьє читається колонкою: на широкому екрані рядок якості з якорем не
+   мусить розтягуватись на всю ширину — око втрачає рядок. */
+.wb-block-date-analysis {
+  max-width: 72ch;
+}
+
+/* Підпис над досьє — **окреме правило на клас**, а не `h2` усередині рамки:
    той самий `h2` малює й крок вибору систем, і зайвий відступ там осів би під
    підписом кроку. Просвіт — не оздоблення: притиснутий підпис читається як
    перша комірка таблиці. */
@@ -76,32 +83,6 @@
   text-wrap: pretty;
 }
 
-/* Смуга перемикача вигляду: сам контрол тримає власну ширину — два підписи не
-   мусять розповзатись на пів екрана (у шапці екрана той самий контрол ділить
-   місце із заголовком і тому малює лише знаки).
-
-   Смуга закріплена **сама**: вона стоїть над таблицею, а не в ній, тож ділити
-   місце липкості з її шапкою не може — у одного елемента одна позиція. Висота
-   задана, а не виміряна: від неї відлічує закріплена шапка (`--param-views-h`). */
-.wb-analysis-views {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-sticky);
-  display: flex;
-  height: var(--param-views-h);
-  padding-bottom: var(--sp-3);
-  /* Плоский колір екрана: під смугу заїжджають рядки, і крізь неї їх видно
-     не мусить. */
-  background: var(--bg-page, var(--bg-0));
-}
-
-/* Висота смуги перемикача разом із просвітом під нею: від неї відлічує
-   закріплена шапка. 44px — планка пальця (`.wb-segmented-btn`), просвіт — той
-   самий, що відділяє перемикач від шапки. */
-.wb-block-date-analysis {
-  --param-views-h: calc(44px + var(--sp-3));
-}
-
 /* Дані лежать на сторінці: гортає її людина, а не рамка. Рамка лишає форму
    (радіус і тінь), але висоти в неї немає — і сторінці нема чого гортати
    навколо неї. Вітрина систем шапки не має: її рамка така сама. */
@@ -111,50 +92,6 @@
      потрібна лише закріпленим клітинкам, тож вона мусить дорівнювати тлу,
      на якому стоїть рамка. */
   --wb-table-surface: var(--bg-page, var(--bg-0));
-}
-
-/* Тіло гортається **вбік**: стовпців стільки, скільки дат, і вони не діляться
-   екраном. По вертикалі рамка не гортає нічого — висота таблиці вільна, а
-   сторінку гортає людина. */
-.wb-param-scroll {
-  overflow-x: auto;
-}
-
-/* Смуга шапки: ту саму шапку тягне за тілом програма (`usePinnedHead`) —
-   пальцем її не рушити. */
-.wb-param-head {
-  overflow: hidden;
-}
-
-/* Шапка — окремою смугою під перемикачем, а не всередині тіла: закріплене
-   тримається краю того, хто скролить (`DESIGN_SYSTEM` §27), а тіло скролить
-   себе вбік — тобто всередині нього шапці триматись ні за що, і вона їхала б
-   разом зі сторінкою. Смуга міряє стовпці тіла й тримає ті самі — інакше дві
-   таблиці розійшлися б стовпцями. */
-.wb-param-pin {
-  position: sticky;
-  top: var(--param-views-h);
-  z-index: var(--z-sticky);
-  /* Смуга висне над рядками, коли сторінку гортають, — тож вона непрозора й
-     того самого кольору, що й поверхня таблиці. */
-  background: var(--wb-table-surface, var(--bg-page, var(--bg-0)));
-}
-
-/* У вікні смуги перемикача над таблицею немає: шапка тримається самого верху
-   тіла вікна, а не відступає під неіснуючий перемикач. */
-.wb-modal .wb-param-pin {
-  top: 0;
-}
-
-/* Платформа крутить **документ**, а хедер закріплений: смуги тримаються під
-   ним самі. За адмінку не турбуємось: там панель скролить себе, тож смуги
-   відлічують від її верху — тобто від нуля. */
-.wb-tabbar-layout .wb-analysis-views {
-  top: var(--appbar-h);
-}
-
-.wb-tabbar-layout .wb-param-pin {
-  top: calc(var(--appbar-h) + var(--param-views-h));
 }
 
 /* `separate`, а не `collapse`: у згорнутій таблиці рамки малює сама таблиця,
@@ -199,33 +136,6 @@
   border-top-right-radius: 0;
 }
 
-/* Дата — сам підпис стовпця, а назва дати — другий рядок під нею: людина знає
-   свої дати за назвою, а не за числом. */
-.wb-param-date {
-  display: block;
-  /* Дата — одне число: воно не рветься ні на дві частини, ні на два рядки. */
-  white-space: nowrap;
-  color: var(--text-secondary);
-}
-
-.wb-param-date__name {
-  display: block;
-  max-width: 12ch;
-  margin-top: 2px;
-  color: var(--text-muted);
-  font-weight: var(--weight-normal);
-  white-space: normal;
-}
-
-/* Вид суб'єкта над іменем: у порівнянні людей із подіями одне слово
-   вирішує, як читати весь стовпець, тож воно не губиться серед підписів. */
-.wb-param-date__kind {
-  display: block;
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-}
-
 /* Тло — на комірці, а не на рамці: комірка ж і тримає заокруглений кут
    (`border-radius` предка тло нащадка не обрізає, тож квадрат ряду вилазив би
    за кути рамки — саме тому воно не на `tr`). */
@@ -255,15 +165,6 @@
 
 .wb-param-table tbody:first-child tr:first-child > td:last-child {
   border-top-right-radius: var(--radius-md);
-}
-
-/* У тіла аналізу `tbody` — перша дитина, і за цією ознакою воно взяло б собі
-   верхні кути рамки. Але верху в нього немає: над ним стоїть шапка, окремою
-   смугою (`.wb-param-pin`), — і заокруглення читалося б вирізом під нею. */
-.wb-param-table--body tbody tr:first-child > td:first-child,
-.wb-param-table--body tbody tr:first-child > td:last-child {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
 }
 
 .wb-param-table tbody tr:last-child > td:first-child {
@@ -317,10 +218,6 @@
 
 .wb-param-toggle--open .wb-param-toggle__caret {
   color: var(--accent);
-}
-
-.wb-param-value {
-  font-weight: var(--weight-semibold);
 }
 
 /* Розкритий рядок — продовження свого параметра: лінії між ними немає, і тла
@@ -379,41 +276,9 @@
   line-height: var(--leading-relaxed);
 }
 
-/* Аналіз: дат стільки, скільки людина обрала, тож стовпці **не діляться**
-   шириною екрана, а роз'їжджаються вбік — кожен тримає свою ширину, а рамка
-   гортає таблицю.
-   Значення не переносяться, і стовпець за ними міряє `usePinnedHead`; дата
-   в шапці не рветься ніколи, а назва дати під нею — може. */
-.wb-param-table--compare .wb-param-value {
-  white-space: nowrap;
-  hyphens: none;
-  overflow-wrap: normal;
-}
-
-/* Підпис рядка — кістяк таблиці: він лишається на екрані при гортанні вбік,
-   тож ширину тримає власну, а не частку екрана. */
-.wb-param-table--compare th:first-child,
-.wb-param-table--compare td:first-child {
-  min-width: 8rem;
-  border-right: 1px solid var(--border-subtle);
-}
-
-/* Стовпець дати не вужчий за своє значення — інакше таблиця знову стискалась
-   би до нерозбірливих смужок замість того, щоб гортатись. */
-.wb-param-table--compare thead th + th {
-  min-width: 5.5rem;
-}
-
 .wb-param-table th,
 .wb-param-table td {
   overflow-wrap: break-word;
-}
-
-/* Спільні ширини стовпців ставить `usePinnedHead`: шапка й тіло — дві різні
-   таблиці, і своїми стовпцями вони розійшлися б (ширину дає вміст, а він у
-   них різний). */
-.wb-param-table--measured {
-  table-layout: fixed;
 }
 
 /* Рядок системи — не дані: назву відділяє товща лінія зверху. */
@@ -454,4 +319,382 @@
 /* Помилка кроку: тон — семантичний токен, а не колір у розмітці. */
 .wb-block-date-analysis__error {
   color: var(--red);
+}
+
+/* ── Досьє: домени, якості, свідчення ─────────────────────────────────
+   Досьє — не таблиця й не картка на картці: домени йдуть один під одним,
+   якість — рядок, що розкривається свідченнями. Числа лишаються лише там, де
+   це рівень або дата; рівень читається якорем, а розбіжність — розподілом. */
+
+.wb-dossiers {
+  display: grid;
+  gap: var(--sp-6);
+  min-width: 0;
+}
+
+.wb-dossier {
+  display: grid;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+/* Шапка досьє: хто це, за якою датою і скільки якостей мають свідчення.
+   Межа знизу — не рамка картки, а кінець шапки. */
+.wb-dossier__head {
+  display: grid;
+  gap: var(--sp-1);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.wb-dossier__kicker {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Ім'я суб'єкта може бути довгим — воно переноситься, а не розсовує екран. */
+.wb-dossier__title {
+  margin: 0;
+  font-size: var(--text-xl);
+  line-height: var(--leading-tight);
+  overflow-wrap: anywhere;
+}
+
+.wb-dossier__meta {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+/* Покриття — стан, а не оцінка: скільком якостям є що сказати. */
+.wb-dossier__coverage {
+  color: var(--accent);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-dossier__note {
+  max-width: 62ch;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  text-wrap: pretty;
+}
+
+.wb-dossier-domains {
+  display: grid;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+.wb-dossier-domain {
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.wb-dossier-domain__title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.wb-dossier-domain__count {
+  flex: none;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.wb-dossier-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wb-dossier-quality {
+  min-width: 0;
+}
+
+/* Рядок якості — тап-таргет 48px: якір буває на два рядки, і палець мусить
+   попадати в рядок, а не в слово. */
+.wb-dossier-quality__summary {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  min-height: 48px;
+  padding: var(--sp-2) 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.wb-dossier-quality__summary::-webkit-details-marker {
+  display: none;
+}
+
+.wb-dossier-quality__text {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wb-dossier-quality__name {
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
+}
+
+.wb-dossier-quality__anchor {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+/* Плашка рівня: колір — лише підказка, підпис — головне. */
+.wb-dossier-quality__level {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--radius-full);
+  background: var(--bg-3);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.wb-dossier-quality__level[data-level="1"],
+.wb-dossier-quality__level[data-level="2"] {
+  background: var(--red-dim);
+  color: var(--red);
+}
+
+.wb-dossier-quality__level[data-level="3"] {
+  background: var(--yellow-dim);
+  color: var(--yellow);
+}
+
+.wb-dossier-quality__level[data-level="4"],
+.wb-dossier-quality__level[data-level="5"] {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.wb-dossier-quality__level[data-level="conflict"] {
+  background: var(--yellow-dim);
+  color: var(--yellow);
+}
+
+.wb-dossier-quality--conflict .wb-dossier-quality__anchor {
+  color: var(--yellow);
+}
+
+.wb-dossier-quality__caret {
+  flex: none;
+  margin-top: 2px;
+  color: var(--text-muted);
+  transition: transform var(--duration-fast) var(--ease);
+}
+
+.wb-dossier-quality__details[open] > .wb-dossier-quality__summary .wb-dossier-quality__caret {
+  transform: rotate(180deg);
+}
+
+/* Тіло — не картка: воно продовжує рядок, і зсув показує вкладеність. */
+.wb-dossier-quality__body {
+  display: grid;
+  gap: var(--sp-3);
+  padding: 0 0 var(--sp-4) var(--sp-3);
+}
+
+.wb-dossier-quality__definition {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.wb-dossier-claims {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wb-dossier-claim {
+  display: grid;
+  gap: 2px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--bg-2);
+}
+
+.wb-dossier-claim__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--text-xs);
+}
+
+.wb-dossier-claim__source {
+  font-weight: var(--weight-semibold);
+}
+
+.wb-dossier-claim__layer {
+  padding: 0 var(--sp-2);
+  border-radius: var(--radius-full);
+  background: var(--bg-3);
+  color: var(--text-secondary);
+}
+
+.wb-dossier-claim__layer--measured {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.wb-dossier-claim__layer--narrative {
+  background: var(--yellow-dim);
+  color: var(--yellow);
+}
+
+.wb-dossier-claim__layer--symbolic {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.wb-dossier-claim__level {
+  margin-left: auto;
+  color: var(--text-muted);
+}
+
+.wb-dossier-claim__evidence {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.wb-dossier-claim__confidence {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+/* Розподіл — п'ять комірок за рівнями: розбіжність видно як два стовпчики, а
+   не як одне згладжене число. */
+.wb-dossier-distribution {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+}
+
+.wb-dossier-distribution__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  border-radius: var(--radius-xs);
+  background: var(--accent-soft);
+  font-size: var(--text-xs);
+}
+
+.wb-dossier-distribution__cell[data-empty="true"] {
+  background: var(--bg-2);
+  color: var(--text-muted);
+}
+
+.wb-dossier-distribution__count {
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-dossier-distribution__caption {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+/* Якість без свідчень — не порожній рядок і не середина: ім'я лишається, стан
+   сказано словом. */
+.wb-dossier-quality--unknown {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  min-height: 40px;
+  padding: var(--sp-1) 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.wb-dossier-quality--unknown .wb-dossier-quality__name {
+  color: var(--text-secondary);
+}
+
+.wb-dossier-quality__unknown {
+  flex: none;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+/* Опитування — стан на тому самому екрані, а не обіцянка в іншому розділі. */
+.wb-dossier-survey {
+  display: grid;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--accent-dim);
+}
+
+.wb-dossier-survey__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.wb-dossier-survey__title {
+  font-weight: var(--weight-semibold);
+}
+
+.wb-dossier-survey__status {
+  padding: 0 var(--sp-2);
+  border-radius: var(--radius-full);
+  background: var(--bg-3);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+.wb-dossier-survey__text {
+  max-width: 62ch;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.wb-dossier-survey__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: 44px;
+  color: var(--accent);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-block-date-analysis__foot {
+  max-width: 62ch;
+  margin-top: var(--sp-4);
+  line-height: var(--leading-relaxed);
 }
