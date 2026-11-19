@@ -17,6 +17,7 @@ const PATHS: ShopApiPaths = {
   products: "/api/user/shop/products",
   media: "/api/user/shop/media",
   catalog: "/api/public/shop/products",
+  shops: "/api/public/shops",
   orders: "/api/user/shop/orders",
   orderStatus: "/api/user/shop/orders/status",
   placeOrder: "/api/public/shop/orders",
@@ -152,6 +153,22 @@ describe("зміна статусу — єдиний шлях, де номер �
 
     expect(calls[0].path).toBe("/api/user/shop/orders/status");
     expect(bodyOf(calls[0])).toEqual({ shop: 7, id: 42, status: "done" });
+  });
+});
+
+describe("список магазинів — без параметрів", () => {
+  it("питає рівно свій шлях: відбір робить сервер, а не клієнт", async () => {
+    const { client, calls } = api({ ok: true, shops: [] });
+    await client.shops();
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.path).toBe(PATHS.shops);
+  });
+
+  it("порожня відповідь — порожній список, а не помилка", async () => {
+    const { client } = api({ ok: true });
+
+    expect(await client.shops()).toEqual([]);
   });
 });
 

@@ -1,9 +1,9 @@
 /**
  * Клієнт магазину — форма запиту, спільна для оболонок.
  *
- * **Два шляхи, і різниця між ними принципова:** власні товари читаються з-під
- * підписаного `initData` (разом із чернетками), а каталог — публічний, за
- * адресою магазину. Тримати це в одній функції означало б «залежить від того,
+ * **Два боки, і різниця між ними принципова:** власні товари читаються з-під
+ * підписаного `initData` (разом із чернетками), а каталог і **список відкритих
+ * магазинів** — публічні. Тримати це в одній функції означало б «залежить від того,
  * хто кличе», тобто правило, яке легко забути — а помилка тут показала б
  * чернетки покупцеві.
  *
@@ -40,7 +40,9 @@ import type {
   ProductDraft,
   ProductListResponse,
   ProductSaveResponse,
+  PublicShop,
   ShopMedia,
+  ShopListResponse,
   ShopOrder,
   ShopProduct,
   StatusListResponse,
@@ -71,6 +73,8 @@ export interface ShopApi {
   removeProduct: (shopId: number, id: number) => Promise<void>;
   /** Каталог відкритого магазину за його адресою. */
   catalog: (shopSlug: string) => Promise<ShopProducts>;
+  /** Відкриті магазини платформи — вхід у кожен за його адресою. */
+  shops: () => Promise<PublicShop[]>;
   /** Власна бібліотека файлів — щоб одне фото можна було поставити двом товарам. */
   media: (shopId: number) => Promise<ShopMedia[]>;
   /** Завантажити фото: файл спершу стає рядком, потім його приєднує товар. */
@@ -96,6 +100,8 @@ export interface ShopApiPaths {
   products: string;
   media: string;
   catalog: string;
+  /** Список відкритих магазинів — без параметрів: відбір робить запит. */
+  shops: string;
   orders: string;
   /** Зміна статусу — окремий шлях: список і дія не плутаються навіть адресою. */
   orderStatus: string;
@@ -126,6 +132,8 @@ export function createShopApi(
 
     catalog: async (shopSlug) =>
       read(await fetchJson<CatalogResponse>(withQuery(paths.catalog, { shop: shopSlug }))),
+
+    shops: async () => (await fetchJson<ShopListResponse>(paths.shops)).shops ?? [],
 
     // Номер магазину їде **в адресі**, як і в решті шляхів товарів: він називає
     // магазин, а не товар, тож у тілі він був би полем чернетки — і контролер

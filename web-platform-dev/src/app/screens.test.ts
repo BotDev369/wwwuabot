@@ -16,6 +16,12 @@ describe("ключ екрана з адреси", () => {
     expect(screenKeyOfPath("/scenarios/7/orders")).toBe("scenarios");
   });
 
+  it("список магазинів — свій ключ, а сам магазин лишається сторінкою", () => {
+    expect(screenKeyOfPath("/shops")).toBe("shops");
+    // Вітрина магазину — рядок `scenarios`: її ключ — сторінка контенту.
+    expect(screenKeyOfPath("/kava")).toBe("page");
+  });
+
   it("сторінка контенту за slug — окремий ключ, а не чужий екран", () => {
     expect(screenKeyOfPath("/dateanalysis")).toBe("date-analysis");
     expect(screenKeyOfPath("/some-scenario")).toBe("page");

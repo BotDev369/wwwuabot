@@ -8,11 +8,13 @@
  */
 
 import { describe, expect, it } from "vitest";
+import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import {
   ASSESSMENTS_PATH,
   ACCOUNT_PATH,
   DAY_PATH,
   ORDERS_PATH,
+  SHOPS_PATH,
   TRACKERS_PATH,
   USERS_PATH,
 } from "@/app/routes";
@@ -55,9 +57,24 @@ describe("меню платформи", () => {
     expect(activeKeys("/research")).toEqual([]);
   });
 
-  it("⛔ хибних переходів немає: жоден пункт не веде на Оцінки", () => {
+  it("магазини, аналіз і тестування мають пункт, а не лише адресу", () => {
+    // Це три речі, заради яких людина приходить: без пункту вони існували
+    // тільки для того, кому колись надіслали посилання.
     const hrefs = PLATFORM_NAV.flatMap((section) => section.items).map((item) => item.href);
-    expect(hrefs).not.toContain(ASSESSMENTS_PATH);
+    expect(hrefs).toContain(SHOPS_PATH);
+    expect(hrefs).toContain(DATE_ANALYSIS_PATH);
+    expect(hrefs).toContain(ASSESSMENTS_PATH);
+  });
+
+  it("кожен із трьох входів світить саме себе", () => {
+    expect(activeKeys(SHOPS_PATH)).toEqual(["shops"]);
+    expect(activeKeys(DATE_ANALYSIS_PATH)).toEqual(["analysis"]);
+    expect(activeKeys(ASSESSMENTS_PATH)).toEqual(["assessments"]);
+    // Проходження тесту — той самий пункт, а не порожній хвіст.
+    expect(activeKeys(`${ASSESSMENTS_PATH}/stress`)).toEqual(["assessments"]);
+  });
+
+  it("хибних переходів немає: пункту, який нікуди не веде, не існує", () => {
     // «Світлиця» повернеться в меню тоді, коли в неї буде власний екран.
     const labels = PLATFORM_NAV.flatMap((section) => section.items).map((item) => item.label);
     expect(labels).not.toContain("Світлиця");

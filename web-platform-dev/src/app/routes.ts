@@ -132,6 +132,16 @@ export const USERS_PATH = `/${USERS_ROUTE}`;
 export const SCENARIOS_ROUTE = "scenarios";
 export const SCENARIOS_PATH = `/${SCENARIOS_ROUTE}`;
 
+/**
+ * Магазини — **список** відкритих магазинів, а не сторінка контенту: сам
+ * магазин відкривається своїм `slug` (`/kava`) і рендериться тим самим
+ * `ScenarioPage`. Список адресу має тому, що це вибірка з `scenarios`
+ * (`template_key = 'shop'`); `shops` не може стати адресою сторінки — його
+ * стереже `RESERVED_PAGE_SLUGS` (`docs/SHOPS.md` §9).
+ */
+export const SHOPS_ROUTE = "shops";
+export const SHOPS_PATH = `/${SHOPS_ROUTE}`;
+
 /** Один сценарій за номером рядка: під ним стоять вкладки магазину. */
 export const scenarioPath = (id: number): string => `${SCENARIOS_PATH}/${id}`;
 

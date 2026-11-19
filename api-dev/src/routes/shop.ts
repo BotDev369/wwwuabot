@@ -19,7 +19,11 @@
 
 import type { Env } from "../shared/types";
 import { decodePathSegment } from "../shared/url";
-import { handleUserShopProducts, handlePublicShopProducts } from "../controllers/shop.controller";
+import {
+  handleUserShopProducts,
+  handlePublicShopProducts,
+  handlePublicShops,
+} from "../controllers/shop.controller";
 import { handleUserShopMedia, handleShopMediaFile } from "../controllers/shop-media.controller";
 import {
   handleUserShopOrders,
@@ -68,6 +72,12 @@ export function matchShopRoute(
     const key = decodePathSegment(pathname.replace("/api/shop/media/", ""));
     if (key === null) return badRequest();
     return handleShopMediaFile(env, key);
+  }
+
+  // Список відкритих магазинів — вхід у вітрини: відбір (`is_public`,
+  // `is_active`, незаблокований власник) робить запит до бази, а не клієнт.
+  if (pathname === "/api/public/shops" && request.method === "GET") {
+    return handlePublicShops(request, env);
   }
 
   // Каталог магазину — теж публічно: `is_public = 1` і `is_active = 1` відбирає

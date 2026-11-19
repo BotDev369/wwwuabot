@@ -142,6 +142,8 @@ export type {
   ProductDraft,
   ProductListResponse,
   ProductSaveResponse,
+  PublicShop,
+  ShopListResponse,
   ShopMedia,
   ShopOrder,
   ShopProduct,

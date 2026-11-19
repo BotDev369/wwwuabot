@@ -32,5 +32,6 @@ export const RESERVED_PAGE_SLUGS: readonly string[] = [
   "orders",
   "scenarios",
   "services",
+  "shops",
   "users",
 ];

@@ -4,6 +4,7 @@
  *   GET    /api/user/shop/products   — власні товари (разом із чернетками)
  *   POST   /api/user/shop/products   — зберегти свій (без `id` — новий)
  *   DELETE /api/user/shop/products   — прибрати свій за номером
+ *   GET    /api/public/shops         — список **відкритих** магазинів
  *   GET    /api/public/shop/products  — каталог **відкритого** магазину
  *
  * Ідентичність береться **тільки** з підписаного `initData` (`resolveUserId`):
@@ -25,6 +26,7 @@ import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
 import { resolveUserId } from "../shared/identity";
 import { ShopProductsService } from "../services/shop/products.service";
+import { listPublicShops } from "../services/shop/shops";
 
 /** Текст невдачі — без подробиць: у винятку бувають назви таблиць і значення. */
 const FAILURE = "Не вдалося виконати дію";
@@ -116,6 +118,27 @@ export async function handleUserShopProducts(request: Request, env: Env): Promis
  * файл. Закритий магазин не дістається каталогом — та сама межа, що в
  * сторінок і оголошень.
  */
+/**
+ * `GET /api/public/shops` — відкриті магазини платформи одним списком.
+ *
+ * Без авторизації і без параметрів: питання «які магазини відкриті» має одну
+ * відповідь для всіх, а коло магазинів відбирає запит до бази. Стелю задає
+ * сервіс — сміття в `limit` з адреси тут не потрібне: екран просить список
+ * цілком (`docs/SHOPS.md` §1).
+ */
+export async function handlePublicShops(request: Request, env: Env): Promise<Response> {
+  if (request.method !== "GET") {
+    return json({ ok: false, error: "Method not allowed" }, 405);
+  }
+
+  try {
+    return json({ ok: true, shops: await listPublicShops(env.DB) });
+  } catch (e: unknown) {
+    apiLog.error("Shop list error", e);
+    return json({ ok: false, error: "Не вдалося завантажити магазини" }, 500);
+  }
+}
+
 export async function handlePublicShopProducts(request: Request, env: Env): Promise<Response> {
   const params = new URL(request.url).searchParams;
   const slug = (params.get("shop") ?? "").trim();

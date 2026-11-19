@@ -5,12 +5,18 @@
  * світить лише «Я», а вкладки магазину (`/scenarios/7/products`) — нічого: вони
  * не пункт меню, а сторінка всередині магазину.
  *
+ * **Магазини, аналіз і тестування стоять у меню навмисно.** Це три речі, заради
+ * яких людина приходить: без пункту вони існували тільки для того, кому колись
+ * надіслали посилання.
+ *
  * @module web-platform-dev/src/layout/platform-nav
  */
 
 import type { SideBarItem, SideBarSection } from "@wwwuabot/ui/nav";
+import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import {
   ACCOUNT_PATH,
+  ASSESSMENTS_PATH,
   CONTACTS_PATH,
   DAY_PATH,
   FAVORITES_PATH,
@@ -18,6 +24,7 @@ import {
   NOTES_PATH,
   ORDERS_PATH,
   SERVICES_PATH,
+  SHOPS_PATH,
   TRACKERS_PATH,
   USERS_PATH,
 } from "../app/routes";
@@ -31,6 +38,9 @@ const MAIN: readonly SideBarItem[] = [
 
 /** «Ще»: усе інше одним списком. */
 const MORE: readonly SideBarItem[] = [
+  { key: "shops", label: "Магазини", icon: "cart", href: SHOPS_PATH },
+  { key: "analysis", label: "Аналіз людей", icon: "my-dates", href: DATE_ANALYSIS_PATH },
+  { key: "assessments", label: "Тестування", icon: "growth", href: ASSESSMENTS_PATH },
   { key: "favorites", label: "Обране", icon: "thumbs-up", href: FAVORITES_PATH },
   { key: "trackers", label: "Трекери", icon: "bar-chart", href: TRACKERS_PATH },
   { key: "notes", label: "Нотатки", icon: "list", href: NOTES_PATH },
@@ -62,8 +72,8 @@ function belongs(pathname: string, href: string | undefined): boolean {
 /**
  * Меню з підсвіченим пунктом.
  *
- * Рахуємо **найдовший** збіг: інакше `/pages/7` світило б і «Базар», і «Мій
- * день», і екран мав би два «тут ти».
+ * Рахуємо **найдовший** збіг: інакше `/scenarios/7/products` світило б і
+ * «Магазини», і «Мій день», і екран мав би два «тут ти».
  */
 export function platformNav(pathname: string): SideBarSection[] {
   const path = normalize(pathname);

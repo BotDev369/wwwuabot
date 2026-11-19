@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import type { Env } from "../../shared/types";
-import { managedShopId, shopStaffIds, type ShopScope } from "./shops";
+import { listPublicShops, managedShopId, shopStaffIds, type ShopScope } from "./shops";
 
 const OWNER = 372567448;
 const GALYA = 1049272067;
@@ -59,6 +59,43 @@ describe("managedShopId", () => {
   it("рядок платформи (без власника) доступом не ділиться", async () => {
     const platform = { id: 7, owner_id: null, admin_ids: null };
     expect(await managedShopId(makeDb(platform).DB, 7, OWNER)).toBeNull();
+  });
+});
+
+describe("listPublicShops", () => {
+  /** Заглушка D1, яка віддає готові рядки й пам'ятає надісланий SQL. */
+  function listDb(rows: Record<string, unknown>[]): { env: Env; sql: () => string } {
+    let sql = "";
+    const db = {
+      prepare: (text: string) => {
+        sql = text;
+        return { bind: () => ({ all: async () => ({ results: rows }) }) };
+      },
+    };
+    return { env: { DB: db } as unknown as Env, sql: () => sql };
+  }
+
+  it("віддає рівно те, що потрібно рядку списку: номер, адресу й підпис", async () => {
+    const db = listDb([{ id: 382, slug: "galyashop", title: "GalyaShop" }]);
+
+    expect(await listPublicShops(db.env.DB)).toEqual([
+      { id: 382, slug: "galyashop", title: "GalyaShop" },
+    ]);
+  });
+
+  it("відбір робить запит: лише магазини, відкриті, увімкнені й без блоку", async () => {
+    const db = listDb([]);
+    await listPublicShops(db.env.DB);
+
+    const sql = db.sql();
+    expect(sql).toMatch(/template_key = 'shop'/);
+    expect(sql).toMatch(/COALESCE\(s\.is_public, 0\) = 1/);
+    expect(sql).toMatch(/s\.is_active = 1/);
+    expect(sql).toMatch(/COALESCE\(u\.is_blocked, 0\) = 0/);
+  });
+
+  it("порожня база — порожній список, а не помилка", async () => {
+    expect(await listPublicShops(listDb([]).env.DB)).toEqual([]);
   });
 });
 

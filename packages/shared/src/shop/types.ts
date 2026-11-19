@@ -57,6 +57,23 @@ export interface ShopProduct {
   updatedAt: string;
 }
 
+/**
+ * Відкритий магазин у списку: номер (ключ), адреса (`/<slug>`) і підпис.
+ * Товарів тут немає — каталог питає сама вітрина, коли її відкрили
+ * (`docs/SHOPS.md` §9).
+ */
+export interface PublicShop {
+  id: number;
+  slug: string;
+  title: string;
+}
+
+/** Відповідь `GET /api/public/shops`: відкриті магазини платформи. */
+export interface ShopListResponse {
+  ok: boolean;
+  shops: PublicShop[];
+}
+
 /** Те, що надсилає форма: без `id` — новий, з `id` — правка свого. */
 export interface ProductDraft {
   id?: number;

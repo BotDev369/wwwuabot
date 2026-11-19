@@ -40,6 +40,7 @@ import {
   SHOP_PRODUCTS_ROUTE,
   SCENARIOS_ROUTE,
   SERVICES_ROUTE,
+  SHOPS_ROUTE,
   TRACKERS_ROUTE,
   USERS_ROUTE,
 } from "@/app/routes";
@@ -64,6 +65,7 @@ import { ShopOrderPage } from "@/pages/shop/ShopOrderPage";
 import { ShopOrdersPage } from "@/pages/shop/ShopOrdersPage";
 import { ShopProductForm } from "@/pages/shop/ShopProductForm";
 import { ShopProductsPage } from "@/pages/shop/ShopProductsPage";
+import { ShopsPage } from "@/pages/shop/ShopsPage";
 
 export const router = createBrowserRouter([
   {
@@ -84,6 +86,10 @@ export const router = createBrowserRouter([
       // Акаунт — не контент, а дані користувача: платформа й Telegram окремими
       // розділами, а не одним суцільним списком.
       { path: ACCOUNT_ROUTE, element: <ProfileAccountPage /> },
+      // Магазини — список відкритих магазинів: вхід у вітрини за їхніми
+      // адресами (`/<slug>`). Стоїть перед catch-all, інакше `shops` зʼїв би
+      // його як сторінку за адресою.
+      { path: SHOPS_ROUTE, element: <ShopsPage /> },
       // Замовлення — у яких магазинах людина працює й куди йти за роботою. Під
       // сторінкою магазину вже стоїть його черга замовлень, тож цей екран лише
       // називає магазини (`ProfileOrdersPage`).

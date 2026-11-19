@@ -18,6 +18,7 @@ import {
   NOTES_PATH,
   ORDERS_PATH,
   SCENARIOS_PATH,
+  SHOPS_PATH,
   SERVICES_PATH,
   TRACKERS_PATH,
   USERS_PATH,
@@ -34,6 +35,7 @@ export function screenKeyOfPath(pathname: string): string {
   if (at(NOTES_PATH)) return "notes";
   if (at(CONTACTS_PATH)) return "contacts";
   if (at(ORDERS_PATH)) return "orders";
+  if (at(SHOPS_PATH)) return "shops";
   if (at(SCENARIOS_PATH)) return "scenarios";
   if (at(ADS_PATH)) return "ads";
   if (at(USERS_PATH)) return "users";

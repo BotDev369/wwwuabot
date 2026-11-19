@@ -23,6 +23,7 @@
 | `GET` | `/api/public/research` | `handlePublicResearch` |
 | `POST` | `/api/public/shop/orders` | `handlePublicShopOrders` |
 | `GET` | `/api/public/shop/products` | `handlePublicShopProducts` |
+| `GET` | `/api/public/shops` | `handlePublicShops` |
 | `GET` | `/api/public/users` | `handlePublicUsers` |
 | `GET` | `/api/public/users/<…>` | `handlePublicUser` |
 | `ANY` | `/api/scenario/<…>` | `handleScenario` |
@@ -128,4 +129,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **99**.
+Усього шляхів: **100**.

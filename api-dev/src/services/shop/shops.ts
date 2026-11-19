@@ -21,6 +21,10 @@
 
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { isPageManager, pageAdminIds, pageStaffIds } from "@wwwuabot/shared/pages";
+import type { PublicShop } from "@wwwuabot/shared/shop";
+
+/** Стеля списку магазинів: більше за один екран однаково ніхто не обходить. */
+export const PUBLIC_SHOPS_LIMIT = 60;
 
 /** Магазин, який дивиться сторонній: номер, адреса, продавець і підпис. */
 export interface ShopScope {
@@ -75,6 +79,37 @@ function shopOwner(raw: string | number | null): number | null {
 /** Усі, кому адресоване замовлення: продавець і адміни (`pageStaffIds`). */
 export function shopStaffIds(shop: ShopScope): number[] {
   return pageStaffIds(shop.ownerId, shop.adminIds);
+}
+
+/**
+ * Відкриті магазини — ті самі умови, що й у вітрини (`publicShopBySlug`),
+ * плюс `template_key = 'shop'`: список не показує візиток і статей. Розійтися
+ * цим двом не можна — рядок у списку вів би в 404 (`docs/SHOPS.md` §1, §9).
+ */
+export async function listPublicShops(
+  db: D1Database,
+  limit = PUBLIC_SHOPS_LIMIT,
+): Promise<PublicShop[]> {
+  const result = await db
+    .prepare(
+      `SELECT s.id, s.slug, s.title
+         FROM platform_pages s
+         JOIN users u ON u.user_id = s.owner_id
+        WHERE s.owner_id IS NOT NULL
+          AND s.template_key = 'shop'
+          AND COALESCE(s.is_public, 0) = 1
+          AND s.is_active = 1
+          AND COALESCE(u.is_blocked, 0) = 0
+        ORDER BY s.updated_at DESC, s.id DESC LIMIT ?`,
+    )
+    .bind(limit)
+    .all<Record<string, unknown>>();
+
+  return (result.results ?? []).map((row) => ({
+    id: Number(row.id),
+    slug: String(row.slug ?? ""),
+    title: String(row.title ?? ""),
+  }));
 }
 
 /**

@@ -16,6 +16,7 @@ import { RESERVED_PAGE_SLUGS } from "@wwwuabot/shared/pages";
 import {
   ACCOUNT_ROUTE,
   ADS_ROUTE,
+  ASSESSMENTS_ROUTE,
   CONTACTS_ROUTE,
   FAVORITES_ROUTE,
   GAMES_ROUTE,
@@ -24,6 +25,7 @@ import {
   ORDERS_ROUTE,
   SCENARIOS_ROUTE,
   SERVICES_ROUTE,
+  SHOPS_ROUTE,
   USERS_ROUTE,
 } from "../../app/routes";
 
@@ -40,6 +42,8 @@ describe("адреси, зайняті платформою", () => {
       GAMES_ROUTE,
       USERS_ROUTE,
       SERVICES_ROUTE,
+      SHOPS_ROUTE,
+      ASSESSMENTS_ROUTE,
       ORDERS_ROUTE,
       NOTES_ROUTE,
       CONTACTS_ROUTE,
