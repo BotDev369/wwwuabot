@@ -9,6 +9,7 @@ import { useMemo, useState, type FormEvent, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { isValidDate } from "@wwwuabot/shared/utils/mydate-helpers";
+import { readDates, readSubject } from "@wwwuabot/ui/analysis/params";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { ANALYSIS_PATH, analysisStepPath, type AnalysisMode } from "@/app/routes";
 
@@ -41,17 +42,25 @@ const COPY: Record<AnalysisMode, { title: string; lead: string; submit: string }
 
 const MAX_ROWS = 4;
 
+/**
+ * Співставлення починається не з нуля, коли людину вже обрано: профіль веде
+ * сюди зі своєю датою, тож перший рядок заповнений, а другий чекає на другу
+ * людину.
+ */
+function compareRows(search: string): Row[] {
+  const dates = readDates(search);
+  const labels = readSubject(search, dates.length).labels;
+  const rows = dates.slice(0, MAX_ROWS).map((date, index) => ({ date, name: labels[index] ?? "" }));
+  while (rows.length < 2) rows.push({ date: "", name: "" });
+  return rows;
+}
+
 export function SubjectStep({ mode }: SubjectStepProps): ReactElement {
   const copy = COPY[mode];
   useScreenChrome({ title: copy.title });
   const navigate = useNavigate();
   const [rows, setRows] = useState<Row[]>(() =>
-    mode === "compare"
-      ? [
-          { date: "", name: "" },
-          { date: "", name: "" },
-        ]
-      : [{ date: "", name: "" }],
+    mode === "compare" ? compareRows(window.location.search) : [{ date: "", name: "" }],
   );
 
   const filled = useMemo(() => rows.filter((row) => isValidDate(row.date)), [rows]);

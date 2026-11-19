@@ -49,6 +49,7 @@ import { ContactsPage } from "@/pages/ContactsPage";
 import { FavoritesPage } from "@/pages/favorites/FavoritesPage";
 import { TrackersPage } from "@/pages/trackers/TrackersPage";
 import { AnalysisHub } from "@/pages/analysis/AnalysisHub";
+import { AnalysisCompare } from "@/pages/analysis/AnalysisCompare";
 import { AnalysisProfile } from "@/pages/analysis/AnalysisProfile";
 import { AnalysisSystemsPage } from "@/pages/analysis/AnalysisSystemsPage";
 import { AnalysisTestScreen } from "@/pages/analysis/AnalysisTestScreen";
@@ -113,7 +114,7 @@ export const router = createBrowserRouter([
       { path: `${ANALYSIS_ROUTE}/event/result`, element: <AnalysisProfile mode="event" /> },
       { path: `${ANALYSIS_ROUTE}/event`, element: <SubjectStep mode="event" /> },
       { path: `${ANALYSIS_ROUTE}/compare/systems`, element: <SystemsStep mode="compare" /> },
-      { path: `${ANALYSIS_ROUTE}/compare/result`, element: <AnalysisProfile mode="compare" /> },
+      { path: `${ANALYSIS_ROUTE}/compare/result`, element: <AnalysisCompare /> },
       { path: `${ANALYSIS_ROUTE}/compare`, element: <SubjectStep mode="compare" /> },
       { path: `${ANALYSIS_ROUTE}/systems`, element: <AnalysisSystemsPage /> },
       { path: `${ANALYSIS_ROUTE}/tests/:key`, element: <AnalysisTestScreen /> },

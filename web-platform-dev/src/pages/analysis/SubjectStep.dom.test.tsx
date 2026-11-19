@@ -8,7 +8,7 @@
  * @module web-platform-dev/src/pages/analysis/SubjectStep.dom.test
  */
 
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
@@ -32,6 +32,7 @@ function renderStep(mode: "person" | "event" | "compare"): void {
   );
 }
 
+beforeEach(() => window.history.replaceState({}, "", "/"));
 afterEach(cleanup);
 
 describe("крок даних", () => {
@@ -79,6 +80,23 @@ describe("крок даних", () => {
     await userEvent.click(screen.getAllByRole("button", { name: "Прибрати рядок" })[0]);
     expect(screen.getAllByLabelText("Дата народження")).toHaveLength(3);
     expect(screen.getAllByRole("button", { name: "Прибрати рядок" })).toHaveLength(3);
+  });
+
+  it("співставлення з профілю починається з уже обраної людини", () => {
+    window.history.replaceState({}, "", "/analysis/compare?dates=1980-03-03&labels=Іван");
+    render(
+      <MemoryRouter initialEntries={["/analysis/compare?dates=1980-03-03&labels=Іван"]}>
+        <Routes>
+          <Route path="/analysis/compare" element={<SubjectStep mode="compare" />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    const dates = screen.getAllByLabelText("Дата народження") as HTMLInputElement[];
+    expect(dates).toHaveLength(2);
+    expect(dates[0].value).toBe("1980-03-03");
+    expect(dates[1].value).toBe("");
+    expect((screen.getAllByLabelText("Ім'я")[0] as HTMLInputElement).value).toBe("Іван");
   });
 
   it("порожній рядок співставлення не їде в адресу", async () => {

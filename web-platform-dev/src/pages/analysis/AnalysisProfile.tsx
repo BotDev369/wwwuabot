@@ -18,7 +18,12 @@ import {
 import { readDates, readLenses, readSubject, readSurvey } from "@wwwuabot/ui/analysis/params";
 import { useDossiers } from "@wwwuabot/ui/analysis/useDossiers";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
-import { ANALYSIS_PATH, ANALYSIS_SYSTEMS_PATH, type AnalysisMode } from "@/app/routes";
+import {
+  ANALYSIS_COMPARE_PATH,
+  ANALYSIS_PATH,
+  ANALYSIS_SYSTEMS_PATH,
+  type AnalysisMode,
+} from "@/app/routes";
 
 interface AnalysisProfileProps {
   mode: AnalysisMode;
@@ -118,10 +123,23 @@ export function AnalysisProfile({ mode }: AnalysisProfileProps): ReactElement {
   return (
     <div className="wb-page wb-page-scroll">
       <div className="an-profile">
-        <a className="an-back" href={ANALYSIS_PATH}>
-          <Icon name="arrow-left" size={16} />
-          До аналізу
-        </a>
+        <div className="an-profile__tools">
+          <a className="an-back" href={ANALYSIS_PATH}>
+            <Icon name="arrow-left" size={16} />
+            До аналізу
+          </a>
+          {mode === "person" && dates.length > 0 && (
+            <a
+              className="an-back"
+              href={`${ANALYSIS_COMPARE_PATH}?dates=${dates[0]}&labels=${encodeURIComponent(
+                subject.labels[0] ?? "",
+              )}`}
+            >
+              <Icon name="compare" size={16} />
+              Співставити з іншою людиною
+            </a>
+          )}
+        </div>
 
         {dates.length === 0 && <p className="an-empty">Немає дати для аналізу.</p>}
 

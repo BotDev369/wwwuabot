@@ -42,6 +42,18 @@ export {
 } from "./profile";
 
 export {
+  comparePeople,
+  type CompareCell,
+  type CompareDomain,
+  type CompareKind,
+  type ComparePerson,
+  type ComparePersonCoverage,
+  type CompareQuality,
+  type CompareResult,
+  type CompareSystem,
+} from "./compare";
+
+export {
   anchorOf,
   claimSources,
   readDossier,

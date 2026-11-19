@@ -1,5 +1,5 @@
 {
-  "version": "2e20950",
+  "version": "35bc761",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -94,7 +94,7 @@
     {
       "file": "analysis.css",
       "tokens": 0,
-      "classes": 99
+      "classes": 127
     },
     {
       "file": "app-chrome.css",
@@ -3868,6 +3868,39 @@
           "an-test-card__meta",
           "an-test-card__title",
           "an-test-list"
+        ]
+      },
+      {
+        "section": "Співставлення: спільне, різні опори, покритість",
+        "names": [
+          "an-bar",
+          "an-bar__fill",
+          "an-bar__head",
+          "an-bar__name",
+          "an-bar__track",
+          "an-bar__value",
+          "an-bars",
+          "an-compare",
+          "an-compare__hint",
+          "an-cover",
+          "an-cover__meta",
+          "an-cover__name",
+          "an-cover__systems",
+          "an-covers",
+          "an-pair",
+          "an-pair__cell",
+          "an-pair__cells",
+          "an-pair__level",
+          "an-pair__name",
+          "an-pair__who",
+          "an-pairs",
+          "an-person--pick",
+          "an-pick",
+          "an-pick__hint",
+          "an-profile__tools",
+          "an-section__action",
+          "an-section__head",
+          "an-section__lead"
         ]
       }
     ],

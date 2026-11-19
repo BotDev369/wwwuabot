@@ -18,6 +18,7 @@ import {
   ANALYSIS_PERSON_PATH,
   ANALYSIS_SYSTEMS_PATH,
   ANALYSIS_TESTS_PATH,
+  analysisStepPath,
 } from "@/app/routes";
 
 const LENS_IDS = LENSES.map((lens) => lens.id).join(",");
@@ -74,6 +75,29 @@ export function AnalysisHub(): ReactElement {
   useScreenChrome({ title: "Аналіз людей та подій" });
   const navigate = useNavigate();
   const [people, setPeople] = useState<MyDate[]>([]);
+  const [picking, setPicking] = useState(false);
+  const [chosen, setChosen] = useState<string[]>([]);
+
+  function togglePicking(): void {
+    setPicking((value) => !value);
+    setChosen([]);
+  }
+
+  function togglePerson(id: string): void {
+    setChosen((current) =>
+      current.includes(id) ? current.filter((one) => one !== id) : [...current, id],
+    );
+  }
+
+  function openCompare(): void {
+    const selected = people.filter((person) => chosen.includes(person.id));
+    if (selected.length < 2) return;
+    const params = new URLSearchParams();
+    params.set("dates", selected.map((person) => person.date).join(","));
+    params.set("labels", selected.map((person) => person.name || "").join("|"));
+    params.set("lenses", LENS_IDS);
+    navigate(`${analysisStepPath("compare", "result")}?${params.toString()}`);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -125,22 +149,54 @@ export function AnalysisHub(): ReactElement {
 
         {people.length > 0 && (
           <section className="an-section">
-            <h2 className="an-section__title">Мої люди</h2>
-            <div className="an-people">
-              {people.map((person) => (
-                <Link
-                  key={person.id}
-                  className="an-person"
-                  to={`${ANALYSIS_PERSON_PATH}/result?dates=${person.date}&labels=${encodeURIComponent(
-                    person.name || "",
-                  )}&lenses=${LENS_IDS}`}
-                >
-                  <span className="an-person__name">{person.name || "Без імені"}</span>
-                  <span className="an-person__date">{humanDate(person.date)}</span>
-                  <Icon name="chevron-right" size={16} />
-                </Link>
-              ))}
+            <div className="an-section__head">
+              <h2 className="an-section__title">Мої люди</h2>
+              <button type="button" className="an-section__action" onClick={togglePicking}>
+                {picking ? "Скасувати" : "Співставити"}
+              </button>
             </div>
+            <div className="an-people">
+              {people.map((person) =>
+                picking ? (
+                  <label className="an-person an-person--pick" key={person.id}>
+                    <input
+                      type="checkbox"
+                      checked={chosen.includes(person.id)}
+                      onChange={() => togglePerson(person.id)}
+                    />
+                    <span className="an-person__name">{person.name || "Без імені"}</span>
+                    <span className="an-person__date">{humanDate(person.date)}</span>
+                  </label>
+                ) : (
+                  <Link
+                    key={person.id}
+                    className="an-person"
+                    to={`${ANALYSIS_PERSON_PATH}/result?dates=${person.date}&labels=${encodeURIComponent(
+                      person.name || "",
+                    )}&lenses=${LENS_IDS}`}
+                  >
+                    <span className="an-person__name">{person.name || "Без імені"}</span>
+                    <span className="an-person__date">{humanDate(person.date)}</span>
+                    <Icon name="chevron-right" size={16} />
+                  </Link>
+                ),
+              )}
+            </div>
+            {picking && (
+              <div className="an-pick">
+                <p className="an-pick__hint">
+                  Виберіть двох або більше — покажемо спільне, різні опори й прогалини.
+                </p>
+                <button
+                  type="button"
+                  className="wb-btn wb-btn-primary"
+                  disabled={chosen.length < 2}
+                  onClick={openCompare}
+                >
+                  Співставити обраних ({chosen.length})
+                </button>
+              </div>
+            )}
           </section>
         )}
 
