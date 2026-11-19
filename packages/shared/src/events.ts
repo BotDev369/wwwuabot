@@ -239,7 +239,7 @@ export const PLATFORM_SCREENS: readonly PlatformScreen[] = [
   { key: "page", label: "Сторінка" },
   { key: "users", label: "Користувачі" },
   { key: "assessments", label: "Розвиток" },
-  { key: "date-analysis", label: "Аналіз дати" },
+  { key: "analysis", label: "Аналіз людей та подій" },
   { key: "games", label: "Ігри" },
 ];
 
