@@ -19,12 +19,30 @@
  */
 
 import { scoredItems } from "./scales";
-import type { AssessmentBand, AssessmentScale, AssessmentTest } from "./types";
+import type { AssessmentBand, AssessmentItem, AssessmentScale, AssessmentTest } from "./types";
+
+/** Межі шкали відповіді — з варіантів тесту, а не з припущення «0…5». */
+function optionRange(test: AssessmentTest): { min: number; max: number } {
+  const values = test.options.map((option) => option.value);
+  return { min: Math.min(...values), max: Math.max(...values) };
+}
+
+/**
+ * Бал відповіді з урахуванням зворотного питання: `1` на шкалі `1…5` стає `5`.
+ * Межі беруться з варіантів тесту, бо в WHO-5 шкала починається з нуля.
+ */
+export function answeredValue(
+  item: AssessmentItem,
+  answer: number,
+  min: number,
+  max: number,
+): number {
+  return item.reverse ? min + max - answer : answer;
+}
 
 /** Найбільший бал шкали: скільки її питань, помножено на найбільший бал варіанта. */
 export function maxRawScore(test: AssessmentTest, scale: AssessmentScale): number {
-  const values = test.options.map((option) => option.value);
-  return scoredItems(test, scale).length * Math.max(...values);
+  return scoredItems(test, scale).length * optionRange(test).max;
 }
 
 /** Найбільший бал одного варіанта відповіді — знаменник у профілі по сферах. */
@@ -92,6 +110,8 @@ export function validateAnswers(test: AssessmentTest, answers: readonly number[]
  * і людина відповідала саме на тій шкалі; відсоток тут другорядний.
  */
 export function exceedsAttention(scale: AssessmentScale, raw: number): boolean {
+  // Шкала без порогу — це риса, а не стан: у неї немає «гіршого» боку.
+  if (scale.attentionRaw === undefined) return false;
   return scale.severityDirection === "higher-is-worse"
     ? raw >= scale.attentionRaw
     : raw <= scale.attentionRaw;
@@ -130,7 +150,11 @@ export function scoreScale(
   scale: AssessmentScale,
   answers: readonly number[],
 ): ScaleResult {
-  const raw = scoredItems(test, scale).reduce((sum, { index }) => sum + (answers[index] ?? 0), 0);
+  const { min, max } = optionRange(test);
+  const raw = scoredItems(test, scale).reduce(
+    (sum, { item, index }) => sum + answeredValue(item, answers[index] ?? 0, min, max),
+    0,
+  );
   return {
     scale,
     raw,
@@ -208,6 +232,7 @@ export function profileOf(
   if (problem) throw new Error(`Тест «${test.key}»: ${problem}`);
 
   const max = maxOptionValue(test);
+  const min = optionRange(test).min;
   // **Питання про вплив на життя — не сфера.** Воно міряє наслідок, а не
   // симптом, тому в профілі йому не місце: інакше людина, яка відповіла
   // «нічого не ускладнило», бачила б його як «найслабшу ланку».
@@ -216,7 +241,9 @@ export function profileOf(
     .map(({ item, value }) => ({
       id: item.id,
       label: item.label,
-      value: value ?? 0,
+      // Зворотне питання читається в той самий бік, що й пряме: інакше
+      // «найсильніша сфера» виявилася б згодою з протилежним твердженням.
+      value: answeredValue(item, value ?? 0, min, max),
       max,
       weakNote: item.weakNote,
     }));

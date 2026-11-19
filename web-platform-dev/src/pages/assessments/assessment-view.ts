@@ -113,6 +113,9 @@ export function thresholdLine(
   record: AssessmentRecord,
 ): string {
   const max = maxRawScore(test, scale);
+  // У рис немає порогу уваги: високий рівень там не гірший за низький, і
+  // рядок про поріг просто не показується.
+  if (scale.attentionRaw === undefined) return "";
   const attention = scale.attentionRaw;
   // «Вище/нижче» — це просто те, де число стоїть відносно межі. Напрямок
   // шкали тут ні до чого: він уже спрацював у `exceedsAttention`, і підміняти

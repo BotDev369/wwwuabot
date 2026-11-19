@@ -66,8 +66,11 @@ describe("fetchDossiers", () => {
     const dossiers = [
       { date: "1980-03-03", kind: "person", symbol: "Риби", claims: [CLAIM], note: null },
     ];
-    respond({ ok: true, dossiers });
-    await expect(fetchDossiers(["1980-03-03"], "person", ["western"])).resolves.toEqual(dossiers);
+    respond({ ok: true, dossiers, survey: null });
+    await expect(fetchDossiers(["1980-03-03"], "person", ["western"], false)).resolves.toEqual({
+      dossiers,
+      survey: null,
+    });
     const call = lastCall();
     expect(call.url).toBe("/api/mydate/dossier");
     expect(call.init?.method).toBe("POST");
@@ -75,12 +78,23 @@ describe("fetchDossiers", () => {
       dates: ["1980-03-03"],
       kind: "person",
       lenses: ["western"],
+      survey: false,
     });
+  });
+
+  it("згода на виміряне їде тим самим запитом і повертається окремо", async () => {
+    const survey = { measuredAt: "2026-11-19", claims: [CLAIM] };
+    respond({ ok: true, dossiers: [], survey });
+    await expect(fetchDossiers(["1980-03-03"], undefined, ["western"], true)).resolves.toEqual({
+      dossiers: [],
+      survey,
+    });
+    expect(JSON.parse(String(lastCall().init?.body)).survey).toBe(true);
   });
 
   it("помилку сервера показує людині", async () => {
     respond({ ok: false, error: "Немає свідчень" });
-    await expect(fetchDossiers(["1980-03-03"], undefined, ["western"])).rejects.toThrow(
+    await expect(fetchDossiers(["1980-03-03"], undefined, ["western"], false)).rejects.toThrow(
       "Немає свідчень",
     );
   });
@@ -90,7 +104,7 @@ describe("fetchDossiers", () => {
       "fetch",
       vi.fn(async () => new Response("", { status: 503 })),
     );
-    await expect(fetchDossiers(["1980-03-03"], undefined, ["western"])).rejects.toThrow(
+    await expect(fetchDossiers(["1980-03-03"], undefined, ["western"], false)).rejects.toThrow(
       /Помилка аналізу.*503/,
     );
   });

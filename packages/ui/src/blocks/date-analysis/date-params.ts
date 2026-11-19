@@ -53,6 +53,11 @@ export function readLenses(search: string): string[] {
   );
 }
 
+/** Чи додано другий вектор — свої виміряні якості: `?survey=1` — явна згода. */
+export function readSurvey(search: string): boolean {
+  return new URLSearchParams(search).get("survey") === "1";
+}
+
 /** Кого читаємо — разом із підписами й ознакою власного аналізу. */
 export interface AnalysisSubject {
   /** Вид на кожну дату, у тому ж порядку, що й `dates`. */

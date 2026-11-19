@@ -1,5 +1,5 @@
 {
-  "version": "d6282b7",
+  "version": "8af7a84",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -129,7 +129,7 @@
     {
       "file": "date-analysis.css",
       "tokens": 1,
-      "classes": 82
+      "classes": 98
     },
     {
       "file": "dates.css",
@@ -5223,17 +5223,33 @@
           "wb-dossier-quality__unknown",
           "wb-dossier-survey",
           "wb-dossier-survey__head",
+          "wb-dossier-survey__hint",
           "wb-dossier-survey__link",
           "wb-dossier-survey__status",
           "wb-dossier-survey__text",
           "wb-dossier-survey__title",
+          "wb-dossier-survey__toggle",
           "wb-dossier__coverage",
           "wb-dossier__head",
           "wb-dossier__kicker",
           "wb-dossier__meta",
           "wb-dossier__note",
           "wb-dossier__title",
-          "wb-dossiers"
+          "wb-dossiers",
+          "wb-measured",
+          "wb-measured-domain",
+          "wb-measured-domain__title",
+          "wb-measured-domains",
+          "wb-measured-list",
+          "wb-measured-quality",
+          "wb-measured-quality__evidence",
+          "wb-measured-quality__level",
+          "wb-measured-quality__name",
+          "wb-measured__coverage",
+          "wb-measured__head",
+          "wb-measured__kicker",
+          "wb-measured__note",
+          "wb-measured__title"
         ]
       }
     ],

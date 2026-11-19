@@ -11,10 +11,11 @@ import { useMemo, useState } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import { analysisScreenTitle } from "./date-analysis/screen-title";
-import { readDates, readLenses, readSubject } from "./date-analysis/date-params";
+import { readDates, readLenses, readSubject, readSurvey } from "./date-analysis/date-params";
 import { useDossiers } from "./date-analysis/useDossiers";
 import { Dossier, humanDate } from "./date-analysis/Dossier";
 import { DossierLensPicker } from "./date-analysis/DossierLensPicker";
+import { DossierMeasured } from "./date-analysis/DossierMeasured";
 import { DossierSurvey } from "./date-analysis/DossierSurvey";
 
 export function DateAnalysisBlock({ block }: BlockComponentProps) {
@@ -32,7 +33,15 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
   const initialLenses = useMemo(() => readLenses(search), [search]);
   const [lenses, setLenses] = useState<readonly string[]>(initialLenses);
   const [pickerOpen, setPickerOpen] = useState(initialLenses.length === 0);
-  const { dossiers, loading, error } = useDossiers(dates, subject.kinds, lenses);
+  // Другий вектор теж починається з вибору: галочка в адресі, а не мовчазне
+  // «додамо все, що є».
+  const [survey, setSurvey] = useState(() => readSurvey(search));
+  const {
+    dossiers,
+    survey: measured,
+    loading,
+    error,
+  } = useDossiers(dates, subject.kinds, lenses, survey);
 
   function applyLenses(next: string[]): void {
     setLenses(next);
@@ -40,6 +49,15 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
     const params = new URLSearchParams(window.location.search);
     if (next.length > 0) params.set("lenses", next.join(","));
     else params.delete("lenses");
+    const query = params.toString();
+    window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+  }
+
+  function applySurvey(next: boolean): void {
+    setSurvey(next);
+    const params = new URLSearchParams(window.location.search);
+    if (next) params.set("survey", "1");
+    else params.delete("survey");
     const query = params.toString();
     window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
   }
@@ -75,10 +93,18 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
         onApply={applyLenses}
       />
 
-      {lenses.length > 0 && <DossierSurvey />}
+      {lenses.length > 0 && subject.scope !== "event" && (
+        <DossierSurvey
+          enabled={survey}
+          measured={survey ? (loading ? null : measured !== null) : null}
+          onChange={applySurvey}
+        />
+      )}
 
       {loading && <p className="wb-text-sm wb-text-muted">Аналізуємо...</p>}
       {error && <p className="wb-text-sm wb-block-date-analysis__error">{error}</p>}
+
+      {!loading && !error && measured && <DossierMeasured survey={measured} />}
 
       {!loading && !error && lenses.length > 0 && (
         <div className="wb-dossiers">

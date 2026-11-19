@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { parseScopes } from "@wwwuabot/shared/content";
-import { LENSES } from "@wwwuabot/shared/qualities";
+import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
+import { LENSES, measuredClaims } from "@wwwuabot/shared/qualities";
 import type { Env } from "../shared/types";
 import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
@@ -9,6 +10,7 @@ import { withMeanings, withSystemAbout } from "../shared/mydate-interpretation-h
 import { listAnalysisSystems, listImplementedSystems } from "../services/analysis-systems.service";
 import { dateNamesFor } from "../services/my-dates.service";
 import { buildDossier } from "../services/quality-dossier.service";
+import { latestSurvey } from "../services/quality-survey.service";
 import { tryResolveUserId } from "../shared/identity";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -23,12 +25,19 @@ const analyzeBody = z
   .object({ date: z.string().optional(), systemId: z.string().optional() })
   .passthrough();
 
-/** Досьє: дати, вид і **явно вибрані** лінзи; без вибору сервер не рахує. */
+/**
+ * Досьє: дати, вид і **явно вибрані** лінзи; без вибору сервер не рахує.
+ *
+ * `survey` — окремий, теж явний вибір: додати до екрана **свої** відповіді.
+ * Він не є лінзою дати (та читає дату, ця — людину), тому й не змішується з
+ * `lenses`: дата й самозвіт лишаються двома векторами з різними шарами.
+ */
 const dossierBody = z
   .object({
     dates: z.array(z.string()).optional(),
     kind: z.string().optional(),
     lenses: z.array(z.string()).optional(),
+    survey: z.boolean().optional(),
   })
   .passthrough();
 
@@ -130,7 +139,7 @@ export async function handleSystems(env: Env): Promise<Response> {
 // ── POST /api/mydate/dossier ────────────────────────────────────────
 // Досьє — не таблиця: назовні йдуть свідчення ядра, а домени, рівні й якорі
 // добирає екран. Тому тут немає ні D1, ні реєстру систем: дата й лінза.
-export async function handleDossier(request: Request): Promise<Response> {
+export async function handleDossier(request: Request, env: Env): Promise<Response> {
   try {
     const parsed = await readBody(request, dossierBody);
     if (!parsed.ok) return parsed.response;
@@ -156,12 +165,31 @@ export async function handleDossier(request: Request): Promise<Response> {
     const dossiers = validDates.map((date, index) =>
       buildDossier(date, kinds[index] ?? "person", lenses),
     );
-    return json({ ok: true, dossiers, lenses });
+
+    // **Виміряне — тільки зі згоди й тільки для власника.** Відповіді описують
+    // одну людину, тож вони не приїжджають ні без запиту, ні без підписаного
+    // `initData`. Друга дата в тому ж запиті лишається без них: це чужа дата.
+    const survey = parsed.body.survey === true ? await readSurvey(request, env) : null;
+    return json({ ok: true, dossiers, lenses, survey });
   } catch (e: unknown) {
     apiLog.error("Dossier error", e);
     const msg = e instanceof Error ? e.message : "Unknown error";
     return json({ ok: false, error: msg }, 500);
   }
+}
+
+/**
+ * Свої виміряні свідчення для екрана; `null` — «ще не виміряно». Без
+ * підписаного `initData` теж `null`: відповіді описують одну людину.
+ */
+async function readSurvey(request: Request, env: Env): Promise<unknown> {
+  if (!env.DB) return null;
+  const userId = await tryResolveUserId(request, env);
+  if (userId === null) return null;
+  await ensureTables(env.DB, ["assessment_results"]);
+  const read = await latestSurvey(env.DB, String(userId));
+  if (!read) return null;
+  return { measuredAt: read.measuredAt, claims: measuredClaims(read.factors) };
 }
 
 // ── POST /api/mydate/compare ────────────────────────────────────────

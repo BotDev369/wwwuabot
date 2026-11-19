@@ -64,17 +64,30 @@ const DOSSIER = {
 };
 
 /** Заглушка API: досьє віддає саме те, що просив тест. */
-function stubApi(dossiers: unknown[]): { calls: string[] } {
+function stubApi(dossiers: unknown[], survey: unknown = null): { calls: string[] } {
   const calls: string[] = [];
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string, init?: RequestInit) => {
       calls.push(`${String(url)} ${(init?.body as string) ?? ""}`);
-      return new Response(JSON.stringify({ ok: true, dossiers }), { status: 200 });
+      return new Response(JSON.stringify({ ok: true, dossiers, survey }), { status: 200 });
     }),
   );
   return { calls };
 }
+
+/** Виміряне свідчення: так його віддає сервер, зі своїм шаром і доказом. */
+const MEASURED_DISCIPLINE = {
+  qualityId: "discipline",
+  level: 5,
+  layer: "measured",
+  sourceId: "bigfive",
+  sourceVersion: "1",
+  evidence: "Сумлінність — 18 з 20",
+  method: "mapped",
+  temporal: "trait",
+  confidence: 0.5,
+};
 
 /** Дочекатися, поки запит з `useEffect` відпрацює. */
 async function settle(): Promise<void> {
@@ -207,17 +220,51 @@ describe("DateAnalysisBlock — досьє", () => {
     expect(screen.queryByText("Середній")).toBeNull();
   });
 
-  it("опитування стоїть на тому ж екрані як «ще не виміряно» з переходом до тестів", async () => {
+  it("опитування — це вибір: без згоди виміряне не приїжджає", async () => {
     openAt("?dates=1980-03-03&lenses=western");
-    stubApi([DOSSIER]);
+    // Сервер без згоди не віддає виміряного — і екран не має його вигадувати.
+    const api = stubApi([DOSSIER], null);
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
     expect(screen.getByText("Опитування")).toBeTruthy();
-    expect(screen.getByText("ще не виміряно")).toBeTruthy();
+    expect(screen.getByText("не додано")).toBeTruthy();
+    expect((screen.getByLabelText(/Додати мої виміряні якості/) as HTMLInputElement).checked).toBe(
+      false,
+    );
     expect(screen.getByRole("link", { name: /Пройти тести/ }).getAttribute("href")).toBe(
       "/assessments",
     );
+    // Запит був, але без згоди: сервер не має віддавати відповіді людини.
+    expect(api.calls[0]).toContain('"survey":false');
+    expect(screen.queryByText(/мають вимір/)).toBeNull();
+  });
+
+  it("згода додає виміряні якості окремим блоком, не змішуючи шари", async () => {
+    openAt("?dates=1980-03-03&lenses=western&survey=1");
+    const api = stubApi([DOSSIER], {
+      measuredAt: "2026-11-19",
+      claims: [MEASURED_DISCIPLINE],
+    });
+    render(<DateAnalysisBlock {...props()} />);
+    await settle();
+
+    expect(api.calls[0]).toContain('"survey":true');
+    expect(screen.getByText(/Опитування: Велика п'ятірка/)).toBeTruthy();
+    expect(screen.getByText("1 з 36 якостей мають вимір")).toBeTruthy();
+    expect(screen.getByText("Сумлінність — 18 з 20")).toBeTruthy();
+    expect(screen.getByText(/не підвищує впевненості/)).toBeTruthy();
+  });
+
+  it("згода без жодного проходження каже це прямо й веде до тестів", async () => {
+    openAt("?dates=1980-03-03&lenses=western&survey=1");
+    stubApi([DOSSIER], null);
+    render(<DateAnalysisBlock {...props()} />);
+    await settle();
+
+    expect(screen.getByText("ще не виміряно")).toBeTruthy();
+    expect(screen.getByText(/Проходження ще немає/)).toBeTruthy();
+    expect(screen.queryByText(/мають вимір/)).toBeNull();
   });
 
   it("кілька дат — кілька досьє з власними підписами", async () => {

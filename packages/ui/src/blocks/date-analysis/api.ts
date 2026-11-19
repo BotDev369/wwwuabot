@@ -29,6 +29,15 @@ export interface DossierRead {
   note: "event-not-modelled" | "symbol-missing" | null;
 }
 
+/**
+ * Свої виміряні свідчення: другий вектор на тому ж екрані. `null` — не
+ * проходила або не дала згоди; обидва стани екран каже вголос.
+ */
+export interface SurveyRead {
+  measuredAt: string;
+  claims: QualityClaim[];
+}
+
 function json(response: Response): Promise<Record<string, unknown>> {
   return response.json() as Promise<Record<string, unknown>>;
 }
@@ -102,14 +111,18 @@ export async function fetchDossiers(
   dates: string[],
   kind: string | undefined,
   lenses: readonly string[],
-): Promise<DossierRead[]> {
+  survey: boolean,
+): Promise<{ dossiers: DossierRead[]; survey: SurveyRead | null }> {
   const response = await fetch("/api/mydate/dossier", {
     method: "POST",
     headers: { "Content-Type": "application/json", ...telegramAuthHeaders() },
-    body: JSON.stringify({ dates, kind, lenses }),
+    body: JSON.stringify({ dates, kind, lenses, survey }),
   });
   if (!response.ok) throw await failure(response, "Помилка аналізу");
   const data = await json(response);
   if (!data.ok) throw new Error((data.error as string) ?? "Помилка аналізу");
-  return (data.dossiers ?? []) as DossierRead[];
+  return {
+    dossiers: (data.dossiers ?? []) as DossierRead[],
+    survey: (data.survey ?? null) as SurveyRead | null,
+  };
 }

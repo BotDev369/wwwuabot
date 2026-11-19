@@ -37,6 +37,7 @@ export {
   type SafetyLevel,
 } from "./flags";
 export {
+  answeredValue,
   bandOf,
   exceedsAttention,
   isSignificantChange,
@@ -68,5 +69,6 @@ export {
   type PeerTallies,
 } from "./peer";
 export { WHO_5 } from "./who5";
+export { BIG_FIVE } from "./bigfive";
 export { MOOD_ANXIETY } from "./mood_anxiety";
 export { ASSESSMENTS, getAssessment } from "./registry";

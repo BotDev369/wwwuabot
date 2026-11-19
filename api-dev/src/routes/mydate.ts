@@ -32,7 +32,7 @@ export function matchMyDateRoute(
   }
   if (pathname === "/api/mydate/systems") return handleSystems(env);
   if (pathname === "/api/mydate/dossier" && request.method === "POST") {
-    return handleDossier(request);
+    return handleDossier(request, env);
   }
   if (pathname === "/api/mydate/compare" && request.method === "POST") {
     return handleCompare(request, env);

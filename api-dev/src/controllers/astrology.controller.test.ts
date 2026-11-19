@@ -17,7 +17,7 @@ import {
   handleAnalysisRead,
   handleAnalyze,
   handleCompare,
-  handleDossier,
+  handleDossier as handleDossierRaw,
   handleSystems,
 } from "./astrology.controller";
 
@@ -71,6 +71,12 @@ async function signedInitData(userId = 777): Promise<string> {
 
 /** Середовище без бази й KV: крок углиб упав би, а не «повернув порожнє». */
 const EMPTY_ENV = {} as Env;
+
+/**
+ * Досьє без виміряного шару: дата й лінзи не торкаються бази взагалі, тож
+ * порожнє середовище — це доказ, а не зручність.
+ */
+const handleDossier = (request: Request): Promise<Response> => handleDossierRaw(request, EMPTY_ENV);
 
 const SYSTEM = {
   id: "western",

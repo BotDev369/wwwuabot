@@ -51,6 +51,15 @@ export {
 } from "./reading";
 
 export {
+  MEASURED_FACTORS,
+  MEASURED_NAME,
+  MEASURED_SOURCE,
+  MEASURED_VERSION,
+  measuredClaims,
+  type MeasuredFactor,
+} from "./measured";
+
+export {
   CHINESE,
   CHINESE_ANIMALS,
   LENSES,

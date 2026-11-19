@@ -8,12 +8,13 @@
  * @module @wwwuabot/shared/assessments/registry
  */
 
+import { BIG_FIVE } from "./bigfive";
 import { MOOD_ANXIETY } from "./mood_anxiety";
 import { WHO_5 } from "./who5";
 import type { AssessmentTest } from "./types";
 
 /** Порядок показу на екрані «Розвиток» — від коротших до довших. */
-export const ASSESSMENTS: readonly AssessmentTest[] = [WHO_5, MOOD_ANXIETY];
+export const ASSESSMENTS: readonly AssessmentTest[] = [WHO_5, BIG_FIVE, MOOD_ANXIETY];
 
 /** Тест за ключем — єдиний спосіб дістати його на сервері й у браузері. */
 export function getAssessment(key: string): AssessmentTest | null {

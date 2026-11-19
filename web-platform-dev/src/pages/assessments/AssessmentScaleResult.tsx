@@ -52,6 +52,8 @@ export function AssessmentScaleResult({
 }: AssessmentScaleResultProps): ReactElement {
   const profile = profileReading(test, scale, record);
   const band = scale.bands.find((candidate) => candidate.key === record.bandKey);
+  // Риса без порогу не показує рядок про «межу уваги»: його просто немає.
+  const threshold = thresholdLine(test, scale, record);
   // Прапорці рахуються з тих самих відповідей, що лежать у рядку: вони не
   // зберігаються окремо, тож старий результат отримує ту саму поведінку.
   const alerts = itemAlerts(test, scale, record.answers);
@@ -74,7 +76,7 @@ export function AssessmentScaleResult({
           <p className="wb-spread-line wb-spread-line--weak">{profile.weakest}</p>
         )}
         {profile.question && <p className="wb-spread-question">{profile.question}</p>}
-        <p className="wb-scale-reading">{thresholdLine(test, scale, record)}</p>
+        {threshold && <p className="wb-scale-reading">{threshold}</p>}
       </div>
 
       {band && (
