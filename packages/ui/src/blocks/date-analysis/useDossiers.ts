@@ -14,22 +14,32 @@ export interface DossiersState {
   error: string | null;
 }
 
-export function useDossiers(dates: readonly string[], kinds: readonly string[]): DossiersState {
+export function useDossiers(
+  dates: readonly string[],
+  kinds: readonly string[],
+  lenses: readonly string[],
+): DossiersState {
   const [dossiers, setDossiers] = useState<DossierRead[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const datesKey = dates.join(",");
   const kindsKey = kinds.join(",");
+  const lensesKey = lenses.join(",");
 
   useEffect(() => {
     const list = datesKey ? datesKey.split(",") : [];
-    if (list.length === 0) return;
+    const selected = lensesKey ? lensesKey.split(",") : [];
+    if (list.length === 0 || selected.length === 0) {
+      setDossiers([]);
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);
 
-    fetchDossiers(list, kindsKey)
+    fetchDossiers(list, kindsKey, selected)
       .then((result) => {
         if (!cancelled) setDossiers(result);
       })
@@ -43,7 +53,7 @@ export function useDossiers(dates: readonly string[], kinds: readonly string[]):
     return () => {
       cancelled = true;
     };
-  }, [datesKey, kindsKey]);
+  }, [datesKey, kindsKey, lensesKey]);
 
   return { dossiers, loading, error };
 }

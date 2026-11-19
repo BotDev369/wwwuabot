@@ -201,18 +201,27 @@ describe("реєстр систем приходить з бази", () => {
 
 describe("досьє за датою", () => {
   it("людина отримує свідчення, а подія — чесний стан без рис", async () => {
-    const person = await handleDossier(request("/api/mydate/dossier", { dates: ["1980-03-03"] }));
+    const person = await handleDossier(
+      request("/api/mydate/dossier", {
+        dates: ["1980-03-03"],
+        lenses: ["western", "numerology", "chinese", "mayan"],
+      }),
+    );
     const personBody = (await person.json()) as {
       ok: boolean;
       dossiers: Array<{ kind: string; claims: unknown[]; note: string | null }>;
     };
     expect(person.status).toBe(200);
     expect(personBody.dossiers[0]?.kind).toBe("person");
-    expect(personBody.dossiers[0]?.claims).toHaveLength(3);
+    expect(personBody.dossiers[0]?.claims).toHaveLength(14);
     expect(personBody.dossiers[0]?.note).toBeNull();
 
     const event = await handleDossier(
-      request("/api/mydate/dossier", { dates: ["1980-03-03"], kind: "event" }),
+      request("/api/mydate/dossier", {
+        dates: ["1980-03-03"],
+        kind: "event",
+        lenses: ["western"],
+      }),
     );
     const eventBody = (await event.json()) as {
       dossiers: Array<{ claims: unknown[]; note: string | null }>;
@@ -223,9 +232,23 @@ describe("досьє за датою", () => {
 
   it("без валідних дат — 400, а не порожнє досьє", async () => {
     const response = await handleDossier(
-      request("/api/mydate/dossier", { dates: ["03.03.1980", ""] }),
+      request("/api/mydate/dossier", { dates: ["03.03.1980", ""], lenses: ["western"] }),
     );
     expect(response.status).toBe(400);
+  });
+
+  it("без вибору систем — 400: досьє не рахується саме", async () => {
+    const response = await handleDossier(request("/api/mydate/dossier", { dates: ["1980-03-03"] }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ ok: false, error: "No lenses selected" });
+  });
+
+  it("невідома лінза — 400, а не тихий пропуск", async () => {
+    const response = await handleDossier(
+      request("/api/mydate/dossier", { dates: ["1980-03-03"], lenses: ["vedic"] }),
+    );
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ ok: false, error: "Unknown lens: vedic" });
   });
 
   it("понад 30 дат — відмова, а не запит на пів хвилини", async () => {
@@ -233,7 +256,9 @@ describe("досьє за датою", () => {
       { length: 31 },
       (_, index) => `1980-03-${String(index + 1).padStart(2, "0")}`,
     );
-    const response = await handleDossier(request("/api/mydate/dossier", { dates }));
+    const response = await handleDossier(
+      request("/api/mydate/dossier", { dates, lenses: ["western"] }),
+    );
     expect(response.status).toBe(400);
   });
 });

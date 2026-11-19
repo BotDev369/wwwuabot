@@ -79,6 +79,8 @@ export interface LensDefinition {
   readonly version: string;
   readonly layer: ClaimLayer;
   readonly inputs: readonly LensInput[];
+  /** Що саме система бере з дати — для вибору й прозорості правила. */
+  readonly rule: string;
 }
 
 /** Підписи смуг — єдині для всього продукту. */

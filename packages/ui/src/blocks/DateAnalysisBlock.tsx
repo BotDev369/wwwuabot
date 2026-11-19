@@ -1,19 +1,20 @@
 /**
  * Page Builder — DateAnalysisBlock: екран досьє. Суб'єктів може бути кілька —
  * кожен має своє досьє; дати й підписи їдуть `?dates=` / `?labels=`, вид —
- * `?kind=`. Таблиці параметрів тут більше немає: якість, її рівень і свідчення
- * описують людину, а не матрицю систем.
+ * `?kind=`, вибрані системи — `?lenses=`. Без вибору систем досьє не рахується:
+ * людина сама каже, які лінзи читають дату.
  *
  * @module packages/ui/src/blocks/DateAnalysisBlock
  */
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import { analysisScreenTitle } from "./date-analysis/screen-title";
-import { readDates, readSubject } from "./date-analysis/date-params";
+import { readDates, readLenses, readSubject } from "./date-analysis/date-params";
 import { useDossiers } from "./date-analysis/useDossiers";
 import { Dossier, humanDate } from "./date-analysis/Dossier";
+import { DossierLensPicker } from "./date-analysis/DossierLensPicker";
 import { DossierSurvey } from "./date-analysis/DossierSurvey";
 
 export function DateAnalysisBlock({ block }: BlockComponentProps) {
@@ -23,11 +24,25 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
   };
 
   // Адреса читається один раз за прохід екрана: крок змінюється переходом на
-  // іншу адресу, а не станом цього компонента.
+  // іншу адресу, а не станом цього компонента. Вибір систем — виняток: він
+  // живе в адресі, щоб перезавантаження не втратило вибір.
   const search = window.location.search;
   const dates = useMemo(() => readDates(search), [search]);
   const subject = useMemo(() => readSubject(search, dates.length), [search, dates.length]);
-  const { dossiers, loading, error } = useDossiers(dates, subject.kinds);
+  const initialLenses = useMemo(() => readLenses(search), [search]);
+  const [lenses, setLenses] = useState<readonly string[]>(initialLenses);
+  const [pickerOpen, setPickerOpen] = useState(initialLenses.length === 0);
+  const { dossiers, loading, error } = useDossiers(dates, subject.kinds, lenses);
+
+  function applyLenses(next: string[]): void {
+    setLenses(next);
+    setPickerOpen(false);
+    const params = new URLSearchParams(window.location.search);
+    if (next.length > 0) params.set("lenses", next.join(","));
+    else params.delete("lenses");
+    const query = params.toString();
+    window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+  }
 
   if (dates.length === 0) {
     return (
@@ -53,12 +68,19 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
         додає другий вектор окремо.
       </p>
 
-      <DossierSurvey />
+      <DossierLensPicker
+        selected={lenses}
+        open={pickerOpen}
+        onToggle={() => setPickerOpen((value) => !value)}
+        onApply={applyLenses}
+      />
+
+      {lenses.length > 0 && <DossierSurvey />}
 
       {loading && <p className="wb-text-sm wb-text-muted">Аналізуємо...</p>}
       {error && <p className="wb-text-sm wb-block-date-analysis__error">{error}</p>}
 
-      {!loading && !error && (
+      {!loading && !error && lenses.length > 0 && (
         <div className="wb-dossiers">
           {dossiers.map((dossier, index) => (
             <Dossier

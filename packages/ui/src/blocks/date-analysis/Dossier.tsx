@@ -44,7 +44,7 @@ export function Dossier({ dossier, name }: { dossier: DossierRead; name: string 
               {known} з {total} якостей мають свідчення
             </p>
             <p className="wb-dossier__note">
-              Джерело: {sourceNames(dossier.claims)}. Рівень — це свідчення джерела, а не оцінка
+              Джерела: {sourceNames(dossier.claims)}. Рівень — це свідчення джерела, а не оцінка
               людини; без свідчень якість лишається невідомою.
             </p>
           </>

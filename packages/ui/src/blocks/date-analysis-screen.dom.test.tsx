@@ -1,16 +1,15 @@
 // @vitest-environment jsdom
 /**
- * Екран аналізу рендерить **досьє**, а не таблицю параметрів.
- *
- * Перевіряється те, що видно людині: домени, рівень якорем, свідчення з
- * джерелом і шаром, чесне «не знаємо», стан опитування й подія, яка не
- * прикидається людиною.
+ * Екран аналізу рендерить **досьє**, а не таблицю параметрів. Досьє рахується
+ * лише після явного вибору систем; перевіряється те, що видно людині: вибір,
+ * домени, рівень якорем, свідчення з джерелом і шаром, розбіжність обома
+ * позиціями, чесне «не знаємо», стан опитування й подія без рис людини.
  *
  * @module packages/ui/src/blocks/date-analysis-screen.dom.test
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { DateAnalysisBlock } from "./DateAnalysisBlock";
 
@@ -39,6 +38,21 @@ const DISCIPLINE = {
   qualityId: "discipline",
   level: 5,
   evidence: "Сонце в Овні: ритм тримає під зовнішньою вимогою",
+};
+
+const EMPATHY_WEST = {
+  ...INITIATIVE,
+  qualityId: "empathy",
+  level: 4,
+  evidence: "Сонце у Рибах: чує і те, що не сказано",
+};
+
+const EMPATHY_NUMBER = {
+  ...INITIATIVE,
+  qualityId: "empathy",
+  level: 3,
+  sourceId: "numerology",
+  evidence: "Число життєвого шляху 6: помічає зміну настрою",
 };
 
 const DOSSIER = {
@@ -99,9 +113,44 @@ describe("DateAnalysisBlock — без дат", () => {
   });
 });
 
+describe("DateAnalysisBlock — вибір систем", () => {
+  it("без вибору не робить запит і не показує досьє", async () => {
+    openAt("?dates=1980-03-03");
+    const api = stubApi([DOSSIER]);
+    render(<DateAnalysisBlock {...props()} />);
+    await settle();
+
+    expect(screen.getByText("Системи аналізу")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Порахувати досьє" }).hasAttribute("disabled")).toBe(
+      true,
+    );
+    expect(api.calls).toHaveLength(0);
+    expect(screen.queryByText("Не знаємо")).toBeNull();
+    expect(screen.queryByText(/мають свідчення/)).toBeNull();
+  });
+
+  it("вибір системи рахує досьє і лишає вибір в адресі", async () => {
+    openAt("?dates=1980-03-03");
+    const api = stubApi([DOSSIER]);
+    render(<DateAnalysisBlock {...props()} />);
+    await settle();
+
+    fireEvent.click(screen.getByLabelText(/Західна астрологія/));
+    fireEvent.click(screen.getByRole("button", { name: "Порахувати досьє" }));
+    await settle();
+
+    expect(api.calls).toHaveLength(1);
+    expect(api.calls[0]).toContain("/api/mydate/dossier");
+    expect(api.calls[0]).toContain('"lenses":["western"]');
+    expect(window.location.search).toContain("lenses=western");
+    expect(screen.getByRole("heading", { level: 3, name: "3.03.1980" })).toBeTruthy();
+    expect(screen.getByText("2 з 36 якостей мають свідчення")).toBeTruthy();
+  });
+});
+
 describe("DateAnalysisBlock — досьє", () => {
   it("малює домени й рівень якорем, а не таблицею параметрів", async () => {
-    openAt("?dates=1980-03-03");
+    openAt("?dates=1980-03-03&lenses=western");
     const api = stubApi([DOSSIER]);
     render(<DateAnalysisBlock {...props()} />);
     await settle();
@@ -113,14 +162,14 @@ describe("DateAnalysisBlock — досьє", () => {
     expect(screen.getAllByText("Високий").length).toBeGreaterThan(0);
     expect(screen.getByText(/початок без дозволу/)).toBeTruthy();
     expect(screen.queryByRole("table")).toBeNull();
-    // Один запит на екран: ані матриці, ані вибору систем.
+    // Один запит на екран: ані матриці, ані вибору систем після вибору.
     expect(api.calls).toHaveLength(1);
     expect(api.calls[0]).toContain("/api/mydate/dossier");
     expect(api.calls[0]).toContain("1980-03-03");
   });
 
   it("свідчення розкривають джерело, шар і впевненість", async () => {
-    openAt("?dates=1980-03-03");
+    openAt("?dates=1980-03-03&lenses=western");
     stubApi([DOSSIER]);
     render(<DateAnalysisBlock {...props()} />);
     await settle();
@@ -132,8 +181,23 @@ describe("DateAnalysisBlock — досьє", () => {
     expect(screen.getAllByText("Свідчення за рівнями 1–5").length).toBeGreaterThan(0);
   });
 
+  it("розбіжність показує обидві позиції, а не середнє", async () => {
+    openAt("?dates=1980-03-03&lenses=western,numerology");
+    stubApi([{ ...DOSSIER, claims: [EMPATHY_WEST, EMPATHY_NUMBER] }]);
+    render(<DateAnalysisBlock {...props()} />);
+    await settle();
+
+    expect(screen.getByText("Розбіжність")).toBeTruthy();
+    expect(screen.getByText(/Західна астрологія — Високий/)).toBeTruthy();
+    expect(screen.getByText(/Нумерологія — Середній/)).toBeTruthy();
+    expect(screen.getByText(/Різні лінзи читають різні мови дати/)).toBeTruthy();
+    // Якір є в кожного свідчення, навіть коли вони розходяться.
+    expect(screen.getByText("Підбирає слова під стан іншого без нагадування.")).toBeTruthy();
+    expect(screen.getByText("Помічає зміну настрою й питає.")).toBeTruthy();
+  });
+
   it("якості без свідчень кажуть «не знаємо», а не показують середину", async () => {
-    openAt("?dates=1980-03-03");
+    openAt("?dates=1980-03-03&lenses=western");
     stubApi([DOSSIER]);
     render(<DateAnalysisBlock {...props()} />);
     await settle();
@@ -144,7 +208,7 @@ describe("DateAnalysisBlock — досьє", () => {
   });
 
   it("опитування стоїть на тому ж екрані як «ще не виміряно» з переходом до тестів", async () => {
-    openAt("?dates=1980-03-03");
+    openAt("?dates=1980-03-03&lenses=western");
     stubApi([DOSSIER]);
     render(<DateAnalysisBlock {...props()} />);
     await settle();
@@ -157,7 +221,7 @@ describe("DateAnalysisBlock — досьє", () => {
   });
 
   it("кілька дат — кілька досьє з власними підписами", async () => {
-    openAt("?dates=1980-03-03,1990-05-05&labels=Мама|Я");
+    openAt("?dates=1980-03-03,1990-05-05&labels=Мама|Я&lenses=western");
     stubApi([DOSSIER, { ...DOSSIER, date: "1990-05-05", claims: [INITIATIVE] }]);
     render(<DateAnalysisBlock {...props()} />);
     await settle();
@@ -169,7 +233,7 @@ describe("DateAnalysisBlock — досьє", () => {
   });
 
   it("себе показує «Ваше досьє»", async () => {
-    openAt("?dates=1980-03-03&self=1");
+    openAt("?dates=1980-03-03&self=1&lenses=western");
     stubApi([DOSSIER]);
     render(<DateAnalysisBlock {...props()} />);
     await settle();
@@ -179,7 +243,7 @@ describe("DateAnalysisBlock — досьє", () => {
   });
 
   it("подія не прикидається людиною: лише символ дня й чесний стан", async () => {
-    openAt("?dates=1980-03-03&kind=event");
+    openAt("?dates=1980-03-03&kind=event&lenses=western");
     stubApi([{ ...DOSSIER, kind: "event", claims: [], note: "event-not-modelled" }]);
     render(<DateAnalysisBlock {...props()} />);
     await settle();
@@ -191,7 +255,7 @@ describe("DateAnalysisBlock — досьє", () => {
   });
 
   it("помилку сервера видно, і вона не лишає порожніх доменів", async () => {
-    openAt("?dates=1980-03-03");
+    openAt("?dates=1980-03-03&lenses=western");
     vi.stubGlobal(
       "fetch",
       vi.fn(

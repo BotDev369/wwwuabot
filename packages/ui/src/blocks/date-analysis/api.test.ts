@@ -67,19 +67,22 @@ describe("fetchDossiers", () => {
       { date: "1980-03-03", kind: "person", symbol: "Риби", claims: [CLAIM], note: null },
     ];
     respond({ ok: true, dossiers });
-    await expect(fetchDossiers(["1980-03-03"], "person")).resolves.toEqual(dossiers);
+    await expect(fetchDossiers(["1980-03-03"], "person", ["western"])).resolves.toEqual(dossiers);
     const call = lastCall();
     expect(call.url).toBe("/api/mydate/dossier");
     expect(call.init?.method).toBe("POST");
     expect(JSON.parse(String(call.init?.body))).toEqual({
       dates: ["1980-03-03"],
       kind: "person",
+      lenses: ["western"],
     });
   });
 
   it("помилку сервера показує людині", async () => {
     respond({ ok: false, error: "Немає свідчень" });
-    await expect(fetchDossiers(["1980-03-03"])).rejects.toThrow("Немає свідчень");
+    await expect(fetchDossiers(["1980-03-03"], undefined, ["western"])).rejects.toThrow(
+      "Немає свідчень",
+    );
   });
 
   it("без тіла лишається зрозумілий текст із кодом", async () => {
@@ -87,7 +90,9 @@ describe("fetchDossiers", () => {
       "fetch",
       vi.fn(async () => new Response("", { status: 503 })),
     );
-    await expect(fetchDossiers(["1980-03-03"])).rejects.toThrow(/Помилка аналізу.*503/);
+    await expect(fetchDossiers(["1980-03-03"], undefined, ["western"])).rejects.toThrow(
+      /Помилка аналізу.*503/,
+    );
   });
 });
 

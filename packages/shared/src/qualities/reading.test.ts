@@ -33,14 +33,24 @@ describe("readQuality", () => {
     expect(reading.summary.byLevel).toEqual({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
   });
 
-  it("провідний рівень беруть свідчення, а не середнє", () => {
+  it("однаковий рівень різних джерел лишає провідний рівень", () => {
     const reading = readQuality(
-      [claim("initiative", 4), claim("initiative", 5, "друге")],
+      [claim("initiative", 4), claim("initiative", 4, "друге")],
       initiative,
     );
     expect(reading.conflict).toBe(false);
-    // Ваги рівні — показуємо вищий, і це вибір показу, а не оцінка.
-    expect(reading.level).toBe(5);
+    expect(reading.divergent).toBe(false);
+    expect(reading.level).toBe(4);
+  });
+
+  it("різниця рівнів — теж розбіжність, навіть без протилежних боків", () => {
+    const reading = readQuality(
+      [claim("initiative", 4), claim("initiative", 3, "друге")],
+      initiative,
+    );
+    expect(reading.conflict).toBe(false);
+    expect(reading.divergent).toBe(true);
+    expect(reading.level).toBeNull();
   });
 
   it("розбіжність лишається розбіжністю: рівня немає, розподіл є", () => {

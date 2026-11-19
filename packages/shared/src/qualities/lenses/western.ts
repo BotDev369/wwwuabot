@@ -15,6 +15,7 @@ export const WESTERN: LensDefinition = {
   version: "1",
   layer: "symbolic",
   inputs: ["date"],
+  rule: "знак Сонця",
 };
 
 interface SignRule {

@@ -98,11 +98,15 @@ export async function fetchSystems(): Promise<AnalysisSystem[]> {
  * Досьє за датами: один запит на екран, скільки б суб'єктів не було. Вид їде
  * переліком (`person,event`) — словник у кожного суб'єкта свій.
  */
-export async function fetchDossiers(dates: string[], kind?: string): Promise<DossierRead[]> {
+export async function fetchDossiers(
+  dates: string[],
+  kind: string | undefined,
+  lenses: readonly string[],
+): Promise<DossierRead[]> {
   const response = await fetch("/api/mydate/dossier", {
     method: "POST",
     headers: { "Content-Type": "application/json", ...telegramAuthHeaders() },
-    body: JSON.stringify({ dates, kind }),
+    body: JSON.stringify({ dates, kind, lenses }),
   });
   if (!response.ok) throw await failure(response, "Помилка аналізу");
   const data = await json(response);

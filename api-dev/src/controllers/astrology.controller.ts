@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { parseScopes } from "@wwwuabot/shared/content";
+import { LENSES } from "@wwwuabot/shared/qualities";
 import type { Env } from "../shared/types";
 import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
@@ -22,9 +23,13 @@ const analyzeBody = z
   .object({ date: z.string().optional(), systemId: z.string().optional() })
   .passthrough();
 
-/** Досьє: ті самі дати, що й порівняння, без вибору систем — лінза одна. */
+/** Досьє: дати, вид і **явно вибрані** лінзи; без вибору сервер не рахує. */
 const dossierBody = z
-  .object({ dates: z.array(z.string()).optional(), kind: z.string().optional() })
+  .object({
+    dates: z.array(z.string()).optional(),
+    kind: z.string().optional(),
+    lenses: z.array(z.string()).optional(),
+  })
   .passthrough();
 
 /** Порівняння: усі три переліки — рядки, і порожні лишаються порожніми. */
@@ -138,9 +143,20 @@ export async function handleDossier(request: Request): Promise<Response> {
       return json({ ok: false, error: "Too many dates, max 30" }, 400);
     }
 
+    const lenses = [...new Set(parsed.body.lenses ?? [])];
+    if (lenses.length === 0) {
+      return json({ ok: false, error: "No lenses selected" }, 400);
+    }
+    const unknown = lenses.filter((id) => !LENSES.some((lens) => lens.id === id));
+    if (unknown.length > 0) {
+      return json({ ok: false, error: `Unknown lens: ${unknown.join(", ")}` }, 400);
+    }
+
     const kinds = parseScopes(parsed.body.kind, validDates.length);
-    const dossiers = validDates.map((date, index) => buildDossier(date, kinds[index] ?? "person"));
-    return json({ ok: true, dossiers });
+    const dossiers = validDates.map((date, index) =>
+      buildDossier(date, kinds[index] ?? "person", lenses),
+    );
+    return json({ ok: true, dossiers, lenses });
   } catch (e: unknown) {
     apiLog.error("Dossier error", e);
     const msg = e instanceof Error ? e.message : "Unknown error";

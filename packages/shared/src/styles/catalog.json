@@ -1,5 +1,5 @@
 {
-  "version": "a3f310d",
+  "version": "d6282b7",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -129,7 +129,7 @@
     {
       "file": "date-analysis.css",
       "tokens": 1,
-      "classes": 70
+      "classes": 82
     },
     {
       "file": "dates.css",
@@ -5195,6 +5195,17 @@
           "wb-dossier-domain__count",
           "wb-dossier-domain__title",
           "wb-dossier-domains",
+          "wb-dossier-lenses",
+          "wb-dossier-lenses__apply",
+          "wb-dossier-lenses__change",
+          "wb-dossier-lenses__head",
+          "wb-dossier-lenses__list",
+          "wb-dossier-lenses__name",
+          "wb-dossier-lenses__option",
+          "wb-dossier-lenses__rule",
+          "wb-dossier-lenses__selected",
+          "wb-dossier-lenses__text",
+          "wb-dossier-lenses__title",
           "wb-dossier-list",
           "wb-dossier-quality",
           "wb-dossier-quality--conflict",
@@ -5206,6 +5217,7 @@
           "wb-dossier-quality__details",
           "wb-dossier-quality__level",
           "wb-dossier-quality__name",
+          "wb-dossier-quality__positions",
           "wb-dossier-quality__summary",
           "wb-dossier-quality__text",
           "wb-dossier-quality__unknown",

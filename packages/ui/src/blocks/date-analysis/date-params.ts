@@ -16,6 +16,7 @@ import {
   type AnalysisScope,
   type SubjectKind,
 } from "@wwwuabot/shared/content";
+import { LENSES } from "@wwwuabot/shared/qualities";
 import { isValidDate } from "@wwwuabot/shared/utils/mydate-helpers";
 
 /** Перелік із параметра адреси; порожній рядок — це порожній перелік. */
@@ -33,6 +34,23 @@ export function readDates(search: string): string[] {
   const params = new URLSearchParams(search);
   const raw = [params.get("dates") ?? "", params.get("date") ?? ""].join(",");
   return Array.from(new Set(raw.split(",").filter((value) => isValidDate(value))));
+}
+
+/**
+ * Вибрані лінзи з адреси: тільки відомі системи, без повторів. Порожній
+ * перелік — це «ще не вибрано», а не привід рахувати все підряд.
+ */
+export function readLenses(search: string): string[] {
+  const allowed = new Set(LENSES.map((lens) => lens.id));
+  const raw = new URLSearchParams(search).get("lenses") ?? "";
+  return Array.from(
+    new Set(
+      raw
+        .split(",")
+        .map((id) => id.trim())
+        .filter((id) => allowed.has(id)),
+    ),
+  );
 }
 
 /** Кого читаємо — разом із підписами й ознакою власного аналізу. */

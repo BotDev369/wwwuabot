@@ -15,9 +15,12 @@ export interface QualityReading {
   readonly quality: Quality;
   readonly claims: readonly QualityClaim[];
   readonly summary: QualitySummary;
-  /** Провідний рівень; `null` — суперечність або жодного свідчення. */
+  /** Провідний рівень; `null` — розбіжність або жодного свідчення. */
   readonly level: QualityLevel | null;
+  /** Протилежні боки шкали: є і високий, і низький рівень. */
   readonly conflict: boolean;
+  /** Будь-яка різниця рівнів між джерелами — її не усереднюємо. */
+  readonly divergent: boolean;
 }
 
 /** Домен досьє разом із тим, скільки його якостей мають свідчення. */
@@ -61,16 +64,25 @@ function leadingLevel(claims: readonly QualityClaim[]): QualityLevel | null {
 export function readQuality(claims: readonly QualityClaim[], quality: Quality): QualityReading {
   const own = claims.filter((claim) => claim.qualityId === quality.id);
   if (own.length === 0) {
-    return { quality, claims: [], summary: emptySummary(quality.id), level: null, conflict: false };
+    return {
+      quality,
+      claims: [],
+      summary: emptySummary(quality.id),
+      level: null,
+      conflict: false,
+      divergent: false,
+    };
   }
   const summary = summarizeQuality(claims, quality.id);
   const conflict = hasConflict(summary);
+  const divergent = new Set(own.map((claim) => claim.level)).size > 1;
   return {
     quality,
     claims: own,
     summary,
-    level: conflict ? null : leadingLevel(own),
+    level: conflict || divergent ? null : leadingLevel(own),
     conflict,
+    divergent,
   };
 }
 

@@ -50,4 +50,21 @@ export {
   type QualityReading,
 } from "./reading";
 
-export { LENSES, WESTERN, WESTERN_SIGNS, sunInSign, westernClaims } from "./lenses";
+export {
+  CHINESE,
+  CHINESE_ANIMALS,
+  LENSES,
+  MAYAN,
+  MAYAN_DAY_SIGNS,
+  NUMEROLOGY,
+  NUMEROLOGY_NUMBERS,
+  WESTERN,
+  WESTERN_SIGNS,
+  chineseClaims,
+  claimsOf,
+  mayanClaims,
+  numerologyClaims,
+  sunInSign,
+  westernClaims,
+  type LensRule,
+} from "./lenses";
