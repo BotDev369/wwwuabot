@@ -9,6 +9,9 @@
  * Чого не ловить: слово, складене з частин (`"Серв" + "іси"`), і текст, що
  * приїхав із сервера. Перше — це вже обман, друге — і є мета.
  *
+ * Довідкові дані не рахуються: якорі й визначення якостей — це дані з тестами,
+ * а не слова екрана (межа — `docs/SCREEN_TEXTS.md`).
+ *
  * Запуск: `npm run check:texts`; оновити базу (лише коли борг справді менший):
  * `node scripts/check-texts.mjs --write`.
  *
@@ -74,10 +77,14 @@ function stripComments(source) {
   return out;
 }
 
+/** Довідкові дані: показуються як дані, а не як копія слів екрана. */
+const REFERENCE_DATA = ["packages/shared/src/qualities/"];
+
 const perFile = [];
 let total = 0;
 
 for (const file of allSourceFiles()) {
+  if (REFERENCE_DATA.some((dir) => file.startsWith(dir))) continue;
   let count = 0;
   for (const unit of textUnits(read(file))) {
     if (CYRILLIC.test(unit)) count += 1;

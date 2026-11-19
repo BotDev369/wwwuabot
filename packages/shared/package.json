@@ -57,6 +57,7 @@
     "./user/public-profile": "./src/user/public-profile.ts",
     "./ads": "./src/ads/index.ts",
     "./assessments": "./src/assessments/index.ts",
+    "./qualities": "./src/qualities/index.ts",
     "./pages": "./src/pages/index.ts",
     "./screens": "./src/screens/index.ts",
     "./shop": "./src/shop/index.ts",
