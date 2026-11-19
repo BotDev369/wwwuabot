@@ -1,4 +1,21 @@
 #!/bin/sh
-# Фізичний замок: пуш без зеленого `npm run verify` на цьому дереві не проходить.
-# Див. `scripts/verify-stamp.mjs` і `docs/QUALITY_GATE.md`.
-exec node scripts/verify-stamp.mjs --check
+# Два замки на пуш, і жоден не тримається на памʼяті.
+#
+# 1. Без зеленого `npm run verify` на цьому дереві пуш не проходить
+#    (`scripts/verify-stamp.mjs`, `docs/QUALITY_GATE.md`).
+# 2. Пуш у `main` одразу запускає стеження за деплоєм: у фоні чекає run
+#    «Deploy» для цього коміту й виконує `check:deploy`
+#    (`scripts/watch-deploy.mjs`). Пуш не чекає деплой, але й не лишається
+#    без перевірки.
+node scripts/verify-stamp.mjs --check || exit 1
+
+# `npm run push` стежить сам — другого сторожа не треба.
+[ -n "$WWWUABOT_PUSH_WRAPPER" ] && exit 0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$local_ref" = "refs/heads/main" ]; then
+    node scripts/watch-deploy.mjs --detach "--sha=$local_sha"
+  fi
+done
+
+exit 0
