@@ -36,12 +36,12 @@ const SECTIONS: readonly [string, string][] = [
 ];
 
 describe("головна аналізу", () => {
-  it("називає фічу й лишає гасло без опису", () => {
+  it("називає фічу й показує опис затвердженого V2", () => {
     renderHub();
 
     expect(screen.getByText("Аналіз людей та подій")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Пізнай себе, оточуючих та події." })).toBeTruthy();
-    expect(screen.queryByText(/Дата народження й тест/)).toBeNull();
+    expect(screen.getByText(/Дата народження й тест/)).toBeTruthy();
   });
 
   it("показує всі розділи фічі й веде кожен на свою адресу", () => {
@@ -50,6 +50,7 @@ describe("головна аналізу", () => {
     for (const [title, href] of SECTIONS) {
       const link = screen.getByRole("link", { name: new RegExp(title) });
       expect(link.getAttribute("href")).toBe(href);
+      expect(link.textContent?.length).toBeGreaterThan(title.length);
     }
   });
 

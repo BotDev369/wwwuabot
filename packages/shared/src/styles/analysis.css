@@ -189,6 +189,11 @@
   color: var(--text-secondary);
 }
 
+/* Шеврон є лише в затвердженому V2: у плитках 1 і 3 його немає. */
+.an-entry__chevron {
+  display: none;
+}
+
 /* ── Секції, люди, кроки ───────────────────────────────────────────────── */
 
 .an-section {
@@ -1314,20 +1319,59 @@
  * вигляду не створює другої головної: дані й адреси розділів ті самі, а
  * `/analysis` лишається варіантом 1.
  */
+/*
+ * Затверджений V2: один стовпчик рядків, а не плитка.
+ *
+ * Значок ліворуч, назва й пояснення праворуч, шеврон у кінці — так на
+ * погодженому макеті `analysis-landing-v2.png`. Hero лишається з описом:
+ * «Дата народження й тест — два незалежні погляди на ту саму людину».
+ */
+.an-hub[data-variant="2"] {
+  max-width: 720px;
+}
+
 .an-hub[data-variant="2"] .an-entries {
   grid-template-columns: minmax(0, 1fr);
   max-width: 720px;
 }
 
 .an-hub[data-variant="2"] .an-entry {
-  grid-template-columns: minmax(0, 1fr);
-  align-items: start;
-  min-height: 0;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 88px;
+  padding: var(--sp-4);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-xl);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-card);
 }
 
 .an-hub[data-variant="2"] .an-entry__icon {
-  width: 84px;
-  height: 84px;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+}
+
+.an-hub[data-variant="2"] .an-entry__body {
+  gap: 2px;
+}
+
+.an-hub[data-variant="2"] .an-entry__title {
+  font-size: var(--text-lg);
+}
+
+.an-hub[data-variant="2"] .an-entry__lead {
+  font-size: var(--text-md);
+  line-height: 1.45;
+}
+
+.an-hub[data-variant="2"] .an-entry__chevron {
+  display: block;
+  padding-inline-end: var(--sp-1);
+  color: var(--text-muted);
+  font-size: var(--text-xl);
+  line-height: 1;
 }
 
 .an-hub[data-variant="3"] .an-entry {

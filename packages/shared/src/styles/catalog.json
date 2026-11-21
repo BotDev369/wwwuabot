@@ -1,5 +1,5 @@
 {
-  "version": "3bc263f",
+  "version": "4478226",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -94,7 +94,7 @@
     {
       "file": "analysis.css",
       "tokens": 0,
-      "classes": 154
+      "classes": 155
     },
     {
       "file": "app-chrome.css",
@@ -3749,6 +3749,7 @@
           "an-entries",
           "an-entry",
           "an-entry__body",
+          "an-entry__chevron",
           "an-entry__icon",
           "an-entry__lead",
           "an-entry__title",
@@ -3946,7 +3947,10 @@
           "an-entries",
           "an-entry",
           "an-entry__body",
+          "an-entry__chevron",
           "an-entry__icon",
+          "an-entry__lead",
+          "an-entry__title",
           "an-hub",
           "an-variant",
           "an-variant__frame",

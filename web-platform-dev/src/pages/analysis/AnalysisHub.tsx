@@ -20,6 +20,7 @@ import {
 
 interface Section {
   readonly title: string;
+  readonly lead: string;
   readonly icon: IconName;
   readonly tone: number;
   readonly to: string;
@@ -29,36 +30,42 @@ interface Section {
 const SECTIONS: readonly Section[] = [
   {
     title: "Про системи аналізу",
+    lead: "Тестування, астрологія, нумерологія — що вони кажуть і звідки.",
     icon: "book",
     tone: 1,
     to: ANALYSIS_SYSTEMS_PATH,
   },
   {
     title: "Типові якості людей і подій",
+    lead: "Усі риси людини з описами, проявами «+» і «−» та джерелами.",
     icon: "layers",
     tone: 2,
     to: ANALYSIS_QUALITIES_PATH,
   },
   {
     title: "Аналізувати за датою",
+    lead: "Що можна прочитати з дати народження і звідки це взялося.",
     icon: "calendar",
     tone: 3,
     to: ANALYSIS_PERSON_PATH,
   },
   {
     title: "Пройти тестування",
+    lead: "Короткі питання про вас і відповіді, які додаються до дати.",
     icon: "clipboard",
     tone: 1,
     to: ANALYSIS_TESTS_PATH,
   },
   {
     title: "Співставити",
+    lead: "Двоє людей або людина й подія — видно, де збіглося.",
     icon: "compare",
     tone: 2,
     to: ANALYSIS_COMPARE_PATH,
   },
   {
     title: "Люди і події",
+    lead: "Збережені люди, події та групи: можна змінити або видалити.",
     icon: "users",
     tone: 3,
     to: ANALYSIS_PEOPLE_PATH,
@@ -69,7 +76,7 @@ const SECTIONS: readonly Section[] = [
 export type AnalysisHubVariant = 1 | 2 | 3;
 
 interface AnalysisHubProps {
-  /** Яка розкладка: 1 — значок ліворуч, 2 — значок зверху, 3 — значок праворуч. */
+  /** Яка розкладка: 1 — плитка, 2 — затверджений рядок V2, 3 — значок праворуч. */
   variant?: AnalysisHubVariant;
   /** `false` — без шапки: так варіанти стоять поруч на сторінці порівняння. */
   withHero?: boolean;
@@ -85,6 +92,11 @@ export function AnalysisHub({ variant = 2, withHero = true }: AnalysisHubProps =
           <header className="an-hero">
             <p className="an-hero__kicker">Аналіз людей та подій</p>
             <h1 className="an-hero__title">Пізнай себе, оточуючих та події.</h1>
+            {variant === 2 && (
+              <p className="an-hero__lead">
+                Дата народження й тест — два незалежні погляди на ту саму людину.
+              </p>
+            )}
           </header>
         )}
 
@@ -96,6 +108,10 @@ export function AnalysisHub({ variant = 2, withHero = true }: AnalysisHubProps =
               </span>
               <span className="an-entry__body">
                 <span className="an-entry__title">{section.title}</span>
+                <span className="an-entry__lead">{section.lead}</span>
+              </span>
+              <span className="an-entry__chevron" aria-hidden="true">
+                ›
               </span>
             </Link>
           ))}
