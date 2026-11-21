@@ -8,9 +8,11 @@ import {
   deleteMyDates,
   listMyDates,
   normalizeType,
+  readMyDate,
   updateMyDate,
 } from "../services/my-dates.service";
 import type { MyDateItem } from "../services/my-dates.service";
+import { removeAnalysisSetItems, renameAnalysisSetItem } from "../services/analysis-sets.service";
 
 export type { MyDateItem };
 
@@ -93,6 +95,10 @@ export async function handleMyDates(request: Request, env: Env): Promise<Respons
       if (!id) return json({ ok: false, error: "id is required" }, 400);
       if (!date || !DATE_RE.test(date)) return json({ ok: false, error: "date is required" }, 400);
 
+      // Старий підпис потрібен до оновлення: групи зберігають його копією,
+      // тож без синхронізації після перейменування вони показували б старе ім'я.
+      const previous = await readMyDate(env.DB, userId, id);
+
       // Порожні рядки — це «стерти значення», а не «не передавати»: форма
       // присилає все поля, і спроба відрізнити їх лише довжиною змусила б
       // відправляти спеціальні маркери (AGENTS.md §7).
@@ -105,6 +111,16 @@ export async function handleMyDates(request: Request, env: Env): Promise<Respons
       });
 
       if (!updated) return json({ ok: false, error: "Not found" }, 404);
+
+      if (previous && (previous.date !== updated.date || previous.name !== updated.name)) {
+        await renameAnalysisSetItem(
+          env.DB,
+          userId,
+          { date: previous.date, name: previous.name },
+          { date: updated.date, name: updated.name },
+        );
+      }
+
       return json({ ok: true });
     }
 
@@ -115,8 +131,17 @@ export async function handleMyDates(request: Request, env: Env): Promise<Respons
       if (!id && !ids) return json({ ok: false, error: "id or ids required" }, 400);
 
       const wanted = (ids ? ids.split(",") : [id ?? ""]).filter(Boolean);
+      const previous = await Promise.all(wanted.map((one) => readMyDate(env.DB, userId, one)));
       const deleted = await deleteMyDates(env.DB, userId, wanted);
       if (deleted === 0) return json({ ok: false, error: "Not found" }, 404);
+
+      await removeAnalysisSetItems(
+        env.DB,
+        userId,
+        previous
+          .filter((one): one is MyDateItem => one !== null)
+          .map((one) => ({ date: one.date, name: one.name })),
+      );
 
       // Число — реально видалених рядків: список на екрані оновлюється за ним.
       return json({ ok: true, deleted });

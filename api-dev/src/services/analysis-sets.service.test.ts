@@ -6,7 +6,13 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { deleteAnalysisSet, listAnalysisSets, saveAnalysisSet } from "./analysis-sets.service";
+import {
+  deleteAnalysisSet,
+  listAnalysisSets,
+  removeAnalysisSetItems,
+  renameAnalysisSetItem,
+  saveAnalysisSet,
+} from "./analysis-sets.service";
 
 const ME = 1;
 const OTHER = 2;
@@ -116,6 +122,40 @@ describe("набори для співставлення", () => {
     expect(await deleteAnalysisSet(db, ME, "a2")).toBe(0);
     expect(await deleteAnalysisSet(db, ME, "a1")).toBe(1);
     expect(await listAnalysisSets(db, OTHER)).toHaveLength(1);
+  });
+
+  it("перейменування дати оновлює підпис у всіх своїх наборах", async () => {
+    const { db } = makeDb();
+    await saveAnalysisSet(db, ME, { id: "a1", name: "Команда", items: ITEMS });
+    await saveAnalysisSet(db, ME, { id: "a2", name: "Родина", items: [ITEMS[0]] });
+    await saveAnalysisSet(db, OTHER, { id: "a3", name: "Чужий", items: ITEMS });
+
+    const changed = await renameAnalysisSetItem(
+      db,
+      ME,
+      { date: "1980-03-03", name: "Олена" },
+      { date: "1980-03-04", name: "Олена Нова" },
+    );
+
+    expect(changed).toBe(2);
+    const mine = await listAnalysisSets(db, ME);
+    expect(mine.find((set) => set.id === "a1")?.items[0]).toEqual({
+      date: "1980-03-04",
+      name: "Олена Нова",
+    });
+    expect((await listAnalysisSets(db, OTHER))[0].items[0].name).toBe("Олена");
+  });
+
+  it("видалення дати прибирає її зі складу, а решту складу лишає", async () => {
+    const { db } = makeDb();
+    await saveAnalysisSet(db, ME, { id: "a1", name: "Команда", items: ITEMS });
+    await saveAnalysisSet(db, OTHER, { id: "a2", name: "Чужий", items: ITEMS });
+
+    const changed = await removeAnalysisSetItems(db, ME, [ITEMS[0]]);
+
+    expect(changed).toBe(1);
+    expect((await listAnalysisSets(db, ME))[0].items).toEqual([ITEMS[1]]);
+    expect((await listAnalysisSets(db, OTHER))[0].items).toEqual(ITEMS);
   });
 
   it("поламаний JSON у рядку не ламає список", async () => {

@@ -105,6 +105,60 @@ export async function saveAnalysisSet(
   };
 }
 
+/**
+ * Оновити підпис у складах після перейменування або перенесення дати.
+ *
+ * Склад групи зберігає дату й підпис, а не номер рядка `my_dates`: саме тому
+ * після правки людини без цього кроку група показувала старе ім'я. Оновлюємо
+ * лише точний збіг дати й підпису та лише в наборах цієї людини.
+ */
+export async function renameAnalysisSetItem(
+  db: D1Database,
+  userId: number,
+  from: AnalysisSetItem,
+  to: AnalysisSetItem,
+): Promise<number> {
+  if (from.date === to.date && from.name === to.name) return 0;
+  const sets = await listAnalysisSets(db, userId);
+  let changed = 0;
+
+  for (const set of sets) {
+    let touched = false;
+    const items = set.items.map((item) => {
+      if (item.date !== from.date || item.name !== from.name) return item;
+      touched = true;
+      return { date: to.date, name: to.name };
+    });
+    if (!touched) continue;
+    await saveAnalysisSet(db, userId, { id: set.id, name: set.name, items });
+    changed++;
+  }
+
+  return changed;
+}
+
+/** Прибрати дати зі складів груп: видалена людина не лишається «мертвим» підписом. */
+export async function removeAnalysisSetItems(
+  db: D1Database,
+  userId: number,
+  removed: readonly AnalysisSetItem[],
+): Promise<number> {
+  if (removed.length === 0) return 0;
+  const sets = await listAnalysisSets(db, userId);
+  let changed = 0;
+
+  for (const set of sets) {
+    const items = set.items.filter(
+      (item) => !removed.some((one) => one.date === item.date && one.name === item.name),
+    );
+    if (items.length === set.items.length) continue;
+    await saveAnalysisSet(db, userId, { id: set.id, name: set.name, items });
+    changed++;
+  }
+
+  return changed;
+}
+
 /** Прибрати набір: `WHERE` із `user_id` і є перевіркою «чи мій». */
 export async function deleteAnalysisSet(
   db: D1Database,
