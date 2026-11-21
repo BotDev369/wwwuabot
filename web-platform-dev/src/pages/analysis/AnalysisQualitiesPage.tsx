@@ -235,7 +235,7 @@ export function AnalysisQualitiesPage(): ReactElement {
       <div className="an-hub">
         <a className="an-back" href={ANALYSIS_PATH}>
           <Icon name="arrow-left" size={16} />
-          До аналізу
+          До розділів
         </a>
 
         <header className="an-hero an-hero--slim">

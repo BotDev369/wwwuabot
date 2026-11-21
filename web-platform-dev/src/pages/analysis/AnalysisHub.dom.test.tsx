@@ -36,12 +36,11 @@ const SECTIONS: readonly [string, string][] = [
 ];
 
 describe("головна аналізу", () => {
-  it("називає фічу й показує опис затвердженого V2", () => {
+  it("називає платформу й показує шість рівноправних розділів", () => {
     renderHub();
 
     expect(screen.getByText("ПАЛЯНИЦЯ")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Пізнай себе, оточуючих та події." })).toBeTruthy();
-    expect(screen.getByText(/Дата народження й тест/)).toBeTruthy();
   });
 
   it("показує всі розділи фічі й веде кожен на свою адресу", () => {

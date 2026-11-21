@@ -35,7 +35,7 @@ const ALL_LENSES = LENSES.map((lens) => lens.id);
 const TITLES: Record<AnalysisMode, string> = {
   person: "Профіль",
   event: "Профіль події",
-  compare: "Співставлення",
+  compare: "Співставити",
 };
 
 /** Дата людини: `1980-03-03` → `3.03.1980`. */
@@ -127,7 +127,7 @@ export function AnalysisProfile({ mode }: AnalysisProfileProps): ReactElement {
         <div className="an-profile__tools">
           <a className="an-back" href={ANALYSIS_PATH}>
             <Icon name="arrow-left" size={16} />
-            До аналізу
+            До розділів
           </a>
           {mode === "person" && dates.length > 0 && (
             <>

@@ -1,5 +1,5 @@
 {
-  "version": "b2e9b2d",
+  "version": "06b42fb",
   "page": {
     "title": "Єдиний UI",
     "intro": "Справжній зразок, клас і присуд ужитку. Розділи згорнуті — відкривай потрібний.",
@@ -1606,7 +1606,7 @@
           "note": "",
           "icon": "compare",
           "usage": {
-            "platform": 5,
+            "platform": 6,
             "admin": 1,
             "ui": 0,
             "shared": 1

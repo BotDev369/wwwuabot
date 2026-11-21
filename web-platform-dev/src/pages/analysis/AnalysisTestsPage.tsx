@@ -26,7 +26,7 @@ function minutesOf(items: number): number {
 }
 
 export function AnalysisTestsPage(): ReactElement {
-  useScreenChrome({ title: "Тести" });
+  useScreenChrome({ title: "Пройти тестування" });
   const navigate = useNavigate();
   const { tests, loading } = useAssessments();
 
@@ -35,11 +35,11 @@ export function AnalysisTestsPage(): ReactElement {
       <div className="an-hub">
         <a className="an-back" href={ANALYSIS_PATH}>
           <Icon name="arrow-left" size={16} />
-          До аналізу
+          До розділів
         </a>
 
         <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title">Тести</h1>
+          <h1 className="an-hero__title">Пройти тестування</h1>
           <p className="an-hero__lead">
             Ваші відповіді додають до профілю виміряні якості — окремо від дати.
           </p>
@@ -79,7 +79,7 @@ export function AnalysisTestsPage(): ReactElement {
 
         <p className="an-foot">
           Результат зберігається у вашому профілі.{" "}
-          <Link to={ANALYSIS_PATH}>Повернутись до аналізу</Link>.
+          <Link to={ANALYSIS_PATH}>Повернутись до розділів</Link>.
         </p>
       </div>
     </div>

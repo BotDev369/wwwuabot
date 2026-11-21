@@ -39,7 +39,7 @@ describe("крок даних", () => {
   it("без дати не пускає далі, з датою веде на крок систем", async () => {
     renderStep("person");
 
-    expect(screen.getByRole("heading", { name: "Самоаналіз" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Аналізувати за датою" })).toBeTruthy();
     const submit = screen.getByRole("button", { name: "Далі" });
     expect((submit as HTMLButtonElement).disabled).toBe(true);
 

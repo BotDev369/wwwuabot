@@ -60,7 +60,7 @@ describe("підписи для людини й для події", () => {
   it("заголовок і стовпці називають предмет", () => {
     expect(scopeTitle("person")).toBe("Аналіз людини");
     expect(scopeTitle("event")).toBe("Аналіз події");
-    expect(scopeTitle("mixed")).toBe("Аналіз людей і подій");
+    expect(scopeTitle("mixed")).toBe("Люди і події");
     expect(scopeColumnTitle("event")).toBe("Подія");
     expect(scopePlural("mixed")).toBe("Суб'єкти");
   });

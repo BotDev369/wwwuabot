@@ -27,12 +27,12 @@ interface Row {
 
 const COPY: Record<AnalysisMode, { title: string; lead: string; submit: string }> = {
   person: {
-    title: "Самоаналіз",
+    title: "Аналізувати за датою",
     lead: "Виберіть зі збережених або додайте нову дату. Ім'я — лише підпис.",
     submit: "Далі",
   },
   event: {
-    title: "Аналіз подій",
+    title: "Аналізувати за датою",
     lead: "Виберіть зі збережених або додайте дату події.",
     submit: "Далі",
   },
@@ -170,7 +170,7 @@ export function SubjectStep({ mode }: SubjectStepProps): ReactElement {
       <form className="an-setup" onSubmit={submit}>
         <a className="an-back" href={ANALYSIS_PATH}>
           <Icon name="arrow-left" size={16} />
-          До аналізу
+          До розділів
         </a>
 
         <header className="an-setup__head">

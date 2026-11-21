@@ -74,7 +74,7 @@ export function encodeScopes(kinds: readonly SubjectKind[]): string {
 
 /** Підпис над результатом: що саме зараз читають. */
 export function scopeTitle(scope: AnalysisScope): string {
-  if (scope === "mixed") return "Аналіз людей і подій";
+  if (scope === "mixed") return "Люди і події";
   return scope === "event" ? "Аналіз події" : "Аналіз людини";
 }
 

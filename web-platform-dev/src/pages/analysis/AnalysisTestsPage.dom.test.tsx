@@ -63,7 +63,7 @@ describe("каталог тестів", () => {
     });
     renderPage();
 
-    expect(screen.getByRole("heading", { name: "Тести" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Пройти тестування" })).toBeTruthy();
     expect(screen.getByText("6 питань · 2 хвилини · додає 16 якостей")).toBeTruthy();
     // Тест без відомих якостей не обіцяє цифру, якої не знає.
     expect(screen.getByText("3 питання · 1 хвилина")).toBeTruthy();

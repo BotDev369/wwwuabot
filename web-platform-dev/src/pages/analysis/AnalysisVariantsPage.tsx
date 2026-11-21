@@ -35,7 +35,7 @@ export function AnalysisVariantsPage(): ReactElement {
     <div className="wb-page wb-page-scroll">
       <div className="an-hub">
         <a className="an-back" href={ANALYSIS_PATH}>
-          До аналізу
+          До розділів
         </a>
 
         <header className="an-hero an-hero--slim">

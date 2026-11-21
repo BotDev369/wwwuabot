@@ -94,11 +94,6 @@ export function AnalysisHub({ variant = 2, withHero = true }: AnalysisHubProps =
           <header className="an-hero">
             <p className="an-hero__kicker">ПАЛЯНИЦЯ</p>
             <h1 className="an-hero__title">Пізнай себе, оточуючих та події.</h1>
-            {variant === 2 && (
-              <p className="an-hero__lead">
-                Дата народження й тест — два незалежні погляди на ту саму людину.
-              </p>
-            )}
           </header>
         )}
 

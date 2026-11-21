@@ -42,7 +42,7 @@ export function screenKeyOfPath(pathname: string): string {
   if (at(SERVICES_PATH)) return "services";
   if (at(ACCOUNT_PATH) || path === "/") return "account";
   // Один розділ — один ключ: головна, кроки, системи й тести світять журналу
-  // «Аналіз людей та подій», а не чотири різні екрани.
+  // «Аналіз», а не чотири різні екрани.
   if (at(ANALYSIS_PATH)) return "analysis";
   return "page";
 }

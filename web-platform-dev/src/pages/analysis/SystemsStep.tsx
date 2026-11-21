@@ -20,7 +20,7 @@ interface SystemsStepProps {
 const ALL = LENSES.map((lens) => lens.id);
 
 export function SystemsStep({ mode }: SystemsStepProps): ReactElement {
-  useScreenChrome({ title: "Системи" });
+  useScreenChrome({ title: mode === "compare" ? "Співставити" : "Аналізувати за датою" });
   const navigate = useNavigate();
   const search = window.location.search;
   const dates = readDates(search);
@@ -90,7 +90,7 @@ export function SystemsStep({ mode }: SystemsStepProps): ReactElement {
 
         <a className="an-back" href={ANALYSIS_PATH}>
           <Icon name="arrow-left" size={16} />
-          До аналізу
+          До розділів
         </a>
       </form>
     </div>

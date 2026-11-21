@@ -85,7 +85,7 @@ function Section({
 }
 
 export function AnalysisCompare(): ReactElement {
-  useScreenChrome({ title: "Співставлення" });
+  useScreenChrome({ title: "Співставити" });
   const search = window.location.search;
   const dates = readDates(search);
   const subject = readSubject(search, dates.length);
@@ -117,11 +117,11 @@ export function AnalysisCompare(): ReactElement {
       <div className="an-compare">
         <a className="an-back" href={ANALYSIS_PATH}>
           <Icon name="arrow-left" size={16} />
-          До аналізу
+          До розділів
         </a>
 
         <header className="an-hero an-hero--slim">
-          <p className="an-hero__kicker">Співставлення</p>
+          <p className="an-hero__kicker">Співставити</p>
           <h1 className="an-hero__title">
             {dates.length >= 2 ? "Що вас об'єднує" : "Кого співставляємо?"}
           </h1>
