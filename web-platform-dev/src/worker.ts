@@ -46,6 +46,7 @@ function fixAssetHeaders(res: Response, url: string): Response {
  */
 function isDocumentRequest(request: Request, url: URL): boolean {
   if (request.method !== "GET") return false;
+  if (url.pathname === "/api" || url.pathname.startsWith("/api/")) return false;
   if (/\.[a-z0-9]+$/i.test(url.pathname)) return false;
   return (request.headers.get("Accept") ?? "").includes("text/html");
 }

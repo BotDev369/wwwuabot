@@ -75,6 +75,21 @@ describe("worker: старі адреси", () => {
     expect(assets).not.toHaveBeenCalled();
   });
 
+  it("API з Accept: text/html не отримує версійний редирект", async () => {
+    const { env, api, assets } = harness(async () => Response.json({ ok: true, to: null }), "v42");
+
+    const response = await worker.fetch(
+      new Request("https://platform.test/api/my-dates", {
+        headers: { Accept: "text/html", "X-Telegram-Init-Data": "test" },
+      }),
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(api).toHaveBeenCalledOnce();
+    expect(assets).not.toHaveBeenCalled();
+  });
+
   it("документ із поточною версією віддає застосунок", async () => {
     const { env, assets } = harness(async () => Response.json({ ok: true, to: null }), "v42");
 
