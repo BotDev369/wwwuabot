@@ -1,26 +1,25 @@
 // @vitest-environment jsdom
 /**
- * Довідник якостей: без дати показує опис і кнопку «Визначити», з датою —
- * порахований рівень і докази систем. Тест ловить мовчазну поломку: якість без
- * систем або кнопка, що нікуди не веде.
+ * Довідник якостей: акордеон із описом, плюсом/мінусом і системами; «Визначити»
+ * рахує лише обрану якість, а результат переживає reload. Тест ловить мовчазну
+ * поломку: кнопку, що рахує весь портрет, і значення, яке зникає після reload.
  *
  * @module web-platform-dev/src/pages/analysis/AnalysisQualitiesPage.dom.test
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { makeClaim } from "@wwwuabot/shared/qualities";
 import { AnalysisQualitiesPage } from "./AnalysisQualitiesPage";
 
 vi.mock("@wwwuabot/ui/nav", () => ({ useScreenChrome: () => {} }));
-vi.mock("@wwwuabot/ui/analysis/api", () => ({ fetchMyDates: vi.fn() }));
-vi.mock("@wwwuabot/ui/analysis/useDossiers", () => ({ useDossiers: vi.fn() }));
+vi.mock("@wwwuabot/ui/analysis/api", () => ({
+  fetchMyDates: vi.fn(),
+  fetchDossiers: vi.fn(),
+}));
 
 const api = await import("@wwwuabot/ui/analysis/api");
-const hooks = await import("@wwwuabot/ui/analysis/useDossiers");
-
-const EMPTY = { dossiers: [], survey: null, loading: false, error: null };
 
 function renderPage(path = "/analysis/qualities"): void {
   window.history.replaceState({}, "", path);
@@ -33,30 +32,33 @@ function renderPage(path = "/analysis/qualities"): void {
   );
 }
 
+const PATH = "/analysis/qualities?date=1980-03-03&kind=person&label=Олена";
+
 afterEach(() => {
   cleanup();
+  window.localStorage.clear();
   vi.clearAllMocks();
 });
 
 describe("типові якості", () => {
-  it("без дати показує довідник і веде «Визначити» у проходження", async () => {
+  it("без дати показує акордеони й кнопку, яка просить вибрати профіль", async () => {
     vi.mocked(api.fetchMyDates).mockResolvedValue([]);
-    vi.mocked(hooks.useDossiers).mockReturnValue(EMPTY);
     renderPage();
 
     expect(screen.getByRole("heading", { name: "Типові якості людей і подій" })).toBeTruthy();
     expect(screen.getByText("Воля")).toBeTruthy();
     expect(screen.getByText("Цілеспрямованість")).toBeTruthy();
     expect(screen.getAllByText("Не визначено").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Що це:").length).toBeGreaterThan(0);
 
-    const link = screen.getAllByRole("link", { name: /Визначити/ })[0];
-    expect(link.getAttribute("href")).toContain("/analysis/person");
-    expect(link.getAttribute("href")).toContain("quality=");
+    fireEvent.click(screen.getAllByText("Визначити")[0]);
+    expect(screen.getByRole("status").textContent).toContain("Спершу виберіть людину");
+    expect(api.fetchDossiers).not.toHaveBeenCalled();
   });
 
-  it("з датою показує рівень і перехід у профіль", async () => {
+  it("рахує лише обрану якість, показує рівень і зберігає його після reload", async () => {
     vi.mocked(api.fetchMyDates).mockResolvedValue([]);
-    vi.mocked(hooks.useDossiers).mockReturnValue({
+    vi.mocked(api.fetchDossiers).mockResolvedValue({
       dossiers: [
         {
           date: "1980-03-03",
@@ -64,12 +66,12 @@ describe("типові якості", () => {
           symbol: "Овен",
           claims: [
             makeClaim({
-              qualityId: "initiative",
+              qualityId: "control",
               level: 4,
               layer: "symbolic",
               sourceId: "western",
               sourceVersion: "2",
-              evidence: "Сонце в Овні: починає без дозволу",
+              evidence: "Сонце в Овні: тримає кермо",
             }),
           ],
           systems: [],
@@ -77,13 +79,35 @@ describe("типові якості", () => {
         },
       ],
       survey: null,
-      loading: false,
-      error: null,
     });
-    renderPage("/analysis/qualities?date=1980-03-03&kind=person&label=Олена");
+    renderPage(PATH);
 
-    await waitFor(() => expect(screen.getByText("Високий")).toBeTruthy());
-    const link = screen.getByRole("link", { name: /Перевірити профіль/ });
-    expect(decodeURIComponent(link.getAttribute("href") ?? "")).toContain("dates=1980-03-03");
+    const quality = document.querySelector<HTMLElement>('[data-quality-id="control"]');
+    expect(quality).not.toBeNull();
+    fireEvent.click(within(quality as HTMLElement).getByText("Визначити"));
+
+    await waitFor(() =>
+      expect(api.fetchDossiers).toHaveBeenCalledWith(
+        ["1980-03-03"],
+        "person",
+        ["western"],
+        false,
+        "control",
+      ),
+    );
+    await waitFor(() => expect(within(quality as HTMLElement).getByText("Високий")).toBeTruthy());
+    expect(window.localStorage.getItem("analysis-quality:v1:person:1980-03-03:Олена")).toContain(
+      "control",
+    );
+
+    cleanup();
+    renderPage(PATH);
+    await waitFor(() =>
+      expect(
+        within(
+          document.querySelector<HTMLElement>('[data-quality-id="control"]') as HTMLElement,
+        ).getByText("Високий"),
+      ).toBeTruthy(),
+    );
   });
 });

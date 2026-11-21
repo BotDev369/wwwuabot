@@ -1,42 +1,28 @@
 /**
- * Довідник якостей: кожна якість із описом, проявом у високому й низькому
- * рівні, системами, що її визначають, і кнопкою «Визначити». Якщо дату вже
- * обрано, тут видно порахований рівень і докази систем.
+ * Довідник якостей: профіль, домени й точкове визначення обраної якості.
+ * «Визначити» рахує лише цю якість, а не весь портрет; результат зберігається
+ * для профілю й повертається після перезавантаження.
  *
  * @module web-platform-dev/src/pages/analysis/AnalysisQualitiesPage
  */
 
-import { useEffect, useMemo, useState, type ReactElement } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import { Link } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import {
-  LENSES,
-  LENS_QUALITIES,
-  MEASURED_NAME,
-  MEASURED_QUALITIES,
-  QUALITY_DOMAINS,
-  anchorOf,
-  levelLabel,
-  readDossier,
-  type Quality,
-  type QualityClaim,
-  type QualityReading,
-} from "@wwwuabot/shared/qualities";
+import { MEASURED_NAME, QUALITY_DOMAINS, type Quality } from "@wwwuabot/shared/qualities";
 import type { MyDate } from "@wwwuabot/shared/types/mydate";
-import { fetchMyDates } from "@wwwuabot/ui/analysis/api";
-import { useDossiers } from "@wwwuabot/ui/analysis/useDossiers";
+import { fetchDossiers, fetchMyDates } from "@wwwuabot/ui/analysis/api";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
-import { ANALYSIS_PATH, ANALYSIS_PERSON_PATH, analysisStepPath } from "@/app/routes";
-
-const ALL_LENSES = LENSES.map((lens) => lens.id);
-
-type Kind = "person" | "event";
-
-interface Picked {
-  date: string;
-  kind: Kind;
-  label: string;
-}
+import { ANALYSIS_PATH, ANALYSIS_TESTS_PATH } from "@/app/routes";
+import { AnalysisQualityEntry } from "./AnalysisQualityEntry";
+import {
+  qualitySystems,
+  readStored,
+  storageKeyFor,
+  writeStored,
+  type QualityProfile,
+  type StoredMap,
+} from "./analysis-quality-state";
 
 /** Дата людини: `1980-03-03` → `3.03.1980`. */
 function humanDate(date: string): string {
@@ -44,57 +30,26 @@ function humanDate(date: string): string {
   return `${Number(day)}.${month}.${year}`;
 }
 
-function sourceName(sourceId: string): string {
-  if (sourceId === "bigfive") return MEASURED_NAME;
-  return LENSES.find((lens) => lens.id === sourceId)?.name ?? sourceId;
-}
-
-/** Системи, які взагалі можуть назвати цю якість. */
-function systemsOf(qualityId: string): readonly string[] {
-  const ids = LENSES.filter((lens) => LENS_QUALITIES[lens.id]?.includes(qualityId)).map(
-    (lens) => lens.id,
-  );
-  if (MEASURED_QUALITIES.includes(qualityId)) ids.push("bigfive");
-  return ids;
-}
-
-/** Куди веде «Визначити»: з датою — у вибір систем, без неї — у вибір дати. */
-function defineHref(qualityId: string, picked: Picked): string {
-  if (!picked.date) return `${ANALYSIS_PERSON_PATH}?quality=${encodeURIComponent(qualityId)}`;
-  const all = systemsOf(qualityId);
-  const systems = all.filter((id) => id !== "bigfive");
-  const params = new URLSearchParams();
-  params.set("dates", picked.date);
-  params.set("labels", picked.label);
-  params.set("quality", qualityId);
-  if (systems.length > 0) params.set("lenses", systems.join(","));
-  if (all.includes("bigfive")) params.set("survey", "1");
-  return `${analysisStepPath(picked.kind, "systems")}?${params.toString()}`;
-}
-
-function profileHref(claims: readonly QualityClaim[], picked: Picked): string {
-  const lenses = [...new Set(claims.map((claim) => claim.sourceId))].filter(
-    (id) => id !== "bigfive",
-  );
-  const params = new URLSearchParams();
-  params.set("dates", picked.date);
-  params.set("labels", picked.label);
-  if (lenses.length > 0) params.set("lenses", lenses.join(","));
-  if (claims.some((claim) => claim.sourceId === "bigfive")) params.set("survey", "1");
-  return `${analysisStepPath(picked.kind, "result")}?${params.toString()}`;
+function initialProfile(): QualityProfile {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    date: params.get("date") ?? "",
+    kind: params.get("kind") === "event" ? "event" : "person",
+    label: params.get("label") ?? "",
+  };
 }
 
 export function AnalysisQualitiesPage(): ReactElement {
   useScreenChrome({ title: "Типові якості людей і подій" });
-  const [picked, setPicked] = useState<Picked>(() => {
-    const params = new URLSearchParams(window.location.search);
-    return {
-      date: params.get("date") ?? "",
-      kind: params.get("kind") === "event" ? "event" : "person",
-      label: params.get("label") ?? "",
-    };
-  });
+  const [profile, setProfile] = useState<QualityProfile>(initialProfile);
   const [saved, setSaved] = useState<MyDate[]>([]);
+  const [determined, setDetermined] = useState<StoredMap>(() => readStored(storageKeyFor(profile)));
+  const [working, setWorking] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [testHint, setTestHint] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const storageKey = storageKeyFor(profile);
 
   useEffect(() => {
     fetchMyDates()
@@ -102,133 +57,120 @@ export function AnalysisQualitiesPage(): ReactElement {
       .catch(() => setSaved([]));
   }, []);
 
-  const { dossiers, loading, error } = useDossiers(
-    picked.date ? [picked.date] : [],
-    [picked.kind],
-    ALL_LENSES,
-    false,
-  );
-  const dossier = dossiers[0];
+  /** Перехід на інший профіль разом із його збереженими визначеннями. */
+  function applyProfile(next: QualityProfile): void {
+    setProfile(next);
+    setDetermined(readStored(storageKeyFor(next)));
+    setWorking(null);
+    setNotice(null);
+    setTestHint(false);
+    setError(null);
+  }
 
-  const readings = useMemo(() => (dossier ? readDossier(dossier.claims) : null), [dossier]);
-  const known = readings ? readings.reduce((sum, domain) => sum + domain.known, 0) : 0;
-  const byQuality = useMemo(() => {
-    const map = new Map<string, QualityReading>();
-    for (const domain of readings ?? []) {
-      for (const reading of domain.qualities) map.set(reading.quality.id, reading);
+  // Профіль лишається в адресі: reload повертає ту саму людину й ті самі
+  // визначені якості, а не порожній довідник.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (profile.date) {
+      url.searchParams.set("date", profile.date);
+      url.searchParams.set("kind", profile.kind);
+      if (profile.label) url.searchParams.set("label", profile.label);
+      else url.searchParams.delete("label");
+    } else {
+      url.searchParams.delete("date");
+      url.searchParams.delete("kind");
+      url.searchParams.delete("label");
     }
-    return map;
-  }, [readings]);
+    url.searchParams.delete("quality");
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${url.pathname}${url.search}${url.hash}`,
+    );
+  }, [profile]);
 
   /** Вибір саме цього запису, а не першого з такою датою. */
   const selectedId =
     saved.find(
       (one) =>
-        one.date === picked.date &&
-        (one.type === "event" ? "event" : "person") === picked.kind &&
-        (!picked.label || one.name === picked.label),
+        one.date === profile.date &&
+        (one.type === "event" ? "event" : "person") === profile.kind &&
+        (!profile.label || one.name === profile.label),
     )?.id ?? "";
 
   function choose(value: string): void {
     const one = saved.find((item) => item.id === value);
     if (!one) {
-      setPicked({ date: "", kind: "person", label: "" });
+      applyProfile({ date: "", kind: "person", label: "" });
       return;
     }
-    setPicked({
+    applyProfile({
       date: one.date,
       kind: one.type === "event" ? "event" : "person",
       label: one.name,
     });
   }
 
-  function renderQuality(quality: Quality): ReactElement {
-    const reading = byQuality.get(quality.id);
-    const claims = reading?.claims ?? [];
-    const systems = systemsOf(quality.id);
-    const measured = systems.includes("bigfive");
-    const level = reading?.level ?? null;
-    const label =
-      level === null ? (claims.length > 0 ? "Різні відповіді" : "Не визначено") : levelLabel(level);
-
-    return (
-      <li className="an-quality" key={quality.id}>
-        <details className="an-quality__details">
-          <summary className="an-quality__summary">
-            <span className="an-quality__name">{quality.name}</span>
-            <span className="an-quality__level" data-level={level ?? 0}>
-              {label}
-            </span>
-            <Icon name="chevron-down" size={16} className="an-quality__caret" />
-          </summary>
-
-          <div className="an-quality__body">
-            <p className="an-quality__meaning">
-              <strong>Що це:</strong> {quality.definition}
-            </p>
-            <p className="an-quality__meaning">
-              <strong>Проявляється високо:</strong> {anchorOf(quality, 5)}
-            </p>
-            <p className="an-quality__meaning">
-              <strong>Проявляється низько:</strong> {anchorOf(quality, 1)}
-            </p>
-
-            <div className="an-quality__systems">
-              <p className="an-quality__meaning">
-                <strong>Визначають:</strong>{" "}
-                {systems.length > 0 ? systems.map(sourceName).join(", ") : "поки жодна система"}.
-              </p>
-              {systems.length > 0 && (
-                <details className="an-claim__details">
-                  <summary>Які параметри</summary>
-                  <ul className="an-claim__steps">
-                    {LENSES.filter((lens) => systems.includes(lens.id)).map((lens) => (
-                      <li key={lens.id}>
-                        {lens.name}: {lens.rule}
-                      </li>
-                    ))}
-                    {measured && <li>{MEASURED_NAME}: п'ять факторів самооцінки.</li>}
-                  </ul>
-                </details>
-              )}
-            </div>
-
-            {claims.map((claim) => (
-              <div className="an-claim" key={`${claim.sourceId}-${claim.evidence}`}>
-                <p className="an-claim__source">
-                  {sourceName(claim.sourceId)} · {levelLabel(claim.level)}
-                </p>
-                <p className="an-claim__evidence">{claim.evidence}</p>
-                {claim.details && claim.details.length > 0 && (
-                  <details className="an-claim__details">
-                    <summary>Розрахунок</summary>
-                    <ol className="an-claim__steps">
-                      {claim.details.map((step) => (
-                        <li key={step}>{step}</li>
-                      ))}
-                    </ol>
-                  </details>
-                )}
-              </div>
-            ))}
-
-            <div className="an-tools">
-              {claims.length > 0 && (
-                <Link className="an-tool" to={profileHref(claims, picked)}>
-                  <Icon name="check" size={16} />
-                  Перевірити профіль
-                </Link>
-              )}
-              <Link className="an-tool" to={defineHref(quality.id, picked)}>
-                <Icon name="plus" size={16} />
-                Визначити
-              </Link>
-            </div>
-          </div>
-        </details>
-      </li>
-    );
+  function chooseDate(value: string): void {
+    applyProfile({ ...profile, date: value, label: "" });
   }
+
+  async function determine(quality: Quality): Promise<void> {
+    setNotice(null);
+    setTestHint(false);
+    setError(null);
+    if (!profile.date) {
+      document.querySelector<HTMLSelectElement>(".an-select")?.focus();
+      setNotice("Спершу виберіть людину або дату.");
+      return;
+    }
+    const systems = qualitySystems(quality.id);
+    const dateSystems = systems.filter((id) => id !== "bigfive");
+    const measured = systems.includes("bigfive");
+    if (dateSystems.length === 0) {
+      setTestHint(measured);
+      setNotice(
+        measured
+          ? `«${quality.name}» визначає лише ${MEASURED_NAME}.`
+          : `«${quality.name}» поки не визначає жодна система.`,
+      );
+      return;
+    }
+
+    setWorking(quality.id);
+    try {
+      const result = await fetchDossiers(
+        [profile.date],
+        profile.kind,
+        dateSystems,
+        false,
+        quality.id,
+      );
+      const claims = (result.dossiers[0]?.claims ?? []).filter(
+        (claim) => claim.qualityId === quality.id,
+      );
+      const next: StoredMap = {
+        ...determined,
+        [quality.id]: { claims, checkedAt: new Date().toISOString() },
+      };
+      setDetermined(next);
+      writeStored(storageKey, next);
+      if (claims.length === 0) {
+        setTestHint(measured);
+        setNotice(
+          measured
+            ? `Дата не дала значення для «${quality.name}».`
+            : `Системи перевірені, але «${quality.name}» не визначено.`,
+        );
+      }
+    } catch (reason: unknown) {
+      setError(reason instanceof Error ? reason.message : "Помилка розрахунку");
+    } finally {
+      setWorking(null);
+    }
+  }
+
+  const known = Object.values(determined).filter((one) => one.claims.length > 0).length;
 
   return (
     <div className="wb-page wb-page-scroll">
@@ -267,30 +209,43 @@ export function AnalysisQualitiesPage(): ReactElement {
             <input
               className="an-date"
               type="date"
-              value={picked.date}
+              value={profile.date}
               max="2100-12-31"
-              onChange={(event) =>
-                setPicked((current) => ({ ...current, date: event.target.value, label: "" }))
-              }
+              onChange={(event) => chooseDate(event.target.value)}
             />
           </label>
 
-          {picked.date && (
+          {profile.date && (
             <p className="an-section__lead">
-              {picked.label || (picked.kind === "event" ? "Подія" : "Людина")} ·{" "}
-              {humanDate(picked.date)} · {known} із 36 якостей визначено.
+              {profile.label || (profile.kind === "event" ? "Подія" : "Людина")} ·{" "}
+              {humanDate(profile.date)} · {known} із 36 якостей визначено.
             </p>
           )}
 
-          {loading && <p className="an-empty">Рахуємо…</p>}
-          {error && <p className="an-empty">{error}</p>}
-          {dossier?.note === "event-not-modelled" && (
+          {profile.kind === "event" && profile.date && (
             <p className="an-empty">Подія в ядрі ще не описана — нижче лишається довідник.</p>
+          )}
+          {notice && (
+            <p className="an-empty" role="status">
+              {notice}{" "}
+              {testHint && (
+                <>
+                  <Link to={ANALYSIS_TESTS_PATH}>Пройти тест</Link>.
+                </>
+              )}
+            </p>
+          )}
+          {error && (
+            <p className="an-empty" role="alert">
+              {error}
+            </p>
           )}
         </section>
 
         {QUALITY_DOMAINS.map((domain) => {
-          const count = readings?.find((one) => one.domain.id === domain.id)?.known ?? 0;
+          const count = domain.qualities.filter(
+            (quality) => (determined[quality.id]?.claims.length ?? 0) > 0,
+          ).length;
           return (
             <details className="an-fold" key={domain.id}>
               <summary className="an-fold__summary">
@@ -301,7 +256,18 @@ export function AnalysisQualitiesPage(): ReactElement {
                 <Icon name="chevron-down" size={18} className="an-quality__caret" />
               </summary>
               <div className="an-fold__body">
-                <ul className="an-qualities">{domain.qualities.map(renderQuality)}</ul>
+                <ul className="an-qualities">
+                  {domain.qualities.map((quality) => (
+                    <AnalysisQualityEntry
+                      key={quality.id}
+                      quality={quality}
+                      record={determined[quality.id]}
+                      profile={profile}
+                      busy={working === quality.id}
+                      onDetermine={(one) => void determine(one)}
+                    />
+                  ))}
+                </ul>
               </div>
             </details>
           );

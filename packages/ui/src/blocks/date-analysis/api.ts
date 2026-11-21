@@ -183,11 +183,12 @@ export async function fetchDossiers(
   kind: string | undefined,
   lenses: readonly string[],
   survey: boolean,
+  qualityId?: string,
 ): Promise<{ dossiers: DossierRead[]; survey: SurveyRead | null }> {
   const response = await fetch("/api/mydate/dossier", {
     method: "POST",
     headers: { "Content-Type": "application/json", ...telegramAuthHeaders() },
-    body: JSON.stringify({ dates, kind, lenses, survey }),
+    body: JSON.stringify({ dates, kind, lenses, survey, ...(qualityId ? { qualityId } : {}) }),
   });
   if (!response.ok) throw await failure(response, "Помилка аналізу");
   const data = await json(response);

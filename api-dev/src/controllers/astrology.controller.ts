@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { parseScopes } from "@wwwuabot/shared/content";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
-import { LENSES, measuredClaims } from "@wwwuabot/shared/qualities";
+import { LENSES, getQuality, measuredClaims } from "@wwwuabot/shared/qualities";
 import type { Env } from "../shared/types";
 import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
@@ -38,6 +38,7 @@ const dossierBody = z
     kind: z.string().optional(),
     lenses: z.array(z.string()).optional(),
     survey: z.boolean().optional(),
+    qualityId: z.string().optional(),
   })
   .passthrough();
 
@@ -162,10 +163,21 @@ export async function handleDossier(request: Request, env: Env): Promise<Respons
       return json({ ok: false, error: `Unknown lens: ${unknown.join(", ")}` }, 400);
     }
 
+    const qualityId = parsed.body.qualityId;
+    if (qualityId && !getQuality(qualityId)) {
+      return json({ ok: false, error: `Unknown quality: ${qualityId}` }, 400);
+    }
+
     const kinds = parseScopes(parsed.body.kind, validDates.length);
-    const dossiers = validDates.map((date, index) =>
-      buildDossier(date, kinds[index] ?? "person", lenses),
-    );
+    const dossiers = validDates.map((date, index) => {
+      const dossier = buildDossier(date, kinds[index] ?? "person", lenses);
+      // Точкове визначення не тягне інші якості: назовні їде рівно та, яку
+      // людина обрала. Нотатка про відсутність портрета лишається від повного
+      // набору — вона описує дату, а не фільтр.
+      return qualityId
+        ? { ...dossier, claims: dossier.claims.filter((claim) => claim.qualityId === qualityId) }
+        : dossier;
+    });
 
     // **Виміряне — тільки зі згоди й тільки для власника.** Відповіді описують
     // одну людину, тож вони не приїжджають ні без запиту, ні без підписаного

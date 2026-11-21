@@ -273,6 +273,38 @@ describe("портрет за датою", () => {
     expect(await response.json()).toEqual({ ok: false, error: "Unknown lens: vedic" });
   });
 
+  it("точкове визначення віддає свідчення лише обраної якості", async () => {
+    const response = await handleDossier(
+      request("/api/mydate/dossier", {
+        dates: ["1980-03-03"],
+        lenses: ["western", "numerology", "chinese", "mayan"],
+        qualityId: "empathy",
+      }),
+    );
+    const body = (await response.json()) as {
+      dossiers: Array<{ claims: Array<{ qualityId: string }> }>;
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.dossiers[0]?.claims.length).toBeGreaterThan(0);
+    expect(body.dossiers[0]?.claims.every((claim) => claim.qualityId === "empathy")).toBe(true);
+  });
+
+  it("невідома якість — 400, а не порожній фільтр", async () => {
+    const response = await handleDossier(
+      request("/api/mydate/dossier", {
+        dates: ["1980-03-03"],
+        lenses: ["western"],
+        qualityId: "no-such-quality",
+      }),
+    );
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      ok: false,
+      error: "Unknown quality: no-such-quality",
+    });
+  });
+
   it("понад 30 дат — відмова, а не запит на пів хвилини", async () => {
     const dates = Array.from(
       { length: 31 },
