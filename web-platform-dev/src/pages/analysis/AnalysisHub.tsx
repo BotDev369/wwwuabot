@@ -85,15 +85,15 @@ interface AnalysisHubProps {
 export function AnalysisHub({ variant = 2, withHero = true }: AnalysisHubProps = {}): ReactElement {
   // Шапка належить платформі, а не одній фічі: шість розділів нижче —
   // рівноправні входи, і жоден не називає весь застосунок.
-  useScreenChrome({ title: "ПАЛЯНИЦЯ" });
+  useScreenChrome({ title: "Аналіз людей і подій" });
 
   return (
     <div className="wb-page wb-page-scroll">
       <div className="an-hub" data-variant={variant}>
         {withHero && (
           <header className="an-hero">
-            <p className="an-hero__kicker">ПАЛЯНИЦЯ</p>
-            <h1 className="an-hero__title">Пізнай себе, оточуючих та події.</h1>
+            <h1 className="an-hero__title">Аналіз людей і подій</h1>
+            <p className="an-hero__lead">Пізнай себе, оточуючих та події.</p>
           </header>
         )}
 

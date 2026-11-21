@@ -36,11 +36,11 @@ const SECTIONS: readonly [string, string][] = [
 ];
 
 describe("головна аналізу", () => {
-  it("називає платформу й показує шість рівноправних розділів", () => {
+  it("називає фічу, а не платформу, й показує шість рівноправних розділів", () => {
     renderHub();
 
-    expect(screen.getByText("ПАЛЯНИЦЯ")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Пізнай себе, оточуючих та події." })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Аналіз людей і подій" })).toBeTruthy();
+    expect(screen.queryByText("ПАЛЯНИЦЯ")).toBeNull();
   });
 
   it("показує всі розділи фічі й веде кожен на свою адресу", () => {
