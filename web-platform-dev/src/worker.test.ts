@@ -75,6 +75,27 @@ describe("worker: старі адреси", () => {
     expect(assets).not.toHaveBeenCalled();
   });
 
+  it("навігація без Accept теж отримує версію", async () => {
+    const { env, assets } = harness(async () => Response.json({ ok: true, to: null }), "v42");
+
+    const response = await worker.fetch(new Request("https://platform.test/analysis"), env);
+
+    expect(response.status).toBe(302);
+    expect(response.headers.get("Location")).toBe("https://platform.test/analysis?v=v42");
+    expect(assets).not.toHaveBeenCalled();
+  });
+
+  it("старі екрани аналізу ведуть у нові розділи", async () => {
+    const { env } = harness(async () => Response.json({ ok: true, to: null }), "v42");
+
+    const variants = await worker.fetch(documentRequest("/analysis/variants?from=old"), env);
+    const sets = await worker.fetch(documentRequest("/analysis/sets"), env);
+
+    expect(variants.status).toBe(302);
+    expect(variants.headers.get("Location")).toBe("https://platform.test/analysis?from=old");
+    expect(sets.headers.get("Location")).toBe("https://platform.test/analysis/people");
+  });
+
   it("API з Accept: text/html не отримує версійний редирект", async () => {
     const { env, api, assets } = harness(async () => Response.json({ ok: true, to: null }), "v42");
 

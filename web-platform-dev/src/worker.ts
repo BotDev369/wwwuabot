@@ -40,15 +40,18 @@ function fixAssetHeaders(res: Response, url: string): Response {
 }
 
 /**
- * Перехід по документу: `GET`, без розширення файла, браузер чекає HTML.
- * Асети й виклики `/api/` редирект не питають — інакше кожен файл збірки
- * робив би зайвий похід у мережу.
+ * Сторінковий перехід: `GET`, без розширення файла, не `/api/`.
+ *
+ * **Не перевіряємо `Accept`.** Telegram WebView і частина навігацій
+ * надсилають не `text/html`, а широкий `Accept`; через це редирект на версію
+ * не спрацьовував і назовні повертався закешований старий документ. Асети й
+ * `/api/` виключені, щоб файли збірки та запити даних не робили зайвий похід.
  */
-function isDocumentRequest(request: Request, url: URL): boolean {
+function isPageRequest(request: Request, url: URL): boolean {
   if (request.method !== "GET") return false;
   if (url.pathname === "/api" || url.pathname.startsWith("/api/")) return false;
   if (/\.[a-z0-9]+$/i.test(url.pathname)) return false;
-  return (request.headers.get("Accept") ?? "").includes("text/html");
+  return true;
 }
 
 /**
@@ -60,7 +63,7 @@ function isDocumentRequest(request: Request, url: URL): boolean {
  * зберігається браузером.
  */
 function versionRedirect(request: Request, url: URL, version: string): Response | null {
-  if (!isDocumentRequest(request, url)) return null;
+  if (!isPageRequest(request, url)) return null;
   if (url.searchParams.get("v") === version) return null;
 
   const target = new URL(url);
@@ -76,6 +79,22 @@ function versionRedirect(request: Request, url: URL, version: string): Response 
 }
 
 /**
+ * Старі адреси аналізу, які ще могли лишитися в повідомленнях бота або
+ * закладках. Вони показували попередні екрани («Варіанти головної», помилку
+ * наборів), тому ведуть у нові розділи, а не в порожнечу.
+ */
+const LEGACY_PAGES: Record<string, string> = {
+  "/analysis/variants": "/analysis",
+  "/analysis/sets": "/analysis/people",
+};
+
+function legacyRedirect(url: URL): Response | null {
+  const to = LEGACY_PAGES[url.pathname];
+  if (!to) return null;
+  return Response.redirect(`${url.origin}${to}${url.search}`, 302);
+}
+
+/**
  * 301, якщо ця адреса — стара адреса існуючої сторінки (`slug_aliases`).
  *
  * Бази в цього воркера немає, тож адресу питає `api-dev` через service
@@ -83,7 +102,7 @@ function versionRedirect(request: Request, url: URL, version: string): Response 
  * віддаємо застосунок, як раніше.
  */
 async function pageRedirect(request: Request, env: Env, url: URL): Promise<Response | null> {
-  if (!isDocumentRequest(request, url)) return null;
+  if (!isPageRequest(request, url)) return null;
 
   const probe = new URL("/api/public/redirect", url.origin);
   probe.searchParams.set("path", url.pathname);
@@ -113,6 +132,9 @@ export default {
     // Адреса — контракт: переїзд сторінки лишає за собою 301, а не 404
     // (`docs/URL.md`). Перевірка коштує один виклик у `api-dev` і лише на
     // переходах по документу.
+    const legacy = legacyRedirect(url);
+    if (legacy) return legacy;
+
     const redirect = await pageRedirect(request, env, url);
     if (redirect) return redirect;
 
