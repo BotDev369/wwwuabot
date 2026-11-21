@@ -16,6 +16,7 @@ export const LENSES: readonly LensDefinition[] = [WESTERN, NUMEROLOGY, CHINESE, 
 export {
   CHINESE,
   CHINESE_ANIMALS,
+  CHINESE_QUALITIES,
   SOLAR_MONTHS,
   chineseBranch,
   chineseClaims,
@@ -26,6 +27,7 @@ export {
 export {
   MAYAN,
   MAYAN_DAY_SIGNS,
+  MAYAN_QUALITIES,
   mayanClaims,
   mayanSeal,
   mayanTone,
@@ -34,9 +36,17 @@ export {
 export {
   NUMEROLOGY,
   NUMEROLOGY_NUMBERS,
+  NUMEROLOGY_QUALITIES,
   chainLabel,
   numerologyClaims,
   type NumerologyProfile,
 } from "./numerology";
-export { WESTERN, WESTERN_SIGNS, sunInSign, westernClaims, type WesternProfile } from "./western";
+export {
+  WESTERN,
+  WESTERN_QUALITIES,
+  WESTERN_SIGNS,
+  sunInSign,
+  westernClaims,
+  type WesternProfile,
+} from "./western";
 export { claimsOf, strongestPerQuality, type LensRule } from "./rule";

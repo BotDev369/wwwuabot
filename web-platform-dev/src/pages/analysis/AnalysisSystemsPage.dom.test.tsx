@@ -68,13 +68,14 @@ describe("системи аналізу", () => {
   it("картка каже назву, кількість показників і що система бере з дати", () => {
     renderPage();
 
-    expect(screen.getByRole("heading", { name: "Системи аналізу" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Про системи аналізу" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Західна астрологія" })).toBeTruthy();
     expect(screen.getByText("2 показників")).toBeTruthy();
     expect(screen.getByText("Тропічна астрологія читає положення Сонця.")).toBeTruthy();
     expect(screen.getByText("Знак Сонця")).toBeTruthy();
     expect(screen.getByText("Скорпіон")).toBeTruthy();
     expect(screen.getByText(/Що бере з дати:/)).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Велика п'ятірка" })).toBeTruthy();
   });
 
   it("приклад рахується для обраної дати", () => {

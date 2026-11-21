@@ -25,7 +25,9 @@ export async function handleAccess(request: Request, env: Env): Promise<Response
   const userId = await tryResolveUserId(request, env);
 
   let allowed = false;
-  if (userId !== null) {
+  if (userId !== null && env.PLATFORM_OPEN_ACCESS === "true") {
+    allowed = true;
+  } else if (userId !== null) {
     try {
       const row = await env.DB.prepare("SELECT user_id, inviter_id FROM users WHERE user_id = ?")
         .bind(userId)

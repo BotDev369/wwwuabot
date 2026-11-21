@@ -35,6 +35,12 @@ export const NUMEROLOGY: LensDefinition = {
     "особистий рік залежить від поточного року, а не від дати народження",
     "жодних прогнозів: число описує тему, а не подію",
   ],
+  history:
+    "Піфагорійська школа читала число як міру й порядок; середньовічні трактати про числа переписували цю думку, а сучасна нумерологія збирає дату окремими згортками.",
+  spread:
+    "Від грецьких шкіл і середньовічних трактатів — до популярних книжок XX століття й онлайн-калькуляторів у всьому світі.",
+  usage:
+    "Самопізнання й розбір дат. Ми рахуємо шість показників дати; число імені не рахуємо, бо імені не питаємо.",
   source:
     "Піфагорійська школа в редакції Ганса Декоза й Метью Гудвіна: окремі згортки місяця, дня й року; майстер-числа 11/22/33; кармічні 13/14/16/19.",
 };
@@ -179,6 +185,19 @@ const BY_KARMIC: Readonly<Record<number, LensRule>> = {
   16: { qualityId: "honesty", level: 2, note: "16: скромність після падіння" },
   19: { qualityId: "autonomy", level: 2, note: "19: самостійність, що приймає допомогу" },
 };
+
+/** Якості, які ця лінза може назвати: для довідника «хто це визначає». */
+export const NUMEROLOGY_QUALITIES: readonly string[] = [
+  ...new Set([
+    ...Object.values(BY_LIFE_PATH)
+      .flat()
+      .map((rule) => rule.qualityId),
+    ...Object.values(BY_THEME).map((rule) => rule.qualityId),
+    ...Object.values(BY_PINNACLE).map((rule) => rule.qualityId),
+    ...Object.values(BY_CHALLENGE).map((rule) => rule.qualityId),
+    ...Object.values(BY_KARMIC).map((rule) => rule.qualityId),
+  ]),
+].sort();
 
 export const NUMEROLOGY_NUMBERS: readonly number[] = Object.keys(BY_LIFE_PATH).map(Number);
 

@@ -9,7 +9,7 @@ import { useState, type FormEvent, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { LENSES } from "@wwwuabot/shared/qualities";
-import { readDates, readSubject } from "@wwwuabot/ui/analysis/params";
+import { readDates, readLenses, readSubject } from "@wwwuabot/ui/analysis/params";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { ANALYSIS_PATH, analysisStepPath, type AnalysisMode } from "@/app/routes";
 
@@ -25,7 +25,10 @@ export function SystemsStep({ mode }: SystemsStepProps): ReactElement {
   const search = window.location.search;
   const dates = readDates(search);
   const subject = readSubject(search, dates.length);
-  const [chosen, setChosen] = useState<readonly string[]>(ALL);
+  const preselected = readLenses(search);
+  const [chosen, setChosen] = useState<readonly string[]>(
+    preselected.length > 0 ? preselected : ALL,
+  );
 
   function toggle(id: string): void {
     setChosen((current) =>

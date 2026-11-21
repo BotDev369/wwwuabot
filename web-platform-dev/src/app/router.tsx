@@ -26,7 +26,11 @@ import { createBrowserRouter } from "react-router-dom";
 import { PlatformShell } from "@/layout/PlatformShell";
 import {
   ADS_ROUTE,
+  ANALYSIS_MATCH_PATH,
+  ANALYSIS_PEOPLE_PATH,
+  ANALYSIS_QUALITIES_PATH,
   ANALYSIS_ROUTE,
+  ANALYSIS_VARIANTS_PATH,
   CONTACTS_ROUTE,
   DAY_ROUTE,
   FAVORITES_ROUTE,
@@ -49,9 +53,13 @@ import { ContactsPage } from "@/pages/ContactsPage";
 import { FavoritesPage } from "@/pages/favorites/FavoritesPage";
 import { TrackersPage } from "@/pages/trackers/TrackersPage";
 import { AnalysisHub } from "@/pages/analysis/AnalysisHub";
+import { AnalysisVariantsPage } from "@/pages/analysis/AnalysisVariantsPage";
+import { AnalysisMatch } from "@/pages/analysis/AnalysisMatch";
 import { AnalysisCompare } from "@/pages/analysis/AnalysisCompare";
 import { AnalysisProfile } from "@/pages/analysis/AnalysisProfile";
 import { AnalysisSystemsPage } from "@/pages/analysis/AnalysisSystemsPage";
+import { AnalysisQualitiesPage } from "@/pages/analysis/AnalysisQualitiesPage";
+import { AnalysisPeoplePage } from "@/pages/analysis/AnalysisPeoplePage";
 import { AnalysisTestScreen } from "@/pages/analysis/AnalysisTestScreen";
 import { AnalysisTestsPage } from "@/pages/analysis/AnalysisTestsPage";
 import { SubjectStep } from "@/pages/analysis/SubjectStep";
@@ -116,6 +124,13 @@ export const router = createBrowserRouter([
       { path: `${ANALYSIS_ROUTE}/compare/systems`, element: <SystemsStep mode="compare" /> },
       { path: `${ANALYSIS_ROUTE}/compare/result`, element: <AnalysisCompare /> },
       { path: `${ANALYSIS_ROUTE}/compare`, element: <SubjectStep mode="compare" /> },
+      { path: ANALYSIS_MATCH_PATH, element: <AnalysisMatch /> },
+      { path: ANALYSIS_PEOPLE_PATH, element: <AnalysisPeoplePage /> },
+      { path: ANALYSIS_QUALITIES_PATH, element: <AnalysisQualitiesPage /> },
+      { path: ANALYSIS_VARIANTS_PATH, element: <AnalysisVariantsPage /> },
+      { path: `${ANALYSIS_ROUTE}/variant/1`, element: <AnalysisHub variant={1} /> },
+      { path: `${ANALYSIS_ROUTE}/variant/2`, element: <AnalysisHub variant={2} /> },
+      { path: `${ANALYSIS_ROUTE}/variant/3`, element: <AnalysisHub variant={3} /> },
       { path: `${ANALYSIS_ROUTE}/systems`, element: <AnalysisSystemsPage /> },
       { path: `${ANALYSIS_ROUTE}/tests/:key`, element: <AnalysisTestScreen /> },
       { path: `${ANALYSIS_ROUTE}/tests`, element: <AnalysisTestsPage /> },

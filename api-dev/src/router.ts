@@ -4,6 +4,7 @@ import { enforcePlatformAccess } from "./shared/platform-gate";
 import { handleAccess } from "./controllers/access.controller";
 import { handleAccessRequest } from "./controllers/access-request.controller";
 import { handleHealth, handleDeepHealth } from "./controllers/health.controller";
+import { handlePreviewSession } from "./controllers/preview-session.controller";
 import { matchMyDateRoute } from "./routes/mydate";
 import { handleScenario } from "./controllers/scenarios.controller";
 import {
@@ -15,6 +16,7 @@ import {
 } from "./controllers/scenarios-admin.controller";
 import { matchScreensRoute } from "./routes/screens";
 import { handleMyDates } from "./controllers/my-dates.controller";
+import { handleAnalysisSets } from "./controllers/analysis-sets.controller";
 import {
   handleWebhookInfo as handleBotWebhookInfo,
   handleSetupWebhook as handleBotSetupWebhook,
@@ -119,6 +121,14 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   const denied = await enforcePlatformAccess(request, env, pathname);
   if (denied) return denied;
 
+  // ── Сесія прев'ю (лише dev) ─────────────────────────────────────
+  // Сторінку треба подивитися поза Telegram, де `initData` не існує. Підписує
+  // її воркер, у якого є токен; поза `dev` шлях віддає 404
+  // (`controllers/preview-session.controller.ts`).
+  if (pathname === "/api/dev/preview-session" && request.method === "GET") {
+    return handlePreviewSession(env);
+  }
+
   // ── Bot Settings API ─────────────────────────────────────────────
   if (pathname === "/api/bot/webhook-info" && request.method === "GET") {
     return handleBotWebhookInfo(request, env);
@@ -157,6 +167,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // ── My-Dates CRUD ───────────────────────────────────────────────
   if (pathname === "/api/my-dates") {
     return handleMyDates(request, env);
+  }
+
+  // ── Набори для співставлення: склад, а не значення ──────────────
+  if (pathname === "/api/analysis-sets") {
+    return handleAnalysisSets(request, env);
   }
 
   // ── Notes: нотатки людини (ідентичність із підписаного initData) ─

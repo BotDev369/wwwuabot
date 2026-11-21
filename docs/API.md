@@ -13,6 +13,7 @@
 
 | Метод | Шлях | Обробник |
 |---|---|---|
+| `GET` | `/api/dev/preview-session` | `handlePreviewSession` |
 | `ANY` | `/api/messages/media/<…>` | `handleMessageMediaFile` |
 | `ANY` | `/api/mydate/analysis/<…>` | `handleAnalysisRead` |
 | `POST` | `/api/mydate/analyze` | `handleAnalyze` |
@@ -37,6 +38,7 @@
 
 | Метод | Шлях | Обробник |
 |---|---|---|
+| `ANY` | `/api/analysis-sets` | `handleAnalysisSets` |
 | `ANY` | `/api/contacts` | `handleContacts` |
 | `POST` | `/api/contacts/link` | `handleContactLink` |
 | `ANY` | `/api/favorites` | `handleFavorites` |
@@ -130,4 +132,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **101**.
+Усього шляхів: **103**.

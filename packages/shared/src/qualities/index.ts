@@ -42,6 +42,27 @@ export {
 } from "./profile";
 
 export {
+  LAYER_PRIORITY,
+  ROLES,
+  ROLE_IDS,
+  domainOfQuality,
+  getRole,
+  matchRole,
+  parseRole,
+  resolveQuality,
+  type ResolvedQuality,
+  type RoleDefinition,
+  type RoleDomainView,
+  type RoleId,
+  type RoleMatch,
+  type RoleNeed,
+  type RolePersonReading,
+  type RoleQualityView,
+  type RoleSource,
+  type RoleStatus,
+} from "./roles";
+
+export {
   comparePeople,
   type CompareCell,
   type CompareDomain,
@@ -65,6 +86,7 @@ export {
 export {
   MEASURED_FACTORS,
   MEASURED_NAME,
+  MEASURED_QUALITIES,
   MEASURED_SOURCE,
   MEASURED_VERSION,
   measuredClaims,
@@ -74,13 +96,17 @@ export {
 export {
   CHINESE,
   CHINESE_ANIMALS,
+  CHINESE_QUALITIES,
   LENSES,
   MAYAN,
   MAYAN_DAY_SIGNS,
+  MAYAN_QUALITIES,
   NUMEROLOGY,
   NUMEROLOGY_NUMBERS,
+  NUMEROLOGY_QUALITIES,
   SOLAR_MONTHS,
   WESTERN,
+  WESTERN_QUALITIES,
   WESTERN_SIGNS,
   chainLabel,
   chineseBranch,
@@ -101,3 +127,18 @@ export {
   type Pillar,
   type WesternProfile,
 } from "./lenses";
+
+import {
+  CHINESE_QUALITIES,
+  MAYAN_QUALITIES,
+  NUMEROLOGY_QUALITIES,
+  WESTERN_QUALITIES,
+} from "./lenses";
+
+/** Які якості може назвати кожна лінза — зворотний покажчик для довідника. */
+export const LENS_QUALITIES: Readonly<Record<string, readonly string[]>> = {
+  western: WESTERN_QUALITIES,
+  numerology: NUMEROLOGY_QUALITIES,
+  chinese: CHINESE_QUALITIES,
+  mayan: MAYAN_QUALITIES,
+};

@@ -67,6 +67,12 @@ export interface Env {
    */
   ADMIN_TELEGRAM_ID?: string;
   /**
+   * Відкритий доступ до платформи: `"true"` пускає будь-якого користувача з
+   * підписаним `initData`, без запрошення. Це dev-перемикач для перегляду й
+   * тестування; у проді його немає, тож закритий продукт лишається закритим.
+   */
+  PLATFORM_OPEN_ACCESS?: string;
+  /**
    * DSN із Sentry. Задається як Cloudflare Secret (`wrangler secret put` або
    * Dashboard). Без нього Sentry вимкнено — воркер працює як звичайно.
    * Див. `@wwwuabot/shared/observability/sentry`.

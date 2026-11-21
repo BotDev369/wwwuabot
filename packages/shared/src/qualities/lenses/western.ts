@@ -32,6 +32,12 @@ export const WESTERN: LensDefinition = {
     "точні аспекти між планетами — тут рахується лише Сонце",
     "жодних прогнозів подій: це мова опису, а не пророцтво",
   ],
+  history:
+    "Тропічна астрологія виросла з елліністичної традиції: вавилонські таблиці руху планет, грецька геометрія неба й астрономія Олександрії. «Тетрабіблос» Птолемея (II ст.) звів її в навчальний корпус, який переписували грецькою, латиною й арабською.",
+  spread:
+    "Від Олександрії — до Риму, Візантії, Багдада й середньовічних університетів Європи; у XX ст. — до масової культури й мови самопізнання.",
+  usage:
+    "Самопізнання, опис характеру, культурні практики. Ми беремо лише знак і градус Сонця: без прогнозів і без подій.",
   source:
     "Птолемей, «Тетрабіблос»; єгипетські межі — за Птолемеєм; декани — халдейський порядок; довгота Сонця — Meeus, Astronomical Algorithms, розд. 25.",
 };
@@ -200,6 +206,20 @@ const BY_BOUND_RULER: Readonly<Record<string, SignRule>> = {
   Юпітер: { qualityId: "learning", level: 3, note: "межа під Юпітером" },
   Сатурн: { qualityId: "organization", level: 3, note: "межа під Сатурном" },
 };
+
+/** Якості, які ця лінза може назвати: для довідника «хто це визначає». */
+export const WESTERN_QUALITIES: readonly string[] = [
+  ...new Set([
+    ...Object.values(BY_SIGN)
+      .flat()
+      .map((rule) => rule.qualityId),
+    ...Object.values(BY_ELEMENT).map((rule) => rule.qualityId),
+    ...Object.values(BY_MODALITY).map((rule) => rule.qualityId),
+    ...Object.values(BY_DECAN).map((rule) => rule.qualityId),
+    ...Object.values(BY_DECAN_RULER).map((rule) => rule.qualityId),
+    ...Object.values(BY_BOUND_RULER).map((rule) => rule.qualityId),
+  ]),
+].sort();
 
 function claimOf(rule: SignRule, parameter: string, details: readonly string[]): QualityClaim {
   return makeClaim({

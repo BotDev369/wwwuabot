@@ -90,6 +90,14 @@ describe("профіль", () => {
     expect(link.getAttribute("href")).toContain("labels=%D0%86%D0%B2%D0%B0%D0%BD");
   });
 
+  it("веде в підбір ролі зі своєю датою", () => {
+    renderProfile();
+
+    const link = screen.getByRole("link", { name: /Підібрати роль/ });
+    expect(link.getAttribute("href")).toContain("/analysis/match?dates=1980-03-03");
+    expect(link.getAttribute("href")).toContain("labels=%D0%86%D0%B2%D0%B0%D0%BD");
+  });
+
   it("називає людину, дату й скільки якостей відомо", () => {
     renderProfile();
 

@@ -1,5 +1,5 @@
 {
-  "version": "35bc761",
+  "version": "3bc263f",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -94,7 +94,7 @@
     {
       "file": "analysis.css",
       "tokens": 0,
-      "classes": 127
+      "classes": 154
     },
     {
       "file": "app-chrome.css",
@@ -3744,14 +3744,16 @@
         ]
       },
       {
-        "section": "Три входи",
+        "section": "Розділи-вітрини",
         "names": [
           "an-entries",
           "an-entry",
           "an-entry__body",
           "an-entry__icon",
           "an-entry__lead",
-          "an-entry__title"
+          "an-entry__title",
+          "an-hero",
+          "an-hub"
         ]
       },
       {
@@ -3788,6 +3790,7 @@
           "an-row",
           "an-row__remove",
           "an-rows",
+          "an-select",
           "an-setup",
           "an-setup__head",
           "an-setup__lead",
@@ -3828,11 +3831,6 @@
         "section": "Профіль",
         "names": [
           "an-card",
-          "an-claim",
-          "an-claim__details",
-          "an-claim__evidence",
-          "an-claim__source",
-          "an-claim__steps",
           "an-domain",
           "an-domain__count",
           "an-domain__title",
@@ -3846,15 +3844,32 @@
           "an-profile__meta",
           "an-profile__name",
           "an-qualities",
-          "an-quality",
+          "an-quality"
+        ]
+      },
+      {
+        "section": "Акордеони «Люди і події» й довідник якостей",
+        "names": [
+          "an-claim",
+          "an-claim__details",
+          "an-claim__evidence",
+          "an-claim__source",
+          "an-claim__steps",
+          "an-fold",
+          "an-fold__body",
+          "an-fold__count",
+          "an-fold__summary",
+          "an-fold__title",
           "an-quality--empty",
           "an-quality__anchor",
           "an-quality__body",
           "an-quality__caret",
           "an-quality__details",
           "an-quality__level",
+          "an-quality__meaning",
           "an-quality__name",
-          "an-quality__summary"
+          "an-quality__summary",
+          "an-quality__systems"
         ]
       },
       {
@@ -3901,6 +3916,42 @@
           "an-section__action",
           "an-section__head",
           "an-section__lead"
+        ]
+      },
+      {
+        "section": "Підбір ролі: опора, ризик і покритість пари",
+        "names": [
+          "an-domain-chip",
+          "an-domain-chip__count",
+          "an-domain-chip__name",
+          "an-domains",
+          "an-match",
+          "an-match__hint",
+          "an-match__sources",
+          "an-need",
+          "an-pair__sources",
+          "an-person",
+          "an-person-line",
+          "an-person__match",
+          "an-role",
+          "an-role__name",
+          "an-roles",
+          "an-setup--inline",
+          "an-tools"
+        ]
+      },
+      {
+        "section": "Три варіанти розкладки головної",
+        "names": [
+          "an-entries",
+          "an-entry",
+          "an-entry__body",
+          "an-entry__icon",
+          "an-hub",
+          "an-variant",
+          "an-variant__frame",
+          "an-variant__note",
+          "an-variant__title"
         ]
       }
     ],

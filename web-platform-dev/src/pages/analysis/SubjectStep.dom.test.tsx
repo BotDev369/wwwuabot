@@ -39,7 +39,7 @@ describe("крок даних", () => {
   it("без дати не пускає далі, з датою веде на крок систем", async () => {
     renderStep("person");
 
-    expect(screen.getByRole("heading", { name: "Кого аналізуємо?" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Самоаналіз" })).toBeTruthy();
     const submit = screen.getByRole("button", { name: "Далі" });
     expect((submit as HTMLButtonElement).disabled).toBe(true);
 
@@ -48,7 +48,7 @@ describe("крок даних", () => {
     });
     expect((submit as HTMLButtonElement).disabled).toBe(false);
 
-    await userEvent.type(screen.getByLabelText("Ім'я"), "Іван");
+    await userEvent.type(screen.getByLabelText("Підпис"), "Іван");
     await userEvent.click(submit);
 
     expect(
@@ -69,13 +69,13 @@ describe("крок даних", () => {
     expect(screen.getAllByLabelText("Дата народження")).toHaveLength(2);
     expect(screen.queryByRole("button", { name: "Прибрати рядок" })).toBeNull();
 
-    await userEvent.click(screen.getByRole("button", { name: /Додати ще/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Ще один" }));
     expect(screen.getAllByLabelText("Дата народження")).toHaveLength(3);
     expect(screen.getAllByRole("button", { name: "Прибрати рядок" })).toHaveLength(3);
 
-    await userEvent.click(screen.getByRole("button", { name: /Додати ще/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Ще один" }));
     expect(screen.getAllByLabelText("Дата народження")).toHaveLength(4);
-    expect(screen.queryByRole("button", { name: /Додати ще/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Ще один" })).toBeNull();
 
     await userEvent.click(screen.getAllByRole("button", { name: "Прибрати рядок" })[0]);
     expect(screen.getAllByLabelText("Дата народження")).toHaveLength(3);
@@ -96,7 +96,7 @@ describe("крок даних", () => {
     expect(dates).toHaveLength(2);
     expect(dates[0].value).toBe("1980-03-03");
     expect(dates[1].value).toBe("");
-    expect((screen.getAllByLabelText("Ім'я")[0] as HTMLInputElement).value).toBe("Іван");
+    expect((screen.getAllByLabelText("Підпис")[0] as HTMLInputElement).value).toBe("Іван");
   });
 
   it("порожній рядок співставлення не їде в адресу", async () => {

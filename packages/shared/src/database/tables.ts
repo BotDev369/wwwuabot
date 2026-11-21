@@ -1036,6 +1036,32 @@ export const TABLES = {
   },
 
   /**
+   * Набори для співставлення — **склад, а не значення**: у рядку лежать лише
+   * дати й підписи, тож рівні рахуються щоразу заново й не старіють.
+   *
+   * Ключ — `(user_id, id)` з тієї ж причини, що й у `my_dates`: номер набір
+   * отримує на клієнті, а однакові номери в різних людей законні.
+   */
+  analysis_sets: {
+    name: "analysis_sets",
+    owner: "api-dev",
+    purpose:
+      "Збережений склад людей і подій для співставлення: назва й перелік `{date, name}`. Значення не зберігаються.",
+    create: `CREATE TABLE IF NOT EXISTS analysis_sets (
+        user_id INTEGER NOT NULL,
+        id TEXT NOT NULL,
+        name TEXT NOT NULL DEFAULT '',
+        items TEXT NOT NULL DEFAULT '[]',
+        created_at TEXT,
+        updated_at TEXT,
+        PRIMARY KEY (user_id, id)
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_analysis_sets_user ON analysis_sets(user_id, created_at)",
+    ],
+  },
+
+  /**
    * Реєстр систем аналізу — **дані, а не хардкод**: у коді лишається лише
    * розрахунок, а «яка система є, як її звуть, які в неї параметри» живе тут;
    * реєстр спільний для всіх, тож це не JSON у рядку людини.

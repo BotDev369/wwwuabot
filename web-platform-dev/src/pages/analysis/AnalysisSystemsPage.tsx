@@ -6,11 +6,13 @@
  */
 
 import { useState, type ReactElement } from "react";
+import { Link } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import { LENSES } from "@wwwuabot/shared/qualities";
+import { BIG_FIVE } from "@wwwuabot/shared/assessments";
+import { LENSES, MEASURED_NAME } from "@wwwuabot/shared/qualities";
 import { useDossiers } from "@wwwuabot/ui/analysis/useDossiers";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
-import { ANALYSIS_PATH } from "@/app/routes";
+import { ANALYSIS_PATH, ANALYSIS_TESTS_PATH } from "@/app/routes";
 
 const ALL_LENSES = LENSES.map((lens) => lens.id);
 
@@ -20,7 +22,7 @@ function today(): string {
 }
 
 export function AnalysisSystemsPage(): ReactElement {
-  useScreenChrome({ title: "Системи аналізу" });
+  useScreenChrome({ title: "Про системи аналізу" });
   const [date, setDate] = useState(today);
   const { dossiers, loading, error } = useDossiers([date], ["person"], ALL_LENSES, false);
   const systems = dossiers[0]?.systems ?? [];
@@ -34,9 +36,9 @@ export function AnalysisSystemsPage(): ReactElement {
         </a>
 
         <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title">Системи аналізу</h1>
+          <h1 className="an-hero__title">Про системи аналізу</h1>
           <p className="an-hero__lead">
-            Чотири традиції читають одну дату незалежно. Ось що кожна бере й що з цього виходить.
+            Кожна система окремо: що це, звідки взялася, де побутує, що дає й чого не знає.
           </p>
         </header>
 
@@ -68,6 +70,30 @@ export function AnalysisSystemsPage(): ReactElement {
 
                 <p className="an-system-card__about">{system.about ?? lens?.about ?? lens?.rule}</p>
 
+                {lens?.history && (
+                  <p className="an-system-card__gives">
+                    <strong>Історія:</strong> {lens.history}
+                  </p>
+                )}
+
+                {(system.source ?? lens?.source) && (
+                  <p className="an-system-card__gives">
+                    <strong>Засновники й канон:</strong> {system.source ?? lens?.source}
+                  </p>
+                )}
+
+                {lens?.spread && (
+                  <p className="an-system-card__gives">
+                    <strong>Поширення:</strong> {lens.spread}
+                  </p>
+                )}
+
+                {lens?.usage && (
+                  <p className="an-system-card__gives">
+                    <strong>Застосування:</strong> {lens.usage}
+                  </p>
+                )}
+
                 <dl className="an-params">
                   {system.parameters.map((parameter) => (
                     <div className="an-param" key={parameter.label}>
@@ -82,10 +108,37 @@ export function AnalysisSystemsPage(): ReactElement {
                     <strong>Що бере з дати:</strong> {system.gives.join("; ")}.
                   </p>
                 )}
+
+                {system.limits && system.limits.length > 0 && (
+                  <p className="an-system-card__gives">
+                    <strong>Чого не знає:</strong> {system.limits.join("; ")}.
+                  </p>
+                )}
               </article>
             );
           })}
         </div>
+
+        <article className="an-system-card">
+          <header className="an-system-card__head">
+            <h2 className="an-system-card__name">{MEASURED_NAME}</h2>
+            <span className="an-system-card__count">Тест, а не дата</span>
+          </header>
+
+          <p className="an-system-card__about">{BIG_FIVE.about}</p>
+          <p className="an-system-card__gives">
+            <strong>Що бере:</strong> відповіді людини на двадцять тверджень, по чотири на фактор.
+          </p>
+          <p className="an-system-card__gives">
+            <strong>Чого не знає:</strong> того, чого людина про себе не сказала; це самооцінка, а
+            не діагноз.
+          </p>
+
+          <Link className="an-tool" to={ANALYSIS_TESTS_PATH}>
+            <Icon name="clipboard" size={16} />
+            Пройти тестування
+          </Link>
+        </article>
       </div>
     </div>
   );

@@ -119,6 +119,56 @@ export function deleteMyDates(ids: string[]): Promise<void> {
   return remove(`?ids=${ids.map(encodeURIComponent).join(",")}`, "Помилка видалення");
 }
 
+// ── Набори для співставлення ───────────────────────────────────────
+
+/** Один запис набору: дата й підпис, з яким її бачила людина. */
+export interface AnalysisSetItem {
+  date: string;
+  name: string;
+}
+
+/** Збережений склад для співставлення: значення рахуються заново. */
+export interface AnalysisSet {
+  id: string;
+  name: string;
+  items: AnalysisSetItem[];
+  created_at: string;
+  updated_at: string;
+}
+
+export async function fetchAnalysisSets(): Promise<AnalysisSet[]> {
+  const response = await fetch("/api/analysis-sets", { headers: telegramAuthHeaders() });
+  if (!response.ok) throw await failure(response, "Помилка завантаження наборів");
+  const data = await json(response);
+  if (!data.ok) throw new Error((data.error as string) ?? "Помилка завантаження наборів");
+  return data.sets as AnalysisSet[];
+}
+
+export async function saveAnalysisSet(set: {
+  id: string;
+  name: string;
+  items: AnalysisSetItem[];
+}): Promise<void> {
+  const response = await fetch("/api/analysis-sets", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...telegramAuthHeaders() },
+    body: JSON.stringify(set),
+  });
+  if (!response.ok) throw await failure(response, "Помилка збереження набору");
+  const data = await json(response);
+  if (!data.ok) throw new Error((data.error as string) ?? "Помилка збереження набору");
+}
+
+export async function deleteAnalysisSet(id: string): Promise<void> {
+  const response = await fetch(`/api/analysis-sets?id=${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    headers: telegramAuthHeaders(),
+  });
+  if (!response.ok) throw await failure(response, "Помилка видалення набору");
+  const data = await json(response);
+  if (!data.ok) throw new Error((data.error as string) ?? "Помилка видалення набору");
+}
+
 export async function fetchSystems(): Promise<AnalysisSystem[]> {
   const data = await json(await fetch("/api/mydate/systems", { headers: telegramAuthHeaders() }));
   return data.ok ? (data.systems as AnalysisSystem[]) : [];

@@ -32,6 +32,12 @@ export const CHINESE: LensDefinition = {
     "приховані стовбури в гілках і сила елементів — окремий аналіз, тут його немає",
     "межа дня береться за календарною датою, без переходу на місцевий сонячний час",
   ],
+  history:
+    "Ба-Цзи виросло з китайської календарної традиції: сонячні терміни Цзєці, 60-річний цикл Ґань-Чжі й пара «Небесний стовбур + Земна гілка», якою описували рік, місяць і день.",
+  spread:
+    "Китай, Корея, Японія, В'єтнам; у XX ст. — діаспора, а далі популярна практика в Європі та Америці.",
+  usage:
+    "Календарні розрахунки й самопізнання. Ми беремо три стовпи — рік, місяць і день; стовп години потребує часу народження.",
   source:
     "Сонячний календар Цзєці (Лічунь = 315° довготи Сонця); 60-річний цикл Ґань-Чжі; день — (JDN + 49) mod 60, перевірено на 2000-01-01 = 戊午.",
 };
@@ -257,6 +263,20 @@ const BY_DAY_BRANCH: Readonly<Record<number, LensRule>> = {
   10: { qualityId: "cooperation", level: 3, note: "день Собаки: вірність" },
   11: { qualityId: "openness", level: 3, note: "день Свині: прийняття" },
 };
+
+/** Якості, які ця лінза може назвати: для довідника «хто це визначає». */
+export const CHINESE_QUALITIES: readonly string[] = [
+  ...new Set([
+    ...Object.values(BY_ANIMAL)
+      .flat()
+      .map((rule) => rule.qualityId),
+    ...Object.values(BY_YEAR_ELEMENT).map((rule) => rule.qualityId),
+    ...Object.values(BY_POLARITY).map((rule) => rule.qualityId),
+    ...Object.values(BY_MONTH).map((rule) => rule.qualityId),
+    ...Object.values(BY_DAY_ELEMENT).map((rule) => rule.qualityId),
+    ...Object.values(BY_DAY_BRANCH).map((rule) => rule.qualityId),
+  ]),
+].sort();
 
 const BY_BRANCH: Readonly<Record<number, BranchRow>> = Object.fromEntries(
   BRANCHES.map((row, index) => [index, row]),

@@ -53,6 +53,7 @@
     "./security/access": "./src/security/access.ts",
     "./security/session": "./src/security/session.ts",
     "./security/telegram": "./src/security/telegram.ts",
+    "./security/preview-session": "./src/security/preview-session.ts",
     "./user/platform-username": "./src/user/platform-username.ts",
     "./user/public-profile": "./src/user/public-profile.ts",
     "./ads": "./src/ads/index.ts",

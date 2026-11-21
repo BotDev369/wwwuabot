@@ -64,6 +64,15 @@ const BY_FACTOR: Readonly<Record<string, readonly FactorRule[]>> = {
 /** Фактори, для яких є правило; порожній список — помилка даних. */
 export const MEASURED_FACTORS: readonly string[] = Object.keys(BY_FACTOR);
 
+/** Якості, які може назвати тест: для довідника «хто це визначає». */
+export const MEASURED_QUALITIES: readonly string[] = [
+  ...new Set(
+    Object.values(BY_FACTOR)
+      .flat()
+      .map((rule) => rule.qualityId),
+  ),
+].sort();
+
 /**
  * Фактор разом із його рівнем і доказом.
  *

@@ -56,6 +56,9 @@ const GROUPS = [
       "/api/screens/",
       "/api/mydate/",
       "/api/public/",
+      // Сесія прев'ю: підпис видається до того, як у браузері з'явився
+      // користувач. Поза `dev` контролер відповідає 404.
+      "/api/dev/",
       "/api/shop/",
       "/api/messages/media/",
     ],
@@ -65,6 +68,7 @@ const GROUPS = [
     auth: "підписаний Telegram `initData`",
     prefixes: [
       "/api/my-dates",
+      "/api/analysis-sets",
       "/api/notes",
       "/api/contacts",
       "/api/messages",

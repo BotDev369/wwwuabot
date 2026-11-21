@@ -91,6 +91,12 @@ export interface LensDefinition {
   readonly limits?: readonly string[];
   /** Канон, за яким рахуємо: джерело таблиць і формул, а не «так кажуть». */
   readonly source?: string;
+  /** Звідки традиція взялася — для довідки, а не для розрахунку. */
+  readonly history?: string;
+  /** Де традиція побутує — від регіону до сучасної практики. */
+  readonly spread?: string;
+  /** Для чого її застосовують і що саме беремо ми. */
+  readonly usage?: string;
 }
 
 /** Підписи смуг — єдині для всього продукту. */

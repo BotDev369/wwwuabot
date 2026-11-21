@@ -1,235 +1,105 @@
 /**
- * Головна фічі: три входи, збережені люди й «як це працює» — обкладинка одного
- * розділу, а не меню з семи карток.
+ * Головна фічі — вітрина шести розділів, кожен з яких відкривається. Даних
+ * людини тут немає: перший вхід нічого про неї не знає.
  *
  * @module web-platform-dev/src/pages/analysis/AnalysisHub
  */
 
-import { useEffect, useState, type ReactElement } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import type { ReactElement } from "react";
+import { Link } from "react-router-dom";
 import { Icon, type IconName } from "@wwwuabot/shared";
-import { LENSES } from "@wwwuabot/shared/qualities";
-import type { MyDate } from "@wwwuabot/shared/types/mydate";
-import { fetchMyDates } from "@wwwuabot/ui/analysis/api";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import {
   ANALYSIS_COMPARE_PATH,
-  ANALYSIS_EVENT_PATH,
+  ANALYSIS_PEOPLE_PATH,
   ANALYSIS_PERSON_PATH,
+  ANALYSIS_QUALITIES_PATH,
   ANALYSIS_SYSTEMS_PATH,
   ANALYSIS_TESTS_PATH,
-  analysisStepPath,
 } from "@/app/routes";
 
-const LENS_IDS = LENSES.map((lens) => lens.id).join(",");
-
-interface Entry {
+interface Section {
   readonly title: string;
-  readonly lead: string;
   readonly icon: IconName;
   readonly tone: number;
   readonly to: string;
 }
 
-const ENTRIES: readonly Entry[] = [
+/** Шість розділів фічі в тому порядку, у якому людина про них думає. */
+const SECTIONS: readonly Section[] = [
   {
-    title: "Людина",
-    lead: "Характер, сильні сторони й зони ризику — за датою народження.",
-    icon: "user",
+    title: "Про системи аналізу",
+    icon: "book",
     tone: 1,
+    to: ANALYSIS_SYSTEMS_PATH,
+  },
+  {
+    title: "Типові якості людей і подій",
+    icon: "layers",
+    tone: 2,
+    to: ANALYSIS_QUALITIES_PATH,
+  },
+  {
+    title: "Аналізувати за датою",
+    icon: "calendar",
+    tone: 3,
     to: ANALYSIS_PERSON_PATH,
   },
   {
-    title: "Подія",
-    lead: "Тон, рушій і те, чим подія завершується — за її датою.",
-    icon: "sparkles",
-    tone: 3,
-    to: ANALYSIS_EVENT_PATH,
+    title: "Пройти тестування",
+    icon: "clipboard",
+    tone: 1,
+    to: ANALYSIS_TESTS_PATH,
   },
   {
-    title: "Співставлення",
-    lead: "Що об'єднує людей і де між ними напруга — без оцінок.",
+    title: "Співставити",
     icon: "compare",
     tone: 2,
     to: ANALYSIS_COMPARE_PATH,
   },
+  {
+    title: "Люди і події",
+    icon: "users",
+    tone: 3,
+    to: ANALYSIS_PEOPLE_PATH,
+  },
 ];
 
-const STEPS: readonly { title: string; text: string }[] = [
-  { title: "Дата", text: "Одна дата — більше нічого не потрібно." },
-  { title: "Системи", text: "Чотири традиції читають її незалежно." },
-  { title: "Профіль", text: "36 якостей із рівнем і розрахунком кожної." },
-];
+/** Три розкладки головної: та сама розмітка, різне CSS. */
+export type AnalysisHubVariant = 1 | 2 | 3;
 
-/** Людська дата: `1980-03-03` → `3.03.1980`. */
-function humanDate(date: string): string {
-  const [year, month, day] = date.split("-");
-  return `${Number(day)}.${month}.${year}`;
+interface AnalysisHubProps {
+  /** Яка розкладка: 1 — значок ліворуч, 2 — значок зверху, 3 — значок праворуч. */
+  variant?: AnalysisHubVariant;
+  /** `false` — без шапки: так варіанти стоять поруч на сторінці порівняння. */
+  withHero?: boolean;
 }
 
-function savedPeople(dates: readonly MyDate[]): MyDate[] {
-  return dates.filter((one) => one.type === "person" && one.date).slice(0, 4);
-}
-
-export function AnalysisHub(): ReactElement {
+export function AnalysisHub({ variant = 2, withHero = true }: AnalysisHubProps = {}): ReactElement {
   useScreenChrome({ title: "Аналіз людей та подій" });
-  const navigate = useNavigate();
-  const [people, setPeople] = useState<MyDate[]>([]);
-  const [picking, setPicking] = useState(false);
-  const [chosen, setChosen] = useState<string[]>([]);
-
-  function togglePicking(): void {
-    setPicking((value) => !value);
-    setChosen([]);
-  }
-
-  function togglePerson(id: string): void {
-    setChosen((current) =>
-      current.includes(id) ? current.filter((one) => one !== id) : [...current, id],
-    );
-  }
-
-  function openCompare(): void {
-    const selected = people.filter((person) => chosen.includes(person.id));
-    if (selected.length < 2) return;
-    const params = new URLSearchParams();
-    params.set("dates", selected.map((person) => person.date).join(","));
-    params.set("labels", selected.map((person) => person.name || "").join("|"));
-    params.set("lenses", LENS_IDS);
-    navigate(`${analysisStepPath("compare", "result")}?${params.toString()}`);
-  }
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchMyDates()
-      .then((list) => {
-        if (!cancelled) setPeople(savedPeople(list));
-      })
-      .catch(() => {
-        // Список збережених — допомога, а не умова входу: без нього головна
-        // лишається робочою, тож помилка не перетворює екран на порожній.
-        if (!cancelled) setPeople([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   return (
     <div className="wb-page wb-page-scroll">
-      <div className="an-hub">
-        <header className="an-hero">
-          <p className="an-hero__kicker">Аналіз людей та подій</p>
-          <h1 className="an-hero__title">Хто перед вами?</h1>
-          <p className="an-hero__lead">
-            Дата народження і ваші відповіді — два незалежні погляди на одні й ті самі 36 якостей.
-          </p>
-        </header>
-
-        <nav className="an-entries" aria-label="Кого аналізуємо">
-          {ENTRIES.map((entry) => (
-            <button
-              key={entry.title}
-              type="button"
-              className="an-entry"
-              data-tone={entry.tone}
-              onClick={() => navigate(entry.to)}
-            >
-              <span className="an-entry__icon" aria-hidden="true">
-                <Icon name={entry.icon} size={22} />
-              </span>
-              <span className="an-entry__body">
-                <span className="an-entry__title">{entry.title}</span>
-                <span className="an-entry__lead">{entry.lead}</span>
-              </span>
-              <Icon name="chevron-right" size={18} />
-            </button>
-          ))}
-        </nav>
-
-        {people.length > 0 && (
-          <section className="an-section">
-            <div className="an-section__head">
-              <h2 className="an-section__title">Мої люди</h2>
-              <button type="button" className="an-section__action" onClick={togglePicking}>
-                {picking ? "Скасувати" : "Співставити"}
-              </button>
-            </div>
-            <div className="an-people">
-              {people.map((person) =>
-                picking ? (
-                  <label className="an-person an-person--pick" key={person.id}>
-                    <input
-                      type="checkbox"
-                      checked={chosen.includes(person.id)}
-                      onChange={() => togglePerson(person.id)}
-                    />
-                    <span className="an-person__name">{person.name || "Без імені"}</span>
-                    <span className="an-person__date">{humanDate(person.date)}</span>
-                  </label>
-                ) : (
-                  <Link
-                    key={person.id}
-                    className="an-person"
-                    to={`${ANALYSIS_PERSON_PATH}/result?dates=${person.date}&labels=${encodeURIComponent(
-                      person.name || "",
-                    )}&lenses=${LENS_IDS}`}
-                  >
-                    <span className="an-person__name">{person.name || "Без імені"}</span>
-                    <span className="an-person__date">{humanDate(person.date)}</span>
-                    <Icon name="chevron-right" size={16} />
-                  </Link>
-                ),
-              )}
-            </div>
-            {picking && (
-              <div className="an-pick">
-                <p className="an-pick__hint">
-                  Виберіть двох або більше — покажемо спільне, різні опори й прогалини.
-                </p>
-                <button
-                  type="button"
-                  className="wb-btn wb-btn-primary"
-                  disabled={chosen.length < 2}
-                  onClick={openCompare}
-                >
-                  Співставити обраних ({chosen.length})
-                </button>
-              </div>
-            )}
-          </section>
+      <div className="an-hub" data-variant={variant}>
+        {withHero && (
+          <header className="an-hero">
+            <p className="an-hero__kicker">Аналіз людей та подій</p>
+            <h1 className="an-hero__title">Пізнай себе, оточуючих та події.</h1>
+          </header>
         )}
 
-        <section className="an-section">
-          <h2 className="an-section__title">Як це працює</h2>
-          <ol className="an-steps">
-            {STEPS.map((step, index) => (
-              <li className="an-step" key={step.title}>
-                <span className="an-step__num">{index + 1}</span>
-                <span className="an-step__body">
-                  <span className="an-step__title">{step.title}</span>
-                  <span className="an-step__text">{step.text}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <div className="an-tools">
-          <Link className="an-tool" to={ANALYSIS_SYSTEMS_PATH}>
-            <Icon name="book" size={18} />
-            Системи аналізу
-          </Link>
-          <Link className="an-tool" to={ANALYSIS_TESTS_PATH}>
-            <Icon name="growth" size={18} />
-            Тести
-          </Link>
-        </div>
-
-        <p className="an-foot">
-          Рівень — це те, що визначила система, а не оцінка людини. Метод і розрахунок відкриті в
-          кожному профілі.
-        </p>
+        <nav className="an-entries" aria-label="Розділи аналізу">
+          {SECTIONS.map((section) => (
+            <Link key={section.title} className="an-entry" data-tone={section.tone} to={section.to}>
+              <span className="an-entry__icon" aria-hidden="true">
+                <Icon name={section.icon} size={38} />
+              </span>
+              <span className="an-entry__body">
+                <span className="an-entry__title">{section.title}</span>
+              </span>
+            </Link>
+          ))}
+        </nav>
       </div>
     </div>
   );

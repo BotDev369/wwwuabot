@@ -60,19 +60,29 @@ export const DAY_ROUTE = "day";
 export const DAY_PATH = `/${DAY_ROUTE}`;
 
 /**
- * «Аналіз людей та подій» — одна фіча з двома векторами й власною головною.
- *
- * Адреси кроків лежать під `/analysis`, а не в рядках `scenarios`: анкета дат,
- * вибір систем і профіль — це стан одного проходження, а не сім окремих
- * сторінок контенту. Старі `dateanalysis/*` видалені міграцією.
+ * «Аналіз людей та подій» — одна фіча з власною головною. Адреси кроків
+ * лежать під `/analysis`, а не в рядках `scenarios`: анкета, системи й профіль —
+ * стан одного проходження, а не окремі сторінки контенту.
  */
 export const ANALYSIS_ROUTE = "analysis";
 export const ANALYSIS_PATH = `/${ANALYSIS_ROUTE}`;
 export const ANALYSIS_PERSON_PATH = `${ANALYSIS_PATH}/person`;
 export const ANALYSIS_EVENT_PATH = `${ANALYSIS_PATH}/event`;
 export const ANALYSIS_COMPARE_PATH = `${ANALYSIS_PATH}/compare`;
+export const ANALYSIS_MATCH_PATH = `${ANALYSIS_PATH}/match`;
 export const ANALYSIS_SYSTEMS_PATH = `${ANALYSIS_PATH}/systems`;
 export const ANALYSIS_TESTS_PATH = `${ANALYSIS_PATH}/tests`;
+/** Довідник якостей: що це, як проявляється і які системи це визначають. */
+export const ANALYSIS_QUALITIES_PATH = `${ANALYSIS_PATH}/qualities`;
+/** Люди, події й групи — повний CRUD і довільний вибір для співставлення. */
+export const ANALYSIS_PEOPLE_PATH = `${ANALYSIS_PATH}/people`;
+
+/** Три розкладки головної на погодження: `/analysis/variant/1|2|3`. */
+export const ANALYSIS_VARIANT_PATH = (variant: 1 | 2 | 3): string =>
+  `${ANALYSIS_PATH}/variant/${variant}`;
+
+/** Сторінка, де всі три варіанти стоять поруч із підписами. */
+export const ANALYSIS_VARIANTS_PATH = `${ANALYSIS_PATH}/variants`;
 
 /** Вид проходження: один суб'єкт або кілька для співставлення. */
 export type AnalysisMode = "person" | "event" | "compare";
@@ -96,13 +106,10 @@ export function analysisTestPath(key: string): string {
 export const ACCOUNT_ROUTE = "account";
 
 /**
- * Замовлення — робота, яку людина веде, а не сторінка.
- *
- * Магазинів у людини буває кілька, і замовлення лежать під кожним із них
- * (`/scenarios/7/orders`). Другої реалізації того самого списку тут немає: цей
- * екран каже лише **де** працює людина — власником чи адміном, — і веде до
- * замовлень того магазину. Тому адреса має власний сегмент, а не живе під
- * сценарієм: під ним уже стоять товари й замовлення **одного** магазину.
+ * Замовлення — робота, яку людина веде, а не сторінка. Магазинів буває кілька,
+ * і замовлення лежать під кожним (`/scenarios/7/orders`). Друга реалізація
+ * списку тут не потрібна: екран каже, де працює людина, і веде до замовлень
+ * того магазину. Адреса має власний сегмент, а не живе під сценарієм.
  */
 export const ORDERS_ROUTE = "orders";
 export const ORDERS_PATH = `/${ORDERS_ROUTE}`;

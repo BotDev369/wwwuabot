@@ -20,6 +20,7 @@ import { useDossiers } from "@wwwuabot/ui/analysis/useDossiers";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import {
   ANALYSIS_COMPARE_PATH,
+  ANALYSIS_MATCH_PATH,
   ANALYSIS_PATH,
   ANALYSIS_SYSTEMS_PATH,
   type AnalysisMode,
@@ -129,15 +130,26 @@ export function AnalysisProfile({ mode }: AnalysisProfileProps): ReactElement {
             До аналізу
           </a>
           {mode === "person" && dates.length > 0 && (
-            <a
-              className="an-back"
-              href={`${ANALYSIS_COMPARE_PATH}?dates=${dates[0]}&labels=${encodeURIComponent(
-                subject.labels[0] ?? "",
-              )}`}
-            >
-              <Icon name="compare" size={16} />
-              Співставити з іншою людиною
-            </a>
+            <>
+              <a
+                className="an-back"
+                href={`${ANALYSIS_COMPARE_PATH}?dates=${dates[0]}&labels=${encodeURIComponent(
+                  subject.labels[0] ?? "",
+                )}`}
+              >
+                <Icon name="compare" size={16} />
+                Співставити з іншою людиною
+              </a>
+              <a
+                className="an-back"
+                href={`${ANALYSIS_MATCH_PATH}?dates=${dates[0]}&labels=${encodeURIComponent(
+                  subject.labels[0] ?? "",
+                )}`}
+              >
+                <Icon name="heart" size={16} />
+                Підібрати роль
+              </a>
+            </>
           )}
         </div>
 

@@ -46,7 +46,11 @@ const ADMIN_PATH_PREFIXES = ["/api/admin/", "/api/portal/", "/api/bot/"] as cons
  *   вебу**, у якого немає ні бази, ні `initData` людини: відкриття старого
  *   посилання не має залежати від того, чи браузер уже в контексті Telegram.
  *   У відповіді — лише шлях; чи сторінка існує і чи вона публічна, вирішує
- *   `handleScenario` зі своїм гейтом.
+ *   `handleScenario` зі своїм гейтом;
+ * - `/api/dev/preview-session` — підпис для перегляду сторінки поза Telegram.
+ *   Питає **воркер вебу** до того, як у браузері з'явиться хтось, тож допуску
+ *   ще немає. Ціна — нуль поза dev: сам контролер відповідає 404, коли
+ *   `ENVIRONMENT` не `dev`, і підписує лише id власника.
  */
 export const PLATFORM_EXEMPT_PATHS = [
   "/api/user/access",
@@ -54,6 +58,7 @@ export const PLATFORM_EXEMPT_PATHS = [
   "/api/shop/media/",
   "/api/messages/media/",
   "/api/public/redirect",
+  "/api/dev/preview-session",
 ] as const;
 
 function denied(): Response {
@@ -108,6 +113,9 @@ async function hasAccessToPlatform(
 ): Promise<{ ok: true } | { ok: false; response: Response }> {
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return { ok: false, response: identity.response };
+
+  // Dev-перемикач: підпис є, запрошення не потрібне. Прод його не має.
+  if (env.PLATFORM_OPEN_ACCESS === "true") return { ok: true };
 
   const cache = accessCacheFor(env.DB);
   const now = Date.now();
