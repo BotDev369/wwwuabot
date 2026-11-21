@@ -8,6 +8,10 @@ compatibility_date = "2026-08-21"
 [assets]
 directory = "./dist"
 binding = "ASSETS"
+# Без цього `/` віддає `index.html` напряму з Assets, повз воркер: ні
+# версійний редирект, ні `no-store` на корінь не діють. Тепер кожен документ
+# проходить через воркер, а асети він проксює в `ASSETS` без змін.
+run_worker_first = true
 html_handling = "auto-trailing-slash"
 not_found_handling = "single-page-application"
 
