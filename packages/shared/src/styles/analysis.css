@@ -1479,6 +1479,18 @@
   border-radius: var(--radius-lg);
 }
 
+/* Гліф усередині плитки: 32 у 48 лишає однакові 8 px з кожного боку.
+   `justify-content` потрібен саме обгортці `Icon`: без нього 24-піксельний
+   SVG тулився до лівого краю, і знак виглядав зсунутим. */
+.an-hub[data-variant="2"] .an-entry__icon > span {
+  justify-content: center;
+}
+
+.an-hub[data-variant="2"] .an-entry__icon svg {
+  width: 32px;
+  height: 32px;
+}
+
 .an-hub[data-variant="2"] .an-entry__body {
   gap: 2px;
 }
@@ -1501,6 +1513,40 @@
   font-size: var(--text-xl);
   line-height: 1;
   transform: translateY(-50%);
+}
+
+/*
+ * На телефоні рядок стає щільнішим, але не втрачає сітку: назва, значок і
+ * шеврон стоять на одній верхній лінії, пояснення має однакову ширину, а
+ * висота картки спільна. Донедавна 20/17 розтягували пояснення на три-чотири
+ * рядки, і кожна картка мала власну висоту — звідси «плаваючі» значки й шеврони.
+ */
+@media (width <= 559px) {
+  .an-hub[data-variant="2"] .an-entry {
+    grid-template-columns: 48px minmax(0, 1fr);
+    align-items: start;
+    gap: var(--sp-1);
+    min-height: 116px;
+    padding: var(--sp-3);
+  }
+
+  .an-hub[data-variant="2"] .an-entry__title {
+    font-size: var(--text-md);
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  .an-hub[data-variant="2"] .an-entry__lead {
+    font-size: var(--text-base);
+    line-height: 1.4;
+    text-wrap: pretty;
+  }
+
+  .an-hub[data-variant="2"] .an-entry__chevron {
+    top: var(--sp-3);
+    right: var(--sp-3);
+    transform: none;
+  }
 }
 
 .an-hub[data-variant="3"] .an-entry {
