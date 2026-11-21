@@ -56,11 +56,11 @@ describe("меню платформи", () => {
     expect(activeKeys("/research")).toEqual([]);
   });
 
-  it("«Аналіз» — один пункт головного меню, і в ньому тести", () => {
+  it("«Аналіз людей і подій» — один пункт головного меню, і в ньому тести", () => {
     // Два входи в одну фічу (окремо аналіз і окремо тести) читались як два
     // різні розділи, хоч у них спільне ядро якостей.
     const main = PLATFORM_NAV.find((section) => section.key === "main");
-    expect(main?.items.map((item) => item.label)).toContain("Аналіз");
+    expect(main?.items.map((item) => item.label)).toContain("Аналіз людей і подій");
 
     const hrefs = PLATFORM_NAV.flatMap((section) => section.items).map((item) => item.href);
     expect(hrefs.filter((href) => href === ANALYSIS_PATH)).toHaveLength(1);
