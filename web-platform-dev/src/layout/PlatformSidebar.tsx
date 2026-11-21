@@ -1,6 +1,6 @@
 /**
  * Сайдбар платформи — та сама коробка `SideBar`, що в адмінці: тут лишається
- * рівно лого й склад пунктів. На телефоні це поверхня, на десктопі — колонка;
+ * рівно склад пунктів. На телефоні це поверхня, на десктопі — колонка;
  * різницю тримає CSS (`.wb-platform-sidebar`), а не стан React, інакше меню
  * мигнуло б на першому рендері.
  *
@@ -27,14 +27,6 @@ export function PlatformSidebar({ open = false, onClose }: PlatformSidebarProps)
     <SideBar
       className={`wb-platform-sidebar${open ? " wb-platform-sidebar--open" : ""}`}
       onClose={onClose}
-      header={
-        <div className="wb-nav-header">
-          <span className="wb-nav-logo" aria-hidden="true">
-            ✦
-          </span>
-          <span className="wb-nav-title">ПАЛЯНИЦЯ</span>
-        </div>
-      }
     >
       <SideBarMenu
         sections={platformNav(pathname)}
