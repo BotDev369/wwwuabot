@@ -1,5 +1,5 @@
 {
-  "version": "49903f9",
+  "version": "70eaecd",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -94,7 +94,7 @@
     {
       "file": "analysis.css",
       "tokens": 0,
-      "classes": 158
+      "classes": 167
     },
     {
       "file": "app-chrome.css",
@@ -3760,13 +3760,19 @@
       {
         "section": "Секції, люди, кроки",
         "names": [
+          "an-add",
+          "an-adder",
+          "an-adder__head",
+          "an-adder__title",
           "an-back",
           "an-empty",
           "an-foot",
+          "an-list__bar",
           "an-people",
           "an-person",
           "an-person__date",
           "an-person__name",
+          "an-person__text",
           "an-section",
           "an-section__title",
           "an-step",
@@ -3934,14 +3940,16 @@
           "an-match__sources",
           "an-need",
           "an-pair__sources",
-          "an-person",
           "an-person-line",
+          "an-person-line__edit",
           "an-person__match",
           "an-role",
           "an-role__name",
           "an-roles",
-          "an-setup--inline",
-          "an-tools"
+          "an-row-action",
+          "an-row-action--danger",
+          "an-row-actions",
+          "an-setup--inline"
         ]
       },
       {

@@ -15,6 +15,7 @@ import { deleteMyDate, fetchMyDates, saveMyDate } from "@wwwuabot/ui/analysis/ap
 import { readDates, readSubject } from "@wwwuabot/ui/analysis/params";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { ANALYSIS_PATH, analysisStepPath, type AnalysisMode } from "@/app/routes";
+import { EntityRow, RowAction } from "./EntityRow";
 
 interface SubjectStepProps {
   mode: AnalysisMode;
@@ -184,65 +185,69 @@ export function SubjectStep({ mode }: SubjectStepProps): ReactElement {
           <section className="an-section">
             <h2 className="an-section__title">Зі збережених</h2>
             <div className="an-people">
-              {saved.map((one) => (
-                <div className="an-person-line" key={one.id}>
-                  <label className="an-person an-person--pick">
-                    <input
-                      type="checkbox"
-                      checked={chooseSaved(one)}
-                      onChange={() => toggleSaved(one)}
-                    />
-                    <span className="an-person__name">{one.name || "Без підпису"}</span>
-                    <span className="an-person__date">{humanDate(one.date)}</span>
-                  </label>
-
-                  <div className="an-tools">
-                    <button type="button" className="an-tool" onClick={() => startEdit(one)}>
-                      <Icon name="settings" size={16} />
-                      Змінити
-                    </button>
-                    <button type="button" className="an-tool" onClick={() => remove(one.id)}>
-                      <Icon name="close" size={16} />
-                      Видалити
-                    </button>
-                  </div>
-
-                  {editing === one.id && (
-                    <div className="an-pick">
-                      <label className="an-field">
-                        <span className="an-field__label">Дата</span>
-                        <input
-                          className="an-date"
-                          type="date"
-                          value={draft.date}
-                          max="2100-12-31"
-                          onChange={(event) =>
-                            setDraft((current) => ({ ...current, date: event.target.value }))
-                          }
+              {saved.map((one) => {
+                const label = one.name || humanDate(one.date);
+                return (
+                  <EntityRow
+                    key={one.id}
+                    name={one.name || "Без підпису"}
+                    meta={humanDate(one.date)}
+                    picked={chooseSaved(one)}
+                    checkLabel={`Обрати ${label}`}
+                    onToggle={() => toggleSaved(one)}
+                    actions={
+                      <>
+                        <RowAction
+                          label={`Змінити ${label}`}
+                          icon="edit"
+                          onClick={() => startEdit(one)}
                         />
-                      </label>
-                      <label className="an-field">
-                        <span className="an-field__label">Підпис</span>
-                        <input
-                          className="an-input"
-                          type="text"
-                          value={draft.name}
-                          onChange={(event) =>
-                            setDraft((current) => ({ ...current, name: event.target.value }))
-                          }
+                        <RowAction
+                          label={`Видалити ${label}`}
+                          icon="trash"
+                          onClick={() => remove(one.id)}
+                          danger
                         />
-                      </label>
-                      <button
-                        type="button"
-                        className="wb-btn wb-btn-primary"
-                        onClick={() => saveEdit(one.id)}
-                      >
-                        Зберегти зміни
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
+                      </>
+                    }
+                  >
+                    {editing === one.id && (
+                      <div className="an-pick">
+                        <label className="an-field">
+                          <span className="an-field__label">Дата</span>
+                          <input
+                            className="an-date"
+                            type="date"
+                            value={draft.date}
+                            max="2100-12-31"
+                            onChange={(event) =>
+                              setDraft((current) => ({ ...current, date: event.target.value }))
+                            }
+                          />
+                        </label>
+                        <label className="an-field">
+                          <span className="an-field__label">Підпис</span>
+                          <input
+                            className="an-input"
+                            type="text"
+                            value={draft.name}
+                            onChange={(event) =>
+                              setDraft((current) => ({ ...current, name: event.target.value }))
+                            }
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          className="wb-btn wb-btn-primary"
+                          onClick={() => saveEdit(one.id)}
+                        >
+                          Зберегти зміни
+                        </button>
+                      </div>
+                    )}
+                  </EntityRow>
+                );
+              })}
             </div>
           </section>
         )}

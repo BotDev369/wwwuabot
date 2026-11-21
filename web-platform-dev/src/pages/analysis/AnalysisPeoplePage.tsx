@@ -24,6 +24,8 @@ import {
 } from "@wwwuabot/ui/analysis/api";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { ANALYSIS_COMPARE_PATH, ANALYSIS_PATH } from "@/app/routes";
+import { EntityRow, RowAction } from "./EntityRow";
+import { GroupAdder } from "./GroupAdder";
 import { PeopleAdder, PeopleRow } from "./PeopleRow";
 import { humanDate, kindOf, type Draft, type Kind } from "./people-model";
 
@@ -58,8 +60,10 @@ export function AnalysisPeoplePage(): ReactElement {
   const [picked, setPicked] = useState<readonly string[]>([]);
   const [error, setError] = useState("");
   const [groupName, setGroupName] = useState("");
+  const [groupFormOpen, setGroupFormOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [adding, setAdding] = useState<Kind | null>(null);
   const [draft, setDraft] = useState<Draft>({ date: "", name: "" });
   const [newPerson, setNewPerson] = useState<Draft>({ date: "", name: "" });
   const [newEvent, setNewEvent] = useState<Draft>({ date: "", name: "" });
@@ -117,6 +121,7 @@ export function AnalysisPeoplePage(): ReactElement {
       .then(() => {
         setGroupName("");
         setEditingGroup(null);
+        setGroupFormOpen(false);
         reload();
       })
       .catch((failure: Error) => setError(failure.message));
@@ -124,6 +129,7 @@ export function AnalysisPeoplePage(): ReactElement {
 
   /** Правка групи починається з її складу: інакше перший же новий вибір губить старих. */
   function startGroupEdit(set: AnalysisSet): void {
+    setGroupFormOpen(true);
     setEditingGroup(set.id);
     setGroupName(set.name);
     setPicked(
@@ -133,11 +139,18 @@ export function AnalysisPeoplePage(): ReactElement {
     );
   }
 
+  function closeGroupForm(): void {
+    setGroupFormOpen(false);
+    setEditingGroup(null);
+    setGroupName("");
+  }
+
   function removeGroup(id: string): void {
     setError("");
     deleteAnalysisSet(id)
       .then(() => {
         setPicked((current) => current.filter((one) => one !== `group:${id}`));
+        if (editingGroup === id) closeGroupForm();
         reload();
       })
       .catch((failure: Error) => setError(failure.message));
@@ -151,6 +164,7 @@ export function AnalysisPeoplePage(): ReactElement {
       .then(() => {
         if (kind === "person") setNewPerson({ date: "", name: "" });
         else setNewEvent({ date: "", name: "" });
+        setAdding(null);
         reload();
       })
       .catch((failure: Error) => setError(failure.message));
@@ -244,83 +258,73 @@ export function AnalysisPeoplePage(): ReactElement {
             <Icon name="chevron-down" size={18} className="an-quality__caret" />
           </summary>
           <div className="an-fold__body">
-            <div className="an-row">
-              <label className="an-field">
-                <span className="an-field__label">
-                  {editingGroup ? "Нова назва групи" : "Назва групи"}
-                </span>
-                <input
-                  className="an-input"
-                  type="text"
-                  value={groupName}
-                  placeholder="Наприклад, команда"
-                  onChange={(event) => setGroupName(event.target.value)}
-                />
-              </label>
-              <div className="an-tools">
+            {groupFormOpen ? (
+              <GroupAdder
+                editing={Boolean(editingGroup)}
+                name={groupName}
+                canSave={Boolean(groupName.trim()) && (chosen.length > 0 || Boolean(editingGroup))}
+                onName={setGroupName}
+                onSave={saveGroup}
+                onCancel={closeGroupForm}
+              />
+            ) : (
+              <div className="an-list__bar">
                 <button
                   type="button"
-                  className="wb-btn wb-btn-primary"
-                  disabled={!groupName.trim() || (chosen.length === 0 && !editingGroup)}
-                  onClick={saveGroup}
+                  className="an-add"
+                  onClick={() => {
+                    setGroupFormOpen(true);
+                    setEditingGroup(null);
+                    setGroupName("");
+                  }}
                 >
-                  {editingGroup ? "Зберегти групу" : "Створити групу"}
+                  <Icon name="plus" size={16} />
+                  Нова група
                 </button>
-                {editingGroup && (
-                  <button
-                    type="button"
-                    className="an-tool"
-                    onClick={() => {
-                      setEditingGroup(null);
-                      setGroupName("");
-                    }}
-                  >
-                    Скасувати
-                  </button>
-                )}
               </div>
-              <p className="an-pick__hint">
-                Група збирається з позначених людей і подій. Порожню групу не створюємо.
-              </p>
-            </div>
+            )}
 
             {sets.length === 0 ? (
               <p className="an-empty">Груп ще немає.</p>
             ) : (
               <div className="an-people">
-                {sets.map((set) => (
-                  <div className="an-person-line" key={set.id}>
-                    <label className="an-person an-person--pick">
-                      <input
-                        type="checkbox"
-                        checked={picked.includes(`group:${set.id}`)}
-                        aria-label={`Обрати групу ${set.name || "Без назви"}`}
-                        onChange={() => toggle(`group:${set.id}`)}
-                      />
-                      <span className="an-person__name">{set.name || "Без назви"}</span>
-                      <span className="an-person__date">{set.items.length} у складі</span>
-                    </label>
-
-                    <div className="an-tools">
-                      <Link className="an-tool" to={compareHref(set.items, dates)}>
-                        <Icon name="compare" size={16} />
-                        Співставити
-                      </Link>
-                      <button type="button" className="an-tool" onClick={() => startGroupEdit(set)}>
-                        <Icon name="settings" size={16} />
-                        Змінити
-                      </button>
-                      <button type="button" className="an-tool" onClick={() => removeGroup(set.id)}>
-                        <Icon name="close" size={16} />
-                        Видалити
-                      </button>
-                    </div>
-
-                    <p className="an-pick__hint">
-                      {set.items.map((one) => one.name || humanDate(one.date)).join(" · ")}
-                    </p>
-                  </div>
-                ))}
+                {sets.map((set) => {
+                  const label = set.name || "Без назви";
+                  return (
+                    <EntityRow
+                      key={set.id}
+                      name={label}
+                      meta={`${set.items.length} у складі`}
+                      picked={picked.includes(`group:${set.id}`)}
+                      checkLabel={`Обрати групу ${label}`}
+                      onToggle={() => toggle(`group:${set.id}`)}
+                      actions={
+                        <>
+                          <RowAction
+                            label={`Співставити групу ${label}`}
+                            icon="compare"
+                            href={compareHref(set.items, dates)}
+                          />
+                          <RowAction
+                            label={`Змінити групу ${label}`}
+                            icon="edit"
+                            onClick={() => startGroupEdit(set)}
+                          />
+                          <RowAction
+                            label={`Видалити групу ${label}`}
+                            icon="trash"
+                            onClick={() => removeGroup(set.id)}
+                            danger
+                          />
+                        </>
+                      }
+                    >
+                      <p className="an-pick__hint">
+                        {set.items.map((one) => one.name || humanDate(one.date)).join(" · ")}
+                      </p>
+                    </EntityRow>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -333,17 +337,27 @@ export function AnalysisPeoplePage(): ReactElement {
             <Icon name="chevron-down" size={18} className="an-quality__caret" />
           </summary>
           <div className="an-fold__body">
+            {adding === "person" ? (
+              <PeopleAdder
+                kind="person"
+                draft={newPerson}
+                onDraft={(patch) => setNewPerson((current) => ({ ...current, ...patch }))}
+                onAdd={() => addItem("person")}
+                onCancel={() => setAdding(null)}
+              />
+            ) : (
+              <div className="an-list__bar">
+                <button type="button" className="an-add" onClick={() => setAdding("person")}>
+                  <Icon name="plus" size={16} />
+                  Додати людину
+                </button>
+              </div>
+            )}
             {people.length === 0 ? (
               <p className="an-empty">Людей ще немає.</p>
             ) : (
               <div className="an-people">{rows(people)}</div>
             )}
-            <PeopleAdder
-              kind="person"
-              draft={newPerson}
-              onDraft={(patch) => setNewPerson((current) => ({ ...current, ...patch }))}
-              onAdd={() => addItem("person")}
-            />
           </div>
         </details>
 
@@ -354,17 +368,27 @@ export function AnalysisPeoplePage(): ReactElement {
             <Icon name="chevron-down" size={18} className="an-quality__caret" />
           </summary>
           <div className="an-fold__body">
+            {adding === "event" ? (
+              <PeopleAdder
+                kind="event"
+                draft={newEvent}
+                onDraft={(patch) => setNewEvent((current) => ({ ...current, ...patch }))}
+                onAdd={() => addItem("event")}
+                onCancel={() => setAdding(null)}
+              />
+            ) : (
+              <div className="an-list__bar">
+                <button type="button" className="an-add" onClick={() => setAdding("event")}>
+                  <Icon name="plus" size={16} />
+                  Додати подію
+                </button>
+              </div>
+            )}
             {events.length === 0 ? (
               <p className="an-empty">Подій ще немає.</p>
             ) : (
               <div className="an-people">{rows(events)}</div>
             )}
-            <PeopleAdder
-              kind="event"
-              draft={newEvent}
-              onDraft={(patch) => setNewEvent((current) => ({ ...current, ...patch }))}
-              onAdd={() => addItem("event")}
-            />
           </div>
         </details>
       </div>

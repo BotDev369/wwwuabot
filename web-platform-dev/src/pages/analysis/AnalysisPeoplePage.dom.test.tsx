@@ -188,6 +188,7 @@ describe("люди і події", () => {
 
     await waitFor(() => expect(screen.getByText("Олена")).toBeTruthy());
 
+    await userEvent.click(screen.getByRole("button", { name: "Додати людину" }));
     const dateInput = screen.getAllByLabelText("Дата народження")[0];
     await userEvent.type(dateInput, "2000-01-02");
     await userEvent.type(screen.getAllByPlaceholderText("За бажанням")[0], "Нова");
@@ -202,6 +203,7 @@ describe("люди і події", () => {
 
     await userEvent.click(screen.getByLabelText("Обрати Олена"));
     await userEvent.click(screen.getByLabelText("Обрати Іван"));
+    await userEvent.click(screen.getByRole("button", { name: "Нова група" }));
     await userEvent.type(screen.getByLabelText("Назва групи"), "Двійка");
     await userEvent.click(screen.getByRole("button", { name: "Створити групу" }));
 

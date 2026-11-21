@@ -218,29 +218,80 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  min-height: 56px;
-  padding: var(--sp-2) var(--sp-4);
-  border-radius: var(--radius-lg);
-  background: var(--field-bg);
+  min-width: 0;
+  min-height: 60px;
+  padding: 0;
   color: var(--text-primary);
   text-decoration: none;
 }
 
-.an-person:active {
-  background: var(--surface-active);
+.an-person__text {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 2px;
+  min-width: 0;
 }
 
 .an-person__name {
-  flex: auto;
+  display: block;
   min-width: 0;
+  overflow: hidden;
   font-weight: var(--weight-semibold);
-  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .an-person__date {
-  flex: none;
-  font-size: var(--text-sm);
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--text-xs);
   color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.an-list__bar {
+  display: flex;
+  align-items: center;
+}
+
+.an-add {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+@media (hover: hover) {
+  .an-add:hover {
+    background: var(--accent-dim);
+  }
+}
+
+.an-adder {
+  padding: var(--sp-3);
+}
+
+.an-adder__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.an-adder__title {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
 }
 
 .an-steps {
@@ -1001,7 +1052,7 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  min-height: 52px;
+  min-height: 60px;
   cursor: pointer;
 }
 
@@ -1309,26 +1360,67 @@
 }
 
 /*
- * Рядок «назва + дії» на вузькому екрані **переносить кнопки на новий рядок**.
- * Без `wrap` і основи 220px три кнопки з'їдали всю ширину й назва набору
- * ламалася по літері — саме це видно на телефоні.
+ * Рядок списку: провідний чекбокс, назва з метаданими й trailing-дії в одному
+ * рядку. Дії — 44×44, тому палець дістає їх, але вони не забирають окремий
+ * рядок у кожного запису: саме через це список раніше роздувався на телефоні.
  */
 .an-person-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 var(--sp-1);
+  min-width: 0;
+  padding: var(--sp-1) var(--sp-1) var(--sp-1) var(--sp-4);
+  border-radius: var(--radius-lg);
+  background: var(--field-bg);
+}
+
+.an-person-line[data-picked="true"] {
+  background: var(--accent-soft);
+}
+
+.an-row-actions {
   display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: var(--sp-2);
-  min-width: 0;
+  align-items: center;
 }
 
-.an-person-line .an-person {
-  flex: 1 1 220px;
-  min-width: 0;
+.an-row-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-decoration: none;
 }
 
-.an-person-line .an-tools {
-  flex: 1 1 auto;
-  justify-content: flex-end;
+@media (hover: hover) {
+  .an-row-action:hover {
+    background: var(--surface-active);
+    color: var(--text-primary);
+  }
+}
+
+.an-row-action--danger {
+  color: var(--text-muted);
+}
+
+@media (hover: hover) {
+  .an-row-action--danger:hover {
+    background: var(--red-dim);
+    color: var(--red);
+  }
+}
+
+.an-person-line__edit {
+  grid-column: 1 / -1;
+  min-width: 0;
+  padding: 0 var(--sp-2) var(--sp-3) 0;
 }
 
 .an-person__match {

@@ -9,6 +9,7 @@ import type { ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { MyDate } from "@wwwuabot/shared/types/mydate";
 import { isValidDate } from "@wwwuabot/shared/utils/mydate-helpers";
+import { EntityRow, RowAction } from "./EntityRow";
 import { humanDate, kindOf, type Draft, type Kind } from "./people-model";
 
 interface PeopleRowProps {
@@ -37,31 +38,22 @@ export function PeopleRow({
   onRemove,
 }: PeopleRowProps): ReactElement {
   const kind = kindOf(one);
+  const label = one.name || humanDate(one.date);
 
   return (
-    <div className="an-person-line">
-      <label className="an-person an-person--pick">
-        <input
-          type="checkbox"
-          checked={picked}
-          aria-label={`Обрати ${one.name || humanDate(one.date)}`}
-          onChange={onToggle}
-        />
-        <span className="an-person__name">{one.name || "Без підпису"}</span>
-        <span className="an-person__date">{humanDate(one.date)}</span>
-      </label>
-
-      <div className="an-tools">
-        <button type="button" className="an-tool" onClick={onStartEdit}>
-          <Icon name="settings" size={16} />
-          Змінити
-        </button>
-        <button type="button" className="an-tool" onClick={onRemove}>
-          <Icon name="close" size={16} />
-          Видалити
-        </button>
-      </div>
-
+    <EntityRow
+      name={one.name || "Без підпису"}
+      meta={humanDate(one.date)}
+      picked={picked}
+      checkLabel={`Обрати ${label}`}
+      onToggle={onToggle}
+      actions={
+        <>
+          <RowAction label={`Змінити ${label}`} icon="edit" onClick={onStartEdit} />
+          <RowAction label={`Видалити ${label}`} icon="trash" onClick={onRemove} danger />
+        </>
+      }
+    >
       {editing && (
         <div className="an-pick">
           <label className="an-field">
@@ -95,7 +87,7 @@ export function PeopleRow({
           </div>
         </div>
       )}
-    </div>
+    </EntityRow>
   );
 }
 
@@ -104,11 +96,32 @@ interface PeopleAdderProps {
   draft: Draft;
   onDraft: (patch: Partial<Draft>) => void;
   onAdd: () => void;
+  onCancel: () => void;
 }
 
-export function PeopleAdder({ kind, draft, onDraft, onAdd }: PeopleAdderProps): ReactElement {
+export function PeopleAdder({
+  kind,
+  draft,
+  onDraft,
+  onAdd,
+  onCancel,
+}: PeopleAdderProps): ReactElement {
   return (
-    <div className="an-row">
+    <div className="an-row an-adder">
+      <div className="an-adder__head">
+        <strong className="an-adder__title">
+          {kind === "event" ? "Нова подія" : "Нова людина"}
+        </strong>
+        <button
+          type="button"
+          className="an-row-action"
+          aria-label="Скасувати додавання"
+          title="Скасувати"
+          onClick={onCancel}
+        >
+          <Icon name="close" size={18} />
+        </button>
+      </div>
       <label className="an-field">
         <span className="an-field__label">
           {kind === "event" ? "Дата події" : "Дата народження"}

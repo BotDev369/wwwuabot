@@ -1,5 +1,5 @@
 {
-  "version": "49903f9",
+  "version": "70eaecd",
   "page": {
     "title": "Єдиний UI",
     "intro": "Справжній зразок, клас і присуд ужитку. Розділи згорнуті — відкривай потрібний.",
@@ -54,8 +54,8 @@
   },
   "summary": {
     "total": 212,
-    "both": 50,
-    "one": 75,
+    "both": 49,
+    "one": 76,
     "shared": 46,
     "builder": 38,
     "unused": 3
@@ -74,7 +74,7 @@
           "sampleText": "Кнопка",
           "note": "Базова кнопка: мірки, радіус і вага — з токенів.",
           "usage": {
-            "platform": 42,
+            "platform": 43,
             "admin": 25,
             "ui": 16,
             "shared": 4
@@ -89,7 +89,7 @@
           "sampleText": "Зберегти",
           "note": "Одна основна дія на екран.",
           "usage": {
-            "platform": 24,
+            "platform": 25,
             "admin": 14,
             "ui": 13,
             "shared": 4
@@ -1622,12 +1622,12 @@
           "note": "",
           "icon": "settings",
           "usage": {
-            "platform": 3,
+            "platform": 0,
             "admin": 2,
             "ui": 0,
             "shared": 1
           },
-          "verdict": "both"
+          "verdict": "one"
         },
         {
           "id": "icon-logout",
@@ -1846,7 +1846,7 @@
           "note": "",
           "icon": "edit",
           "usage": {
-            "platform": 4,
+            "platform": 7,
             "admin": 4,
             "ui": 5,
             "shared": 1
@@ -1910,7 +1910,7 @@
           "note": "",
           "icon": "trash",
           "usage": {
-            "platform": 10,
+            "platform": 13,
             "admin": 4,
             "ui": 4,
             "shared": 3
@@ -2086,7 +2086,7 @@
           "note": "",
           "icon": "plus",
           "usage": {
-            "platform": 15,
+            "platform": 16,
             "admin": 1,
             "ui": 2,
             "shared": 1
