@@ -39,7 +39,7 @@ describe("головна аналізу", () => {
   it("називає фічу й показує опис затвердженого V2", () => {
     renderHub();
 
-    expect(screen.getByText("Аналіз людей та подій")).toBeTruthy();
+    expect(screen.getByText("ПАЛЯНИЦЯ")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Пізнай себе, оточуючих та події." })).toBeTruthy();
     expect(screen.getByText(/Дата народження й тест/)).toBeTruthy();
   });
