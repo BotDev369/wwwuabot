@@ -10,12 +10,13 @@ import worker, { type Env } from "./worker";
 
 const HTML = { headers: { "Content-Type": "text/html" } };
 
-function harness(answer: () => Promise<Response>) {
+function harness(answer: () => Promise<Response>, version?: string) {
   const assets = vi.fn(async () => new Response("<!doctype html><div id=root></div>", HTML));
   const api = vi.fn(answer);
   const env = {
     ASSETS: { fetch: assets },
     API: { fetch: api },
+    ...(version ? { CF_VERSION_METADATA: { id: version } } : {}),
   } as unknown as Env;
   return { env, assets, api };
 }
@@ -62,6 +63,25 @@ describe("worker: старі адреси", () => {
     await worker.fetch(new Request("https://platform.test/assets/index-abc123.js"), env);
 
     expect(api).not.toHaveBeenCalled();
+  });
+
+  it("документ без версії веде на адресу з версією деплою", async () => {
+    const { env, assets } = harness(async () => Response.json({ ok: true, to: null }), "v42");
+
+    const response = await worker.fetch(documentRequest("/analysis?from=chat"), env);
+
+    expect(response.status).toBe(302);
+    expect(response.headers.get("Location")).toBe("https://platform.test/analysis?from=chat&v=v42");
+    expect(assets).not.toHaveBeenCalled();
+  });
+
+  it("документ із поточною версією віддає застосунок", async () => {
+    const { env, assets } = harness(async () => Response.json({ ok: true, to: null }), "v42");
+
+    const response = await worker.fetch(documentRequest("/analysis?v=v42"), env);
+
+    expect(response.status).toBe(200);
+    expect(assets).toHaveBeenCalledOnce();
   });
 
   it("POST на стару адресу не редиректиться", async () => {

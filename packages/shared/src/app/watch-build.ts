@@ -29,7 +29,13 @@ const DEFAULT_INTERVAL_MS = 60_000;
  * Vite немає, а другого місця, де це вирішується, бути не має.
  */
 export function reloadOnNewBuild(options: WatchBuildOptions = {}): void {
-  watchBuild(() => window.location.reload(), options);
+  watchBuild((stamp) => {
+    // Не просто `reload()`: старий `index.html` міг лишитися в кеші WebView,
+    // тож перезавантаження з міткою в адресі гарантує новий документ.
+    const url = new URL(window.location.href);
+    if (stamp) url.searchParams.set("__build", stamp);
+    window.location.replace(url.toString());
+  }, options);
 }
 
 /**
@@ -38,18 +44,22 @@ export function reloadOnNewBuild(options: WatchBuildOptions = {}): void {
  * Перевірка — не таймер заради таймера: вона йде на повернення вкладки у
  * видимість (людина якраз дивиться) і рідко у фоні.
  */
-export function watchBuild(onStale: () => void, options: WatchBuildOptions = {}): void {
+export function watchBuild(
+  onStale: (stamp: string | null) => void,
+  options: WatchBuildOptions = {},
+): void {
   if (!options.enabled) return;
   const current = document.querySelector('meta[name="x-build"]')?.getAttribute("content")?.trim();
   if (!current) return;
 
   const load =
-    options.load ?? (async () => (await fetch("/index.html", { cache: "no-store" })).text());
+    options.load ??
+    (async () => (await fetch(`/index.html?build=${Date.now()}`, { cache: "no-store" })).text());
 
   const check = async (): Promise<void> => {
     try {
       const next = buildStamp(await load());
-      if (next && next !== current) onStale();
+      if (next && next !== current) onStale(next);
     } catch {
       // Мережа мовчить — наступна перевірка спробує знову.
     }

@@ -9,6 +9,8 @@ import { secureResponse } from "@wwwuabot/shared/security/headers";
 export interface Env {
   ASSETS: { fetch: (request: Request) => Promise<Response> };
   API: { fetch: (request: Request) => Promise<Response> };
+  /** Ідентифікатор версії воркера: новий деплой — нове значення. */
+  CF_VERSION_METADATA?: { id?: string };
 }
 
 /**
@@ -24,6 +26,8 @@ export interface Env {
 function fixAssetHeaders(res: Response, url: string): Response {
   const headers = new Headers(res.headers);
   headers.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+  headers.set("CDN-Cache-Control", "no-store");
+  headers.set("Cloudflare-CDN-Cache-Control", "no-store");
   headers.set("Pragma", "no-cache");
   headers.set("Expires", "0");
   return secureResponse(
@@ -42,9 +46,32 @@ function fixAssetHeaders(res: Response, url: string): Response {
  */
 function isDocumentRequest(request: Request, url: URL): boolean {
   if (request.method !== "GET") return false;
-  if (url.pathname === "/") return false;
   if (/\.[a-z0-9]+$/i.test(url.pathname)) return false;
   return (request.headers.get("Accept") ?? "").includes("text/html");
+}
+
+/**
+ * Документ відкривається за адресою з версією деплою.
+ *
+ * `index.html` без версії в адресі може лишитися в кеші WebView після
+ * деплою — тоді сторінка тягне старий JS. Новий `id` версії дає нову адресу,
+ * а разом з нею — гарантовано свіжий документ; хеш Telegram при переході
+ * зберігається браузером.
+ */
+function versionRedirect(request: Request, url: URL, version: string): Response | null {
+  if (!isDocumentRequest(request, url)) return null;
+  if (url.searchParams.get("v") === version) return null;
+
+  const target = new URL(url);
+  target.searchParams.set("v", version);
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: target.toString(),
+      "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+      "CDN-Cache-Control": "no-store",
+    },
+  });
 }
 
 /**
@@ -87,6 +114,12 @@ export default {
     // переходах по документу.
     const redirect = await pageRedirect(request, env, url);
     if (redirect) return redirect;
+
+    const version = env.CF_VERSION_METADATA?.id;
+    if (version) {
+      const fresh = versionRedirect(request, url, version);
+      if (fresh) return fresh;
+    }
 
     return fixAssetHeaders(await env.ASSETS.fetch(request), url.toString());
   },
