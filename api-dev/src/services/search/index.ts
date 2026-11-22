@@ -89,10 +89,13 @@ function absolute(base: string, path: string): string {
 export async function buildSearchIndex(env: Env, base: string): Promise<SearchIndex> {
   await ensureTables(env.DB, ["platform_pages", "shop_products"]);
 
+  // Сторінки платформи мають is_public = NULL: вони публічні за походженням, а
+  // is_public = 1 — позначка авторської сторінки. Просте `= 1` відкинуло б головну.
   const pagesResult = await env.DB.prepare(
     `SELECT p.slug, p.title, p.photo_url, p.template_key, p.search_terms
        FROM platform_pages p
-      WHERE p.is_active = 1 AND p.is_public = 1
+      WHERE p.is_active = 1
+        AND (p.owner_id IS NULL OR COALESCE(p.is_public, 0) = 1)
         AND NOT EXISTS (
           SELECT 1 FROM users u
            WHERE CAST(u.user_id AS TEXT) = p.owner_id AND u.is_blocked = 1

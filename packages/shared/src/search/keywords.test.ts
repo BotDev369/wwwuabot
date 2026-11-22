@@ -39,7 +39,11 @@ function readSheet(): SearchEntry[] {
       .filter(Boolean);
 
     if (section === "pages" && row.length === 2) {
-      const slug = row[0].replace(/`/g, "");
+      // Головна сторінка має порожній slug: у аркуші вона підписана в дужках.
+      const slug = row[0]
+        .replace(/`/g, "")
+        .replace(/\(.*\)/g, "")
+        .trim();
       entries.push({
         kind: "page",
         slug,

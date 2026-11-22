@@ -21,7 +21,7 @@ UPDATE platform_pages SET search_terms = '["сервіси", "послуги", "
 UPDATE platform_pages SET search_terms = '["обране", "збережене", "закладки"]' WHERE slug = 'favorites';
 UPDATE platform_pages SET search_terms = '["дослідження", "дослідження платформи", "статті"]' WHERE slug = 'research';
 UPDATE platform_pages SET search_terms = '["контакти", "зв''язок", "адмін", "підтримка"]' WHERE slug = 'contacts';
-UPDATE platform_pages SET search_terms = '["головна", "платформа", "паляниця", "palyanytsia", "wwwuabot"]' WHERE slug = ' (головна)';
+UPDATE platform_pages SET search_terms = '["головна", "платформа", "паляниця", "palyanytsia", "wwwuabot"]' WHERE slug = '';
 
 UPDATE shop_products SET search_terms = '["деревій", "деревій звичайний", "кровоспинна трава"]' WHERE slug = 'dereviy-zvychaynyy' AND shop_id = (SELECT id FROM platform_pages WHERE slug = 'galyashop');
 UPDATE shop_products SET search_terms = '["гісоп", "гісоп лікарський", "hyssop"]' WHERE slug = 'hisop-likarskyy' AND shop_id = (SELECT id FROM platform_pages WHERE slug = 'galyashop');

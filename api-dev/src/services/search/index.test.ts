@@ -76,7 +76,9 @@ describe("buildSearchIndex", () => {
       terms: ["галяшоп", "galyashop"],
       photo: "https://api.test/api/shop/media/shop/382/cover.jpg",
     });
-    expect(queries[0].sql).toContain("is_public = 1");
+    // Авторська сторінка — `is_public = 1`, сторінка платформи — `NULL`.
+    expect(queries[0].sql).toContain("COALESCE(p.is_public, 0) = 1");
+    expect(queries[0].sql).toContain("p.owner_id IS NULL");
   });
 
   it("сторінка без свого фото отримує заглушку з R2, а не чужий URL", async () => {
