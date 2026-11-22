@@ -109,6 +109,32 @@ export function sanitizeProductAttributes(raw: unknown): ProductAttribute[] {
   return attributes;
 }
 
+/** Скільки пошукових слів тримає товар: більше — вже не слова, а список. */
+export const PRODUCT_SEARCH_TERMS_MAX = 24;
+export const PRODUCT_SEARCH_TERM_MAX = 60;
+
+/**
+ * Пошукові слова з форми: рядки без країв, без повторів і без порожніх.
+ *
+ * Повтор порівнюється **без регістру**: «Галяшоп» і «галяшоп» — те саме слово,
+ * і друге місце в списку нічого не додає.
+ */
+export function cleanSearchTerms(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const terms: string[] = [];
+  const seen = new Set<string>();
+  for (const entry of raw) {
+    const term = sanitizeLine(entry, PRODUCT_SEARCH_TERM_MAX);
+    if (!term) continue;
+    const key = term.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    terms.push(term);
+    if (terms.length >= PRODUCT_SEARCH_TERMS_MAX) break;
+  }
+  return terms;
+}
+
 /** Розділ каталогу, як його читає покупець; порожній — «Інші товари». */
 export function productCategoryLabel(category: string): string {
   return category.trim() || UNCATEGORIZED_CATEGORY_TITLE;
@@ -157,6 +183,8 @@ export interface ProductInput {
   images: number[];
   attributes: ProductAttribute[];
   isActive: boolean;
+  /** Пошукові слова; немає в чернетці форми — зберігаються наявні або з назви. */
+  searchTerms?: string[];
 }
 
 export type ProductValidation = { ok: true; value: ProductInput } | { ok: false; message: string };
@@ -214,6 +242,7 @@ export function validateProductDraft(raw: unknown): ProductValidation {
       price: sanitizeLine(source.price, PRODUCT_PRICE_MAX),
       images: cleanImageIds(source.images),
       attributes: sanitizeProductAttributes(source.attributes),
+      searchTerms: cleanSearchTerms(source.searchTerms),
       // Прапорець видимості: відсутній означає «у каталозі». Явне `false`
       // лишає товар чернеткою — він у списку продавця, але покупець його не
       // бачить.

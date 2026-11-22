@@ -51,6 +51,11 @@ export interface ShopProduct {
   /** Номери файлів `shop_media` у порядку показу; перший — головний. */
   images: number[];
   attributes: ProductAttribute[];
+  /**
+   * Слова, якими товар знаходять у боті. Порожній список у активного товару —
+   * помилка збереження, а не «покажемо без слів».
+   */
+  searchTerms?: string[];
   /** `false` — чернетка: видно продавцю, немає в каталозі. */
   isActive: boolean;
   createdAt: string;

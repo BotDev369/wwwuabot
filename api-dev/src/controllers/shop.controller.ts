@@ -27,6 +27,7 @@ import { apiLog } from "../shared/logger";
 import { resolveUserId } from "../shared/identity";
 import { ShopProductsService } from "../services/shop/products.service";
 import { listPublicShops } from "../services/shop/shops";
+import { rebuildSearchIndex } from "../services/search";
 
 /** Текст невдачі — без подробиць: у винятку бувають назви таблиць і значення. */
 const FAILURE = "Не вдалося виконати дію";
@@ -90,6 +91,15 @@ export async function handleUserShopProducts(request: Request, env: Env): Promis
       if (outcome.kind === "address_taken") {
         return json({ ok: false, error: "Така адреса товару вже зайнята — оберіть іншу" }, 409);
       }
+      if (outcome.kind === "no_terms") {
+        return json({ ok: false, error: "Додайте пошукові слова — без них товар не знайти" }, 400);
+      }
+
+      // Індекс переписується по факту зміни. Збій KV не робить збереження
+      // товару помилковим: кнопка «Перебудувати пошук» лишається виходом.
+      await rebuildSearchIndex(env, new URL(request.url).origin).catch((error: unknown) =>
+        apiLog.error("search reindex after product save", error),
+      );
 
       return json({ ok: true, product: outcome.product, media: outcome.media });
     }
@@ -100,6 +110,9 @@ export async function handleUserShopProducts(request: Request, env: Env): Promis
 
       const removed = await service.remove(shopId, identity.userId, id);
       if (!removed) return json({ ok: false, error: "Not found" }, 404);
+      await rebuildSearchIndex(env, new URL(request.url).origin).catch((error: unknown) =>
+        apiLog.error("search reindex after product delete", error),
+      );
       return json({ ok: true, id });
     }
 

@@ -222,6 +222,7 @@ export const TABLES = {
         is_public INTEGER DEFAULT 0,
         viewer_ids TEXT,
         is_active INTEGER DEFAULT 1,
+        search_terms TEXT NOT NULL DEFAULT '[]',
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       )`,
@@ -955,6 +956,7 @@ export const TABLES = {
         price TEXT NOT NULL DEFAULT '',
         images TEXT NOT NULL DEFAULT '[]',
         attributes TEXT NOT NULL DEFAULT '[]',
+        search_terms TEXT NOT NULL DEFAULT '[]',
         is_active INTEGER NOT NULL DEFAULT 1,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now')),

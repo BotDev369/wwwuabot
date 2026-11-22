@@ -18,6 +18,7 @@
 
 import type { Env } from "../../shared/types";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
+import { searchTermsFrom } from "@wwwuabot/shared/search";
 import {
   PRODUCT_SLUG_MAX,
   type ProductInput,
@@ -59,13 +60,28 @@ export interface ProductsData {
 export type ProductSaveOutcome =
   | { kind: "saved"; product: ShopProduct; media: ShopMedia[] }
   | { kind: "not_found" }
-  | { kind: "address_taken" };
+  | { kind: "address_taken" }
+  | { kind: "no_terms" };
 
 /** Скільки віддавати за запитом: сміття й перебір дають межі, а не помилку. */
 export function clampCatalogLimit(raw: unknown): number {
   const value = Number(raw);
   if (!Number.isFinite(value) || value <= 0) return CATALOG_PAGE_SIZE;
   return Math.min(Math.floor(value), CATALOG_PAGE_MAX);
+}
+
+/** Слова з JSON-колонки: битий JSON — це `[]`, а не виняток збереження. */
+function termsFromColumn(raw: string | null): string[] {
+  try {
+    const parsed = JSON.parse(raw ?? "[]") as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((term): term is string => typeof term === "string")
+      .map((term) => term.trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
 }
 
 export class ShopProductsService {
@@ -146,6 +162,11 @@ export class ShopProductsService {
     const attributes = JSON.stringify(input.attributes);
     const active = input.isActive ? 1 : 0;
 
+    // Слова: надіслані формою → наявні в рядку → складені з назви й адреси.
+    // Останній крок — гарантія, а не зручність: активний товар без слів не
+    // знаходився б у боті, тобто існував би лише для тих, кому дали посилання.
+    const provided = input.searchTerms ?? [];
+
     if (id !== undefined) {
       const current = await this.row(shopId, id);
       if (!current) return { kind: "not_found" };
@@ -153,10 +174,20 @@ export class ShopProductsService {
         return { kind: "address_taken" };
       }
 
+      const kept = termsFromColumn(current.search_terms);
+      const terms =
+        provided.length > 0
+          ? provided
+          : kept.length > 0
+            ? kept
+            : searchTermsFrom(input.title, input.slug);
+      if (active === 1 && terms.length === 0) return { kind: "no_terms" };
+      const searchTerms = JSON.stringify(terms);
+
       await this.env.DB.prepare(
         `UPDATE shop_products
             SET slug = ?, kind = ?, title = ?, category = ?, summary = ?, description = ?,
-                price = ?, images = ?, attributes = ?, is_active = ?, updated_at = ?
+                price = ?, images = ?, attributes = ?, search_terms = ?, is_active = ?, updated_at = ?
           WHERE id = ? AND shop_id = ?`,
       )
         .bind(
@@ -169,6 +200,7 @@ export class ShopProductsService {
           input.price,
           images,
           attributes,
+          searchTerms,
           active,
           now,
           id,
@@ -185,12 +217,16 @@ export class ShopProductsService {
       };
     }
 
+    const terms = provided.length > 0 ? provided : searchTermsFrom(input.title, input.slug);
+    if (active === 1 && terms.length === 0) return { kind: "no_terms" };
+    const searchTerms = JSON.stringify(terms);
+
     const slug = await this.uniqueSlug(shopId, input.slug);
     const inserted = await this.env.DB.prepare(
       `INSERT INTO shop_products
          (shop_id, slug, kind, title, category, summary, description, price, images, attributes,
-          is_active, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          search_terms, is_active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
       .bind(
         shopId,
@@ -203,6 +239,7 @@ export class ShopProductsService {
         input.price,
         images,
         attributes,
+        searchTerms,
         active,
         now,
         now,

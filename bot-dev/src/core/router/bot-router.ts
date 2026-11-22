@@ -23,6 +23,7 @@ import { handleContactFlow } from "../../modules/access/contact/reply";
 import { handleContactCallback } from "../../modules/access/contact/panel";
 import { handleReportCommand } from "../../modules/reports/history";
 import { splitInviteCode } from "../../modules/access/payload";
+import { handleSearch } from "../../modules/search/search.handler";
 
 export async function botRouter(ctx: AppContext): Promise<void> {
   if (!ctx.user) return;
@@ -77,6 +78,9 @@ export async function botRouter(ctx: AppContext): Promise<void> {
       await deleteIncomingMessage(ctx);
       return;
     }
+    // Будь-який текст у приватній лістці — пошуковий запит. Команди й
+    // діплінки сюди не доходять: їх розібрано вище.
+    if (await handleSearch(ctx, text)) return;
     await show(ctx, text);
     return;
   }

@@ -12,6 +12,12 @@ binding = "DB"
 database_name = "wwwuabot-db-dev"
 database_id = "9fc03f61-d497-4d92-bae4-c92b02c2d1c5"
 
+# Пошуковий індекс пише `api-dev` (сторінки й товари — його), а бот лише читає:
+# **той самий namespace**, другий KV під ту саму відповідь не потрібен.
+[[kv_namespaces]]
+binding = "CONTENT_KV"
+id = "bda7a5fca58b4fbda87d75105d558ebf"
+
 [vars]
 # Воркер називається `bot-dev`, і тут має стояти `dev` — одне слово на один
 # стан. Прод отримає `production` окремим деплоєм (окремий воркер + окрема

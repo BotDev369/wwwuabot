@@ -14,6 +14,7 @@ import {
   handlePlatformPagesList,
   handlePlatformPageRead,
 } from "./controllers/scenarios-admin.controller";
+import { handleSearchReindex } from "./controllers/search.controller";
 import { matchScreensRoute } from "./routes/screens";
 import { handleMyDates } from "./controllers/my-dates.controller";
 import { handleAnalysisSets } from "./controllers/analysis-sets.controller";
@@ -231,6 +232,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/api/admin/platform-pages/read" && request.method === "POST") {
     return handlePlatformPageRead(request, env);
+  }
+  // Пошук: індекс переписують зміни товарів і сторінок, а цей шлях — для
+  // контентних міграцій, де «збереження» не існує.
+  if (pathname === "/api/admin/search/reindex" && request.method === "POST") {
+    return handleSearchReindex(request, env);
   }
 
   // ── Admin: Users CRUD ──────────────────────────────────────────

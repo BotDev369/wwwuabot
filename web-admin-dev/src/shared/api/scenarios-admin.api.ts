@@ -40,7 +40,15 @@ export interface PlatformPageListItem {
 export interface PlatformPageRecord extends PlatformPageListItem {
   photo_url: string | null;
   page_data: string | null;
+  search_terms: string | null;
   is_active: number | null;
+}
+
+/** Що повертає ручна перебудова пошуку. */
+export interface SearchReindexResult {
+  pages: number;
+  products: number;
+  builtAt: string;
 }
 
 export async function listBotScenarios(): Promise<BotScenarioListItem[]> {
@@ -73,6 +81,13 @@ export async function listPlatformPages(): Promise<PlatformPageListItem[]> {
     "/api/admin/platform-pages",
   );
   return res.items;
+}
+
+export async function reindexSearch(): Promise<SearchReindexResult> {
+  const res = await apiFetch<{ ok: boolean } & SearchReindexResult>("/api/admin/search/reindex", {
+    method: "POST",
+  });
+  return res;
 }
 
 export async function readPlatformPage(id: number): Promise<PlatformPageRecord | null> {

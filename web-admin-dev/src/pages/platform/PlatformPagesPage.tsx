@@ -15,11 +15,23 @@ import { PageTopbar } from "../../layout/PageTopbar";
 import {
   listPlatformPages,
   readPlatformPage,
+  reindexSearch,
   type PlatformPageListItem,
   type PlatformPageRecord,
 } from "../../shared/api/scenarios-admin.api";
 
 type Status = "loading" | "idle" | "error";
+
+/** Слова з JSON-колонки для ока: список через кому, без лапок і дужок. */
+function searchTermsLabel(raw: string | null): string {
+  if (!raw) return "— немає";
+  try {
+    const list = JSON.parse(raw) as unknown;
+    return Array.isArray(list) && list.length > 0 ? list.join(", ") : "— немає";
+  } catch {
+    return raw;
+  }
+}
 
 export function PlatformPagesPage() {
   const [items, setItems] = useState<PlatformPageListItem[]>([]);
@@ -27,6 +39,10 @@ export function PlatformPagesPage() {
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [record, setRecord] = useState<PlatformPageRecord | null>(null);
+  const [reindex, setReindex] = useState<{ busy: boolean; note: string }>({
+    busy: false,
+    note: "",
+  });
 
   const load = useCallback(async () => {
     try {
@@ -56,6 +72,19 @@ export function PlatformPagesPage() {
     if (found) setRecord(found);
   }
 
+  async function rebuild(): Promise<void> {
+    setReindex({ busy: true, note: "" });
+    try {
+      const result = await reindexSearch();
+      setReindex({
+        busy: false,
+        note: `Готово: сторінок ${result.pages}, товарів ${result.products}`,
+      });
+    } catch (e) {
+      setReindex({ busy: false, note: (e as Error).message });
+    }
+  }
+
   return (
     <>
       <PageTopbar>
@@ -71,6 +100,14 @@ export function PlatformPagesPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
+          <button
+            className="wb-btn wb-btn-secondary"
+            disabled={reindex.busy}
+            onClick={() => void rebuild()}
+          >
+            {reindex.busy ? "Перебудовуємо…" : "Перебудувати пошук"}
+          </button>
+          {reindex.note && <span className="wb-text-sm wb-text-muted">{reindex.note}</span>}
         </div>
       </PageTopbar>
 
@@ -164,6 +201,10 @@ export function PlatformPagesPage() {
               <div className="wb-admin-field">
                 <span className="wb-admin-label">Шаблон</span>
                 <p className="wb-text-base">{record.template_key || "—"}</p>
+              </div>
+              <div className="wb-admin-field">
+                <span className="wb-admin-label">Пошукові слова</span>
+                <p className="wb-text-base">{searchTermsLabel(record.search_terms)}</p>
               </div>
               <div className="wb-admin-field">
                 <span className="wb-admin-label">Публічна</span>

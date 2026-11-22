@@ -29,7 +29,7 @@ import {
 import { readJsonColumn } from "./json";
 
 export const PRODUCT_COLUMNS =
-  "id, shop_id, slug, kind, title, category, summary, description, price, images, attributes, is_active, created_at, updated_at";
+  "id, shop_id, slug, kind, title, category, summary, description, price, images, attributes, search_terms, is_active, created_at, updated_at";
 
 export interface ProductRow {
   id: number;
@@ -48,9 +48,25 @@ export interface ProductRow {
   price: string | null;
   images: string | null;
   attributes: string | null;
+  /** Слова для бота; у старих рядків `NULL` — читач бере `[]`. */
+  search_terms: string | null;
   is_active: number | null;
   created_at: string | null;
   updated_at: string | null;
+}
+
+/** Пошукові слова з JSON-колонки: не-рядки й порожні відкидаються. */
+function searchTermsOf(raw: string | null): string[] {
+  try {
+    const parsed = JSON.parse(raw ?? "[]") as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((item): item is string => typeof item === "string")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -84,6 +100,7 @@ export function toProduct(row: ProductRow): ShopProduct {
     price: row.price ?? "",
     images: cleanImageIds(readJsonColumn(row.images)),
     attributes: sanitizeProductAttributes(readJsonColumn(row.attributes)),
+    searchTerms: searchTermsOf(row.search_terms),
     // Колонка має `NOT NULL DEFAULT 1`, але читач не має права покладатись на
     // це: `DEFAULT` діє на нові рядки, а не на ті, що вже лежать у базі.
     isActive: Number(row.is_active ?? 1) === 1,

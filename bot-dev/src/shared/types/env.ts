@@ -32,6 +32,11 @@ export interface Env {
   SECRET_TOKEN: string;
   ENVIRONMENT: string;
   DB: D1Database;
+  /**
+   * Пошуковий індекс (`search:v1`), який пише `api-dev`. Той самий namespace,
+   * що в API: другого KV під ту саму відповідь не заводимо.
+   */
+  CONTENT_KV?: KVNamespace;
   CLOUDINARY_CLOUD_NAME: string;
   /** Публічна база Mini App; без неї бот не додає web_app-кнопок. */
   WEB_PLATFORM_URL?: string;

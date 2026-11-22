@@ -60,6 +60,7 @@
     "./assessments": "./src/assessments/index.ts",
     "./qualities": "./src/qualities/index.ts",
     "./pages": "./src/pages/index.ts",
+    "./search": "./src/search/index.ts",
     "./screens": "./src/screens/index.ts",
     "./shop": "./src/shop/index.ts",
     "./monitoring": "./src/monitoring/index.ts",
