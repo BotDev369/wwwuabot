@@ -1,33 +1,31 @@
 /**
  * `AppBar` — глобальний хедер застосунку.
  *
- * **Один хедер на всі екрани.** Він стоїть у каркасі (`PlatformShell`) і
- * закріплений завжди, тож назва екрана та дії лишаються на місці, коли вміст
- * скролиться. Що саме показувати — вирішує екран (`useScreenChrome`), а малює
- * це один кирпичик.
+ * **Один хедер, стек рівнів.** Перший рядок — бренд і «МЕНЮ»; далі кожен
+ * батьківський рівень і поточна сторінка стоять **окремими рядками**
+ * (`ancestors` + `title`). Тому на будь-якій глибині видно весь шлях.
  *
- * **Ліворуч — «Назад», меню й назва; праворуч — самі знаки.** Знак без підпису
- * читається тут, бо кожен сказав би одне слово («Поділитись», «В обране»,
- * «Тема»), а три слова в 44-кнопковому рядку з'їли б назву сторінки на
- * телефоні. Підпис лишається в `aria-label` і `title`.
+ * **Два способи показати стек.** Звичайний екран ставить його відразу.
+ * Екран із великим `h1` (`titleMode: "hero"`) тримає хедер однорядковим, поки
+ * велика назва видима; коли вона йде під хедер, стек стає **другим рядком
+ * хедера** — так само, як на сторінці без `h1`. Окремого плаваючого шару
+ * немає: назва поводиться однаково з «Магазинами» й рештою екранів.
  *
- * **«Назад» — на кожному екрані.** Людина прийшла з конкретної сторінки, тож
- * повернутися має саме туди, звідли прийшла. Кнопка живе тут, а не в кожному
- * екрані окремо: тоді її не забуде той, хто малює нову сторінку.
+ * **Рівні не переносяться.** Кожен рядок — один рівень; довгий обрізається
+ * трикрапкою, щоб висота стека не стрибала.
  *
- * **Палітра відкриває меню вигляду**, а не веде на сторінку: вибір кольорів і
- * шрифту — це два розкриті пункти й рядок «Відмінити / Застосувати», тобто
- * рівно те, що вміщується в меню. Роутера в цьому кирпичику немає, тож дію
- * передає оболонка (`onTheme`, `onBack`).
+ * **МЕНЮ — текстова кнопка, а не гамбургер.** Вона відкриває правий сайдбар;
+ * меню й перемикач теми живуть у ньому, а не в хедері. Хедер не знає про
+ * роутер: дію передає оболонка (`onMenu`, `menuOpen`).
  *
  * **Хедер сам каже, скільки він займає** (`useAppBarHeight` → `--appbar-h`):
  * від цього числа відлічують закріплені речі сторінки, а висота залежить від
- * шрифту людини та довжини назви — числом із CSS її не задати.
+ * шрифту людини та наявності другого рядка — числом із CSS її не задати.
  *
  * @module packages/ui/src/nav/AppBar
  */
 
-import { useContext, useRef, useState, type ReactElement } from "react";
+import { useContext, useEffect, useRef, useState, type ReactElement } from "react";
 import { Icon, type IconName } from "@wwwuabot/shared";
 import type { FavoriteTarget } from "@wwwuabot/shared/favorites";
 import { ScreenChromeContext, type ScreenChrome } from "./screen-chrome";
@@ -38,36 +36,23 @@ import { LikeToast } from "../favorites/LikeToast";
 
 /** Дії, які знає тільки оболонка: вона одна володіє роутером. */
 export interface AppBarActions {
-  /** Повернутися на екран, з якого прийшли. */
-  onBack: () => void;
-  /**
-   * Відкрити меню продукту (сайдбар). На телефоні сайдбар — поверхня, тож
-   * єдина кнопка, яка його відкриває, стоїть у хедері поруч із «Назад».
-   * Немає — хедера без меню: у адмінки свій сайдбар у потоці.
-   */
+  /** Відкрити або закрити меню продукту (правий сайдбар). */
   onMenu?: () => void;
-  /** Відкрити меню вигляду (теми). */
-  onTheme: () => void;
+  /** Меню відкрите — для `aria-expanded`. */
+  menuOpen?: boolean;
   /** Ім'я бота для діплінка «Поділитись»; `null` — діплінка не буде. */
   botUsername?: string | null;
 }
 
 export function AppBar({
-  onBack,
   onMenu,
-  onTheme,
+  menuOpen = false,
   botUsername = null,
 }: AppBarActions): ReactElement | null {
   const chrome = useContext(ScreenChromeContext)?.chrome;
   if (!chrome) return null;
   return (
-    <AppBarView
-      chrome={chrome}
-      onBack={onBack}
-      onMenu={onMenu}
-      onTheme={onTheme}
-      botUsername={botUsername}
-    />
+    <AppBarView chrome={chrome} onMenu={onMenu} menuOpen={menuOpen} botUsername={botUsername} />
   );
 }
 
@@ -77,33 +62,102 @@ export function AppBar({
  */
 export function AppBarView({
   chrome,
-  onBack,
   onMenu,
-  onTheme,
+  menuOpen = false,
   botUsername = null,
 }: { chrome: ScreenChrome } & AppBarActions): ReactElement {
-  const { title, menu, share, favorite } = chrome;
+  const { title, ancestors, titleMode, share, favorite } = chrome;
   const header = useRef<HTMLElement>(null);
   const [sharing, setSharing] = useState(false);
+  // `hero` — велика назва в контенті; хедер тримає її компактну копію
+  // згорнутою, доки `h1` не піде під хедер.
+  const heroTitle = titleMode === "hero";
+  const [titleInHeader, setTitleInHeader] = useState(false);
+  // Останній рівень — поточна сторінка; попередні — її батьки.
+  const trail = title ? [...ancestors, title] : [];
+  const ancestorsKey = JSON.stringify(ancestors);
+
   useAppBarHeight(header);
 
+  useEffect(() => {
+    if (!heroTitle || !title) {
+      setTitleInHeader(false);
+      return;
+    }
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const target = document.querySelector<HTMLElement>("[data-screen-title]");
+      // Без великого `h1` (наприклад, варіант без шапки) назва мусить лишитись
+      // у хедері — інакше екран узагалі без назви.
+      if (!target) {
+        setTitleInHeader(true);
+        return;
+      }
+      const headerBottom = header.current?.getBoundingClientRect().bottom ?? 0;
+      setTitleInHeader(target.getBoundingClientRect().bottom <= headerBottom);
+    };
+    const schedule = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(update);
+    };
+
+    schedule();
+    // `scroll` не бульбашить, але ловиться на фазі перехоплення — тож працює
+    // і для вікна, і для власного скрол-контейнера сторінки.
+    document.addEventListener("scroll", schedule, { capture: true, passive: true });
+    window.addEventListener("resize", schedule);
+
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      document.removeEventListener("scroll", schedule, { capture: true });
+      window.removeEventListener("resize", schedule);
+    };
+  }, [heroTitle, title, ancestorsKey]);
+
   return (
-    <header className="wb-appbar" ref={header}>
+    <header className={`wb-appbar${heroTitle ? " wb-appbar--hero" : ""}`} ref={header}>
       {/* Підтвердження лайка народжується тут, у серці, і малюється порталом
           поверх екрана: місце йому — не в смузі й не в шапці. */}
       <LikeToast />
-      <div className="wb-appbar__lead">
-        {onMenu && <BarButton icon="menu" label="Меню платформи" onClick={onMenu} />}
-        <BarButton icon="arrow-left" label="Назад" onClick={onBack} />
-        {menu && <BarButton icon="menu" label="Меню сторінки" onClick={menu} />}
-        <h1 className="wb-appbar__title">{title}</h1>
+      <div className="wb-appbar__top">
+        <div className="wb-appbar__brand">
+          <span className="wb-appbar__brand-name">ПАЛЯНИЦЯ</span>
+        </div>
+
+        <div className="wb-appbar__actions">
+          {share && <BarButton icon="share" label="Поділитись" onClick={() => setSharing(true)} />}
+          {favorite && <FavoriteAction target={favorite} />}
+          {onMenu && (
+            <button
+              type="button"
+              className="wb-appbar__menu"
+              aria-label="Меню"
+              aria-expanded={menuOpen}
+              onClick={onMenu}
+            >
+              МЕНЮ
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="wb-appbar__actions">
-        {share && <BarButton icon="share" label="Поділитись" onClick={() => setSharing(true)} />}
-        {favorite && <FavoriteAction target={favorite} />}
-        <BarButton icon="palette" label="Тема" onClick={onTheme} />
-      </div>
+      {trail.length > 0 && (!heroTitle || titleInHeader) && (
+        <nav className="wb-appbar__trail" aria-label="Шлях сторінки">
+          {trail.map((item, index) =>
+            index === trail.length - 1 ? (
+              <h1 className="wb-appbar__crumb wb-appbar__crumb--current" key="current" title={item}>
+                {item}
+              </h1>
+            ) : (
+              <span className="wb-appbar__crumb" key={`${index}-${item}`} title={item}>
+                {item}
+              </span>
+            ),
+          )}
+        </nav>
+      )}
       {share && sharing && (
         <ShareModal share={share} botUsername={botUsername} onClose={() => setSharing(false)} />
       )}

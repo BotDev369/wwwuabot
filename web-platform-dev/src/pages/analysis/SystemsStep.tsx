@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { LENSES } from "@wwwuabot/shared/qualities";
 import { readDates, readLenses, readSubject } from "@wwwuabot/ui/analysis/params";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { useAnalysisChrome } from "./analysis-chrome";
 import { ANALYSIS_PATH, analysisStepPath, type AnalysisMode } from "@/app/routes";
 
 interface SystemsStepProps {
@@ -20,7 +20,7 @@ interface SystemsStepProps {
 const ALL = LENSES.map((lens) => lens.id);
 
 export function SystemsStep({ mode }: SystemsStepProps): ReactElement {
-  useScreenChrome({ title: mode === "compare" ? "Співставити" : "Аналізувати за датою" });
+  useAnalysisChrome("Хто читає дату?");
   const navigate = useNavigate();
   const search = window.location.search;
   const dates = readDates(search);
@@ -48,7 +48,9 @@ export function SystemsStep({ mode }: SystemsStepProps): ReactElement {
     <div className="wb-page wb-page-scroll">
       <form className="an-setup" onSubmit={submit}>
         <header className="an-setup__head">
-          <h1 className="an-setup__title">Хто читає дату?</h1>
+          <h1 className="an-setup__title" data-screen-title>
+            Хто читає дату?
+          </h1>
           <p className="an-setup__lead">
             {dates.length === 1
               ? "Чотири традиції незалежно одна від одної."

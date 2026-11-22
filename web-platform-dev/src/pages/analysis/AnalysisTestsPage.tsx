@@ -9,7 +9,7 @@ import { type ReactElement } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { plural, type PluralForms } from "@wwwuabot/shared/utils/plural";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { useAnalysisChrome } from "./analysis-chrome";
 import { useAssessments } from "@/pages/assessments/useAssessments";
 import { ANALYSIS_PATH, analysisTestPath } from "@/app/routes";
 
@@ -26,7 +26,7 @@ function minutesOf(items: number): number {
 }
 
 export function AnalysisTestsPage(): ReactElement {
-  useScreenChrome({ title: "Пройти тестування" });
+  useAnalysisChrome("Пройти тестування");
   const navigate = useNavigate();
   const { tests, loading } = useAssessments();
 
@@ -39,7 +39,9 @@ export function AnalysisTestsPage(): ReactElement {
         </a>
 
         <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title">Пройти тестування</h1>
+          <h1 className="an-hero__title" data-screen-title>
+            Пройти тестування
+          </h1>
           <p className="an-hero__lead">
             Ваші відповіді додають до профілю виміряні якості — окремо від дати.
           </p>

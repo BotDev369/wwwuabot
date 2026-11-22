@@ -10,7 +10,7 @@
 
 import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { useAnalysisChrome } from "./analysis-chrome";
 import { AnalysisHub, type AnalysisHubVariant } from "./AnalysisHub";
 import { ANALYSIS_PATH, ANALYSIS_VARIANT_PATH } from "@/app/routes";
 
@@ -29,7 +29,7 @@ const OPTIONS: readonly Option[] = [
 ];
 
 export function AnalysisVariantsPage(): ReactElement {
-  useScreenChrome({ title: "Варіанти головної" });
+  useAnalysisChrome("Варіанти головної");
 
   return (
     <div className="wb-page wb-page-scroll">
@@ -39,7 +39,9 @@ export function AnalysisVariantsPage(): ReactElement {
         </a>
 
         <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title">Варіанти головної</h1>
+          <h1 className="an-hero__title" data-screen-title>
+            Варіанти головної
+          </h1>
           <p className="an-hero__lead">
             Той самий вміст, три різні розкладки. Відкрий кожен окремо або скажи номер.
           </p>

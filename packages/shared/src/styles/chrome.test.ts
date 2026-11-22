@@ -163,14 +163,13 @@ describe("каркас сторінки: один проміжок на весь
  * Назва екрана на телефоні.
  *
  * Назву дає вміст (назва рядка `scenarios`), тож її довжину ніхто не
- * обмежує: в один рядок на 360px влізає ~12 знаків, і довга назва
- * обрізалась на середині слова. Два рядки — межа, за яку назва
- * не росте, щоб не витісняти дії.
+ * обмежує. У хедері вона стоїть одним рядком і не переноситься — довга
+ * обрізається трикрапкою, щоб не розтягувати другий рядок.
  */
 /**
  * Висота хедера: від неї відлічують закріплені речі сторінки — шапка таблиці
  * стає під хедером через `top`. Число з CSS її не задає: `min-height` —
- * підлога, а два рядки назви на збільшеному шрифті роблять хедер вищим за
+ * підлога, а два рядки хедера на збільшеному шрифті роблять його вищим за
  * `--topbar-h`. Тож токен — початкове значення, а справжню висоту хедер
  * публікує сам (див. `useAppBarHeight.dom.test.ts`).
  */
@@ -203,14 +202,28 @@ describe("мобільні вставки враховують UI клієнта
   }
 });
 
-describe("назва екрана", () => {
-  it("на телефоні вміщується у два рядки замість обрізання на півслові", () => {
-    const title = CHROME.filter((entry) => entry.selector === ".wb-appbar__title");
-    // Дві: широка (один рядок із багатокрапкою) і телефонна (два рядки).
-    expect(title.length).toBe(2);
-    expect(title[0].body).toContain("text-overflow: ellipsis");
-    const caption = title.at(-1)?.body ?? "";
-    expect(caption).toContain("-webkit-line-clamp: 2");
-    expect(caption).toContain("white-space: normal");
+describe("два рядки хедера", () => {
+  it("бренд — скоринка паляниці, а назва сторінки не переноситься", () => {
+    // Підпису «платформа для своїх» більше немає: перший рядок — лише слово й
+    // «МЕНЮ». Назва сторінки стоїть другим рядком і не ламається.
+    expect(CHROME.some((entry) => entry.selector === ".wb-appbar__brand-sub")).toBe(false);
+
+    const name = rule(".wb-appbar__brand-name");
+    const crumb = rule(".wb-appbar__crumb");
+    expect(name, "назва бренду мусить мати правило").toBeDefined();
+    expect(crumb, "рядок шляху мусить мати правило").toBeDefined();
+    expect(name?.body).toContain("color: var(--brand-bread)");
+    expect(crumb?.body).toContain("white-space: nowrap");
+    expect(crumb?.body).toContain("text-overflow: ellipsis");
+
+    // Головний рівень розділу більший за бренд, а не навпаки.
+    expect(crumb?.body).toContain("font-size: var(--text-md)");
+    const section = rule(".wb-appbar__trail > .wb-appbar__crumb:first-child:not(:last-child)");
+    expect(section?.body).toContain("font-size: var(--text-xl)");
+
+    // На hero-екрані стек не має власного шару: після скролу він стає другим
+    // рядком хедера, як на будь-якій сторінці без великого `h1`.
+    expect(CHROME.some((entry) => entry.selector === ".wb-appbar__trail--floating")).toBe(false);
+    expect(CHROME.some((entry) => entry.selector === ".wb-appbar--compact")).toBe(false);
   });
 });

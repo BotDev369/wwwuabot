@@ -74,8 +74,34 @@
   max-width: 1040px;
 }
 
-.an-hub .an-hero {
-  padding: var(--sp-6);
+/*
+ * На головній перший блок — **текст, а не картка**: велика назва й одне
+ * речення на лівому березі бренду. Плашка навколо них була другою шапкою й
+ * забирала повітря, тож лишається чиста типографіка.
+ */
+.an-hub .an-hero--plain {
+  gap: var(--sp-3);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.an-hub .an-hero__title {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+}
+
+@media (min-width: 560px) {
+  .an-hub .an-hero__title {
+    font-size: var(--text-3xl);
+  }
+}
+
+.an-hub .an-hero__lead {
+  max-width: 46ch;
+  font-size: var(--text-base);
 }
 
 .an-entries {
@@ -415,12 +441,20 @@
   gap: var(--sp-2);
 }
 
+/* Той самий ваговий рівень, що й у головної фічі: підсторінка не має
+   виглядати дрібнішою за розділ, з якого вона відкрилась. */
 .an-setup__title {
   margin: 0;
-  font-size: clamp(1.625rem, 6.6vw, 2rem);
-  font-weight: var(--weight-black);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
   letter-spacing: -0.03em;
-  line-height: 1.1;
+  line-height: 1.08;
+}
+
+@media (min-width: 560px) {
+  .an-setup__title {
+    font-size: var(--text-3xl);
+  }
 }
 
 .an-setup__lead {
@@ -1461,12 +1495,22 @@
   max-width: 720px;
 }
 
+/*
+ * Візитка: значок без плитки, у рядку з назвою, висотою у два рядки назви;
+ * опис — під ними на всю ширину картки. Знак більше не «сидить» у кольоровому
+ * квадраті, а тримає власну вагу поруч із назвою.
+ */
 .an-hub[data-variant="2"] .an-entry {
-  grid-template-columns: 48px minmax(0, 1fr);
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  grid-template-areas:
+    "icon title"
+    "lead lead";
   align-items: center;
-  gap: var(--sp-3);
-  min-height: 80px;
-  padding: var(--sp-3) 30px var(--sp-3) var(--sp-3);
+  column-gap: var(--sp-3);
+  row-gap: var(--sp-2);
+  min-height: 112px;
+  padding: var(--sp-3);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-xl);
   background: var(--card-bg);
@@ -1474,78 +1518,71 @@
 }
 
 .an-hub[data-variant="2"] .an-entry__icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-lg);
+  grid-area: icon;
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 
-/* Гліф усередині плитки: 32 у 48 лишає однакові 8 px з кожного боку.
-   `justify-content` потрібен саме обгортці `Icon`: без нього 24-піксельний
-   SVG тулився до лівого краю, і знак виглядав зсунутим. */
 .an-hub[data-variant="2"] .an-entry__icon > span {
   justify-content: center;
 }
 
 .an-hub[data-variant="2"] .an-entry__icon svg {
-  width: 32px;
-  height: 32px;
+  width: 100%;
+  height: 100%;
 }
 
+/* `display: contents` робить назву й опис прямими клітинками сітки:
+   назва стоїть у рядку зі знаком, опис займає другий рядок на всю ширину. */
 .an-hub[data-variant="2"] .an-entry__body {
-  gap: 2px;
+  display: contents;
 }
 
+/*
+ * Назва — 17px і до двох рядків: на 360–390 вона не влізала в один рядок і
+ * обрізалась. Висота під два рядки однакова в усіх картках, тож опис
+ * починається на одній лінії, навіть коли назва коротка.
+ */
 .an-hub[data-variant="2"] .an-entry__title {
-  font-size: var(--text-lg);
+  display: flex;
+  grid-area: title;
+  align-items: center;
+  min-width: 0;
+  min-height: 2.4em;
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
 .an-hub[data-variant="2"] .an-entry__lead {
-  font-size: var(--text-md);
+  grid-area: lead;
+  min-width: 0;
+  font-size: var(--text-sm);
   line-height: 1.45;
 }
 
 .an-hub[data-variant="2"] .an-entry__chevron {
   position: absolute;
-  top: 50%;
-  right: var(--sp-3);
+  top: var(--sp-3);
+  right: var(--sp-1);
   display: block;
   color: var(--text-muted);
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   line-height: 1;
-  transform: translateY(-50%);
+  transform: none;
 }
 
-/*
- * На телефоні рядок стає щільнішим, але не втрачає сітку: назва, значок і
- * шеврон стоять на одній верхній лінії, пояснення має однакову ширину, а
- * висота картки спільна. Донедавна 20/17 розтягували пояснення на три-чотири
- * рядки, і кожна картка мала власну висоту — звідси «плаваючі» значки й шеврони.
- */
+/* На телефоні опис той самий 13px: менший кегль не має стрибати між
+   ширинами, а перенос лишається природним. */
 @media (width <= 559px) {
-  .an-hub[data-variant="2"] .an-entry {
-    grid-template-columns: 48px minmax(0, 1fr);
-    align-items: start;
-    gap: var(--sp-1);
-    min-height: 116px;
-    padding: var(--sp-3);
-  }
-
-  .an-hub[data-variant="2"] .an-entry__title {
-    font-size: var(--text-md);
-    line-height: 1.2;
-    text-wrap: balance;
-  }
-
   .an-hub[data-variant="2"] .an-entry__lead {
-    font-size: var(--text-base);
-    line-height: 1.4;
+    line-height: 1.45;
     text-wrap: pretty;
-  }
-
-  .an-hub[data-variant="2"] .an-entry__chevron {
-    top: var(--sp-3);
-    right: var(--sp-3);
-    transform: none;
   }
 }
 

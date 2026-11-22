@@ -51,15 +51,19 @@ describe("каркас", () => {
 
     expect(screen.getByText("екран трекерів")).toBeTruthy();
     expect(screen.getByLabelText("Навігація платформи")).toBeTruthy();
-    // Хедер малюється каркасом; без `useScreenChrome` він порожній, і сторінка
-    // все одно на місці — саме тому він стоїть тут, а не в кожному екрані.
+    // Хедер малюється каркасом і на всіх екранах показує той самий бренд.
+    expect(screen.getByText("ПАЛЯНИЦЯ")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Меню" })).toBeTruthy();
+    // Тема — перший пункт меню, а не кнопка в хедері.
+    expect(screen.getByRole("switch", { name: "Тема" })).toBeTruthy();
     expect(document.querySelector(".wb-platform")).not.toBeNull();
   });
 
   it("підсвічує пункт, у якому людина стоїть", async () => {
     renderShell();
 
-    // `/trackers` — це «Ще»: пункт мусить бути поточним, а не просто існувати.
+    // `/trackers` — тепер звичайний пункт спільного списку: він мусить бути
+    // поточним, а не просто існувати.
     const current = await screen.findByRole("link", { name: /Трекери/ });
     expect(current.getAttribute("aria-current")).toBe("page");
   });

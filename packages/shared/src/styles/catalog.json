@@ -1,5 +1,5 @@
 {
-  "version": "8efc1ea",
+  "version": "65a96e5",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -94,12 +94,12 @@
     {
       "file": "analysis.css",
       "tokens": 0,
-      "classes": 167
+      "classes": 168
     },
     {
       "file": "app-chrome.css",
       "tokens": 2,
-      "classes": 142
+      "classes": 148
     },
     {
       "file": "assessments.css",
@@ -174,7 +174,7 @@
     {
       "file": "platform.css",
       "tokens": 7,
-      "classes": 35
+      "classes": 43
     },
     {
       "file": "research.css",
@@ -218,12 +218,12 @@
     },
     {
       "file": "themes.css",
-      "tokens": 78,
+      "tokens": 79,
       "classes": 0
     },
     {
       "file": "tokens.css",
-      "tokens": 207,
+      "tokens": 214,
       "classes": 0
     },
     {
@@ -374,6 +374,14 @@
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#ede8f6",
       "dark": "#2c2642",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--brand-bread",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#8f5314",
+      "dark": "#f3c08a",
       "palette": "",
       "paletteDark": ""
     },
@@ -789,6 +797,54 @@
       "name": "--font-ui",
       "section": "Typography",
       "light": "\"Onest\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--glass-blur",
+      "section": "Скло: хедер, меню й плашки пунктів",
+      "light": "22px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--glass-fill",
+      "section": "Скло: хедер, меню й плашки пунктів",
+      "light": "color-mix(in srgb, var(--surface) 58%, transparent)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--glass-fill-strong",
+      "section": "Скло: хедер, меню й плашки пунктів",
+      "light": "color-mix(in srgb, var(--surface) 78%, transparent)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--glass-shadow",
+      "section": "Скло: хедер, меню й плашки пунктів",
+      "light": "0 18px 50px -26px rgba(40, 30, 90, 0.45)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--glass-stroke",
+      "section": "Скло: хедер, меню й плашки пунктів",
+      "light": "color-mix(in srgb, #ffffff 34%, transparent)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--glass-stroke-soft",
+      "section": "Скло: хедер, меню й плашки пунктів",
+      "light": "color-mix(in srgb, #ffffff 20%, transparent)",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1291,7 +1347,7 @@
     },
     {
       "name": "--selection-bg",
-      "section": "Глибина поверхонь",
+      "section": "Скло: хедер, меню й плашки пунктів",
       "light": "rgba(69, 62, 92, 0.14)",
       "dark": "rgba(220, 214, 238, 0.2)",
       "palette": "",
@@ -1539,7 +1595,7 @@
     },
     {
       "name": "--surface-modal",
-      "section": "Глибина поверхонь",
+      "section": "Скло: хедер, меню й плашки пунктів",
       "light": "var(--surface)",
       "dark": "var(--bg-3)",
       "palette": "",
@@ -3753,7 +3809,9 @@
           "an-entry__icon",
           "an-entry__lead",
           "an-entry__title",
-          "an-hero",
+          "an-hero--plain",
+          "an-hero__lead",
+          "an-hero__title",
           "an-hub"
         ]
       },
@@ -3989,11 +4047,17 @@
           "wb-app-hamburger",
           "wb-app-logout",
           "wb-appbar",
+          "wb-appbar--hero",
           "wb-appbar__actions",
+          "wb-appbar__brand",
+          "wb-appbar__brand-name",
           "wb-appbar__btn",
           "wb-appbar__btn--on",
-          "wb-appbar__lead",
-          "wb-appbar__title"
+          "wb-appbar__crumb",
+          "wb-appbar__crumb--current",
+          "wb-appbar__menu",
+          "wb-appbar__top",
+          "wb-appbar__trail"
         ]
       },
       {
@@ -5803,12 +5867,20 @@
       {
         "section": "Каркас платформи: сайдбар замість футера",
         "names": [
+          "wb-nav-close-row",
+          "wb-nav-item",
+          "wb-nav-item--active",
           "wb-nav-menu",
+          "wb-nav-section",
           "wb-platform",
           "wb-platform-main",
           "wb-platform-scrim",
           "wb-platform-sidebar",
-          "wb-platform-sidebar--open"
+          "wb-platform-sidebar--open",
+          "wb-platform-theme",
+          "wb-platform-theme__icon",
+          "wb-switch-label",
+          "wb-switch-row"
         ]
       }
     ],

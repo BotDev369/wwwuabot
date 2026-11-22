@@ -35,7 +35,7 @@ const CHROME = {
   title: "PageSlay",
   favorite: { kind: "page" as const, targetId: 7 },
 };
-const ACTIONS = { onBack: () => undefined, onTheme: () => undefined };
+const ACTIONS = {};
 
 beforeEach(() => {
   state.liked = false;

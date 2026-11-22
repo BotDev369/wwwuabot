@@ -1,20 +1,23 @@
 /**
  * Тести глобального хедера.
  *
- * Перевіряємо те, що ламається мовчки: набір знаків. Екран мовчить — хедер
- * показує порожню кнопку, яка нічого не робить, а це гірше, ніж нічого.
- * Тому тут явно: що є, коли екран сказав, і чого немає, коли не сказав.
+ * Хедер має два рядки: той самий бренд і «МЕНЮ», під ним — назву поточного
+ * екрана. Перевіряємо саме це, а також що дії сторінки (поділитись, обране)
+ * не зникають і не дублюють тему.
  */
 
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AppBarView } from "./AppBar";
-import { EMPTY_CHROME, mergeChrome, type ScreenChrome } from "./screen-chrome";
+import { AppBar, AppBarView } from "./AppBar";
+import { EMPTY_CHROME, mergeChrome, ScreenChromeContext, type ScreenChrome } from "./screen-chrome";
 
-const ACTIONS = { onBack: () => undefined, onTheme: () => undefined };
+const ACTIONS = {};
 
-function render(chrome: ScreenChrome): string {
-  return renderToStaticMarkup(<AppBarView chrome={chrome} {...ACTIONS} />);
+function render(
+  chrome: ScreenChrome,
+  extra: { onMenu?: () => void; menuOpen?: boolean } = {},
+): string {
+  return renderToStaticMarkup(<AppBarView chrome={chrome} {...ACTIONS} {...extra} />);
 }
 
 const WITH_ALL: ScreenChrome = {
@@ -26,48 +29,94 @@ const WITH_ALL: ScreenChrome = {
 };
 
 describe("хедер застосунку", () => {
-  it("⛔ порожній екран не малює зайвих кнопок — тільки назва", () => {
+  it("показує слово бренду й назву сторінки другим рядком", () => {
     const html = render({ ...EMPTY_CHROME, title: "Нотатки" });
 
+    expect(html).toContain("ПАЛЯНИЦЯ");
+    expect(html).toContain('class="wb-appbar__trail"');
     expect(html).toContain("Нотатки");
-    expect(html).not.toContain("Поділитись");
-    expect(html).not.toContain("Меню сторінки");
-    // Тема — єдиний знак, який показується всюди, де тільки можна.
-    expect(html).toContain('aria-label="Тема"');
+    // Підпису «платформа для своїх» більше немає.
+    expect(html).not.toContain("ПЛАТФОРМА");
+    expect(html).not.toContain("ДЛЯ СВОЇХ");
   });
 
-  it("екран із меню, посиланням і серцем показує всі чотири знаки", () => {
-    const html = render(WITH_ALL);
+  it("у hero-режимі ховає назву, поки великий h1 видно", () => {
+    const html = render({ ...EMPTY_CHROME, title: "Hero page", titleMode: "hero" });
 
-    expect(html).toContain('aria-label="Меню сторінки"');
+    expect(html).toContain("wb-appbar--hero");
+    // Поки `h1` видно, хедер однорядковий: жодного стека й жодної плашки.
+    expect(html).not.toContain("wb-appbar__trail");
+    expect(html).not.toContain("Hero page");
+  });
+
+  it("зберігає всі рівні шляху окремими рядками", () => {
+    const html = render({
+      ...EMPTY_CHROME,
+      title: "Співставити",
+      ancestors: ["Аналіз людей і подій"],
+    });
+
+    expect(html.indexOf("Аналіз людей і подій")).toBeLessThan(html.indexOf("Співставити"));
+    expect(html).toContain("wb-appbar__crumb--current");
+  });
+
+  it("⛔ «Назад» і теми в хедері більше немає", () => {
+    const html = render({ ...EMPTY_CHROME, title: "Нотатки" });
+
+    expect(html).not.toContain('aria-label="Назад"');
+    expect(html).not.toContain('aria-label="Тема"');
+  });
+
+  it("«МЕНЮ» — текстова кнопка праворуч, а не гамбургер", () => {
+    const html = render(EMPTY_CHROME, { onMenu: () => undefined });
+
+    expect(html).toContain(">МЕНЮ</button>");
+    expect(html).toContain('aria-label="Меню"');
+    expect(html).not.toContain('aria-label="Меню платформи"');
+    expect(html).toContain('aria-expanded="false"');
+  });
+
+  it("відкрите меню каже `aria-expanded=true`", () => {
+    const html = render(EMPTY_CHROME, { onMenu: () => undefined, menuOpen: true });
+
+    expect(html).toContain('aria-expanded="true"');
+  });
+
+  it("екран із посиланням і серцем показує обидві дії поруч із «МЕНЮ»", () => {
+    const html = render(WITH_ALL, { onMenu: () => undefined });
+
     expect(html).toContain('aria-label="Поділитись"');
     expect(html).toContain('aria-label="Додати в обране"');
-    expect(html).toContain('aria-label="Тема"');
-  });
-
-  it("⛔ палітра теми є на кожному екрані — навіть там, де меню профілю", () => {
-    // Тема в хедері, а не пунктом меню: два входи в одну дію означають, що
-    // за один із них забудуть.
-    const html = render({ ...EMPTY_CHROME, title: "Профіль" });
-
-    expect(html).toContain('aria-label="Тема"');
-  });
-
-  it("⛔ «Назад» є на кожному екрані — навіть там, де немає меню сторінки", () => {
-    // Людина прийшла з конкретної сторінки й мусить вернутися саме туди.
-    const html = render({ ...EMPTY_CHROME, title: "Нотатки" });
-
-    expect(html).toContain('aria-label="Назад"');
+    expect(html).toContain('aria-label="Меню"');
+    // Меню сторінки більше не малюється в хедері: там лише глобальне меню.
     expect(html).not.toContain('aria-label="Меню сторінки"');
   });
 
   it("знак серця лишається читабельним без підпису", () => {
-    // Підпис каже, що кнопка робить, а не «серце»: знак без тексту на
-    // телефоні не сказав би, чи це вже обране.
     const html = render(WITH_ALL);
 
     expect(html).toContain('aria-pressed="false"');
     expect(html).toContain('title="Додати в обране"');
+  });
+});
+
+describe("хедер як частина каркаса", () => {
+  it("без провайдера екранів не малює нічого", () => {
+    expect(renderToStaticMarkup(<AppBar />)).toBe("");
+  });
+
+  it("з провайдером бере стан екрана з контексту", () => {
+    const html = renderToStaticMarkup(
+      <ScreenChromeContext.Provider
+        value={{ chrome: { ...EMPTY_CHROME, title: "Нотатки" }, update: () => undefined }}
+      >
+        <AppBar onMenu={() => undefined} menuOpen />
+      </ScreenChromeContext.Provider>,
+    );
+
+    expect(html).toContain("ПАЛЯНИЦЯ");
+    expect(html).toContain("Нотатки");
+    expect(html).toContain('aria-expanded="true"');
   });
 });
 
@@ -95,8 +144,6 @@ describe("злиття оголошень екрана", () => {
   });
 
   it("⬜ другий екран не успадковує дії попереднього — його серце не лишилося в «Обраному»", () => {
-    // Різниця між екранами видна саме тут: серце сторінки не повинно
-    // переїхати в наступний екран, який про себе нічого не сказав.
     const afterPage = mergeChrome(EMPTY_CHROME, {
       title: "Галерея",
       favorite: { kind: "page", targetId: 7 },

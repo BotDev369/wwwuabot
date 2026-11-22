@@ -11,7 +11,7 @@ import { Icon } from "@wwwuabot/shared";
 import { BIG_FIVE } from "@wwwuabot/shared/assessments";
 import { LENSES, MEASURED_NAME } from "@wwwuabot/shared/qualities";
 import { useDossiers } from "@wwwuabot/ui/analysis/useDossiers";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { useAnalysisChrome } from "./analysis-chrome";
 import { ANALYSIS_PATH, ANALYSIS_TESTS_PATH } from "@/app/routes";
 
 const ALL_LENSES = LENSES.map((lens) => lens.id);
@@ -22,7 +22,7 @@ function today(): string {
 }
 
 export function AnalysisSystemsPage(): ReactElement {
-  useScreenChrome({ title: "Про системи аналізу" });
+  useAnalysisChrome("Про системи аналізу");
   const [date, setDate] = useState(today);
   const { dossiers, loading, error } = useDossiers([date], ["person"], ALL_LENSES, false);
   const systems = dossiers[0]?.systems ?? [];
@@ -36,7 +36,9 @@ export function AnalysisSystemsPage(): ReactElement {
         </a>
 
         <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title">Про системи аналізу</h1>
+          <h1 className="an-hero__title" data-screen-title>
+            Про системи аналізу
+          </h1>
           <p className="an-hero__lead">
             Кожна система окремо: що це, звідки взялася, де побутує, що дає й чого не знає.
           </p>

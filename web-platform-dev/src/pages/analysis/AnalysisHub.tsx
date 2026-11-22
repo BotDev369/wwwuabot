@@ -8,7 +8,7 @@
 import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
 import { Icon, type IconName } from "@wwwuabot/shared";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { ANALYSIS_TITLE, useAnalysisChrome } from "./analysis-chrome";
 import {
   ANALYSIS_COMPARE_PATH,
   ANALYSIS_PEOPLE_PATH,
@@ -84,15 +84,18 @@ interface AnalysisHubProps {
 
 export function AnalysisHub({ variant = 2, withHero = true }: AnalysisHubProps = {}): ReactElement {
   // Шапка належить платформі, а не одній фічі: шість розділів нижче —
-  // рівноправні входи, і жоден не називає весь застосунок.
-  useScreenChrome({ title: "Аналіз людей і подій" });
+  // рівноправні входи, і жоден не називає весь застосунок. `hero` каже
+  // хедеру не дублювати назву, поки її видно великою на сторінці.
+  useAnalysisChrome(ANALYSIS_TITLE, { hero: withHero, enabled: withHero });
 
   return (
     <div className="wb-page wb-page-scroll">
       <div className="an-hub" data-variant={variant}>
         {withHero && (
-          <header className="an-hero">
-            <h1 className="an-hero__title">Аналіз людей і подій</h1>
+          <header className="an-hero an-hero--plain">
+            <h1 className="an-hero__title" data-screen-title>
+              {ANALYSIS_TITLE}
+            </h1>
             <p className="an-hero__lead">Пізнай себе, оточуючих та події.</p>
           </header>
         )}
@@ -101,7 +104,7 @@ export function AnalysisHub({ variant = 2, withHero = true }: AnalysisHubProps =
           {SECTIONS.map((section) => (
             <Link key={section.title} className="an-entry" data-tone={section.tone} to={section.to}>
               <span className="an-entry__icon" aria-hidden="true">
-                <Icon name={section.icon} size={38} />
+                <Icon name={section.icon} size={40} />
               </span>
               <span className="an-entry__body">
                 <span className="an-entry__title">{section.title}</span>

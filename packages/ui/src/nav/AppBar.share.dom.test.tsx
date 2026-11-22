@@ -18,7 +18,7 @@ vi.mock("qrcode", () => ({
 
 const { AppBarView } = await import("./AppBar");
 
-const ACTIONS = { onBack: () => undefined, onTheme: () => undefined };
+const ACTIONS = {};
 const CHROME = { ...EMPTY_CHROME, title: "PageSlay", share: { slug: "pageslay" } };
 
 describe("вікно «Поділитись» із хедера", () => {

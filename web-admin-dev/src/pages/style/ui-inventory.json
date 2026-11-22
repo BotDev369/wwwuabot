@@ -1,5 +1,5 @@
 {
-  "version": "8efc1ea",
+  "version": "65a96e5",
   "page": {
     "title": "Єдиний UI",
     "intro": "Справжній зразок, клас і присуд ужитку. Розділи згорнуті — відкривай потрібний.",
@@ -55,8 +55,8 @@
   "summary": {
     "total": 212,
     "both": 49,
-    "one": 76,
-    "shared": 46,
+    "one": 77,
+    "shared": 45,
     "builder": 38,
     "unused": 3
   },
@@ -1606,7 +1606,7 @@
           "note": "",
           "icon": "compare",
           "usage": {
-            "platform": 6,
+            "platform": 5,
             "admin": 1,
             "ui": 0,
             "shared": 1
@@ -1688,7 +1688,7 @@
           "usage": {
             "platform": 0,
             "admin": 1,
-            "ui": 1,
+            "ui": 0,
             "shared": 1
           },
           "verdict": "one"
@@ -2168,7 +2168,7 @@
           "usage": {
             "platform": 0,
             "admin": 1,
-            "ui": 2,
+            "ui": 1,
             "shared": 1
           },
           "verdict": "one"
@@ -2344,7 +2344,7 @@
           "usage": {
             "platform": 16,
             "admin": 1,
-            "ui": 2,
+            "ui": 1,
             "shared": 2
           },
           "verdict": "both"
@@ -3190,7 +3190,7 @@
           "note": "",
           "icon": "sun",
           "usage": {
-            "platform": 1,
+            "platform": 2,
             "admin": 0,
             "ui": 2,
             "shared": 3
@@ -3206,7 +3206,7 @@
           "note": "",
           "icon": "moon",
           "usage": {
-            "platform": 1,
+            "platform": 2,
             "admin": 0,
             "ui": 2,
             "shared": 3
@@ -3270,12 +3270,12 @@
           "note": "",
           "icon": "hero",
           "usage": {
-            "platform": 0,
+            "platform": 1,
             "admin": 0,
-            "ui": 0,
+            "ui": 1,
             "shared": 1
           },
-          "verdict": "shared"
+          "verdict": "one"
         },
         {
           "id": "icon-select",

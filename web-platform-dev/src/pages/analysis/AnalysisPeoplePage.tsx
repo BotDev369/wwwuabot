@@ -22,7 +22,7 @@ import {
   type AnalysisSet,
   type AnalysisSetItem,
 } from "@wwwuabot/ui/analysis/api";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { useAnalysisChrome } from "./analysis-chrome";
 import { ANALYSIS_COMPARE_PATH, ANALYSIS_PATH } from "@/app/routes";
 import { EntityRow, RowAction } from "./EntityRow";
 import { GroupAdder } from "./GroupAdder";
@@ -54,7 +54,7 @@ function newId(prefix: string): string {
 }
 
 export function AnalysisPeoplePage(): ReactElement {
-  useScreenChrome({ title: "Люди і події" });
+  useAnalysisChrome("Люди і події");
   const [dates, setDates] = useState<MyDate[]>([]);
   const [sets, setSets] = useState<AnalysisSet[]>([]);
   const [picked, setPicked] = useState<readonly string[]>([]);
@@ -225,7 +225,9 @@ export function AnalysisPeoplePage(): ReactElement {
         </a>
 
         <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title">Люди і події</h1>
+          <h1 className="an-hero__title" data-screen-title>
+            Люди і події
+          </h1>
           <p className="an-hero__lead">
             Групи, люди й події. Позначайте потрібні чекбоксами — і беріть у співставлення будь-який
             склад.

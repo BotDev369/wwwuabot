@@ -11,7 +11,8 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { AnalysisHub } from "./AnalysisHub";
 
-vi.mock("@wwwuabot/ui/nav", () => ({ useScreenChrome: () => {} }));
+const chrome = vi.hoisted(() => vi.fn());
+vi.mock("@wwwuabot/ui/nav", () => ({ useScreenChrome: chrome }));
 
 function renderHub(): void {
   render(
@@ -36,10 +37,20 @@ const SECTIONS: readonly [string, string][] = [
 ];
 
 describe("головна аналізу", () => {
-  it("називає фічу, а не платформу, й показує шість рівноправних розділів", () => {
+  it("показує велику назву фічі й віддає хедеру hero-режим", () => {
     renderHub();
 
+    // Поки назва видима великою, хедер не дублює її другим рядком.
+    expect(chrome).toHaveBeenCalledWith(
+      {
+        title: "Аналіз людей і подій",
+        titleMode: "hero",
+        ancestors: [],
+      },
+      true,
+    );
     expect(screen.getByRole("heading", { name: "Аналіз людей і подій" })).toBeTruthy();
+    expect(screen.getByText("Пізнай себе, оточуючих та події.")).toBeTruthy();
     expect(screen.queryByText("ПАЛЯНИЦЯ")).toBeNull();
   });
 

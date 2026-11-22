@@ -9,7 +9,7 @@ import { useEffect, useState, type ReactElement } from "react";
 import { Link, useParams } from "react-router-dom";
 import { LENSES } from "@wwwuabot/shared/qualities";
 import { fetchMyDates } from "@wwwuabot/ui/analysis/api";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { useAnalysisChrome } from "./analysis-chrome";
 import { AssessmentRun } from "@/pages/assessments/AssessmentRun";
 import { useAssessments } from "@/pages/assessments/useAssessments";
 import { ANALYSIS_PERSON_PATH, ANALYSIS_TESTS_PATH } from "@/app/routes";
@@ -21,7 +21,7 @@ export function AnalysisTestScreen(): ReactElement {
   const { tests, results, peers, saving, error, submit, clearError } = useAssessments();
   const [ownDate, setOwnDate] = useState<string | null>(null);
   const test = tests.find((candidate) => candidate.key === key) ?? null;
-  useScreenChrome({ title: test?.title ?? "Тест" });
+  useAnalysisChrome(test?.title ?? "Тест");
 
   useEffect(() => {
     let cancelled = false;

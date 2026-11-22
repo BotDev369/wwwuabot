@@ -1,5 +1,5 @@
 /**
- * Навігація платформи: головні пункти + «Ще». Пункт — це адреса: усе, що
+ * Навігація платформи: один список без «Ще». Пункт — це адреса: усе, що
  * стоїть у меню, уже має екран, і екран, якого немає, не робить вигляд, що
  * натискається. «Тут ти» — найдовша адреса, що збігається, тож `/account`
  * світить лише «Я», а вкладки магазину (`/scenarios/7/products`) — нічого: вони
@@ -31,12 +31,18 @@ import {
   USERS_PATH,
 } from "../app/routes";
 
+/**
+ * Назва розділу — один рядок на меню й на хлібний шлях: друге місце з тим
+ * самим словом розійшлося б із першим на першій же правці.
+ */
+export const ANALYSIS_LABEL = "Аналіз людей і подій";
+
 /** Головне меню: щоденна робота людини, у порядку ранку. */
 const MAIN: readonly SideBarItem[] = [
   { key: "day", label: "Мій день", icon: "home", href: DAY_PATH },
   {
     key: "analysis",
-    label: "Аналіз людей і подій",
+    label: ANALYSIS_LABEL,
     icon: "my-dates",
     href: ANALYSIS_PATH,
   },
@@ -44,7 +50,7 @@ const MAIN: readonly SideBarItem[] = [
   { key: "me", label: "Я", icon: "user-solid", href: ACCOUNT_PATH },
 ];
 
-/** «Ще»: усе інше одним списком. */
+/** Решта розділів — тим самим списком, без окремого підпису. */
 const MORE: readonly SideBarItem[] = [
   { key: "shops", label: "Магазини", icon: "cart", href: SHOPS_PATH },
   { key: "favorites", label: "Обране", icon: "thumbs-up", href: FAVORITES_PATH },
@@ -56,11 +62,8 @@ const MORE: readonly SideBarItem[] = [
   { key: "services", label: "Послуги", icon: "layers", href: SERVICES_PATH },
 ];
 
-/** Секції меню: головні без підпису, решта — під «Ще». */
-export const PLATFORM_NAV: readonly SideBarSection[] = [
-  { key: "main", items: MAIN },
-  { key: "more", title: "Ще", items: MORE },
-];
+/** Один список: пункти рівні, без прихованої другої групи. */
+export const PLATFORM_NAV: readonly SideBarSection[] = [{ key: "main", items: [...MAIN, ...MORE] }];
 
 /** Адреса без хвостового слеша: `/pages/` і `/pages` — та сама сторінка. */
 function normalize(pathname: string): string {

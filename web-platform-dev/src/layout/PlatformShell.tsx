@@ -1,22 +1,22 @@
 /**
  * Каркас платформи: хедер, сайдбар і сторінка.
  *
- * **Навігація — сайдбар, а не футер.** П'ять слотів унизу змушували кожну нову
- * річ або тіснитись у «Сервіси», або не потрапляти нікуди. Сайдбар має головні
- * пункти й «Ще» одним списком, росте без перекроювання й на телефоні виїжджає
- * поверх сторінки — тим самим рухом, що в адмінці.
+ * **Навігація — правий сайдбар, а не футер.** П'ять слотів унизу змушували
+ * кожну нову річ або тіснитись у «Сервіси», або не потрапляти нікуди. Тепер
+ * меню — один список без «Ще», який виїжджає справа поверх сторінки; тему й
+ * усі пункти видно лише тоді, коли людина сама відкрила меню.
  *
  * **Меню — стан каркаса, а не екрана.** Хедер, сайдбар і скрим живуть тут, бо
  * лише каркас знає, що меню відкрите; сторінка про це не здогадується й не
- * тримає в собі кнопку.
+ * тримає в собі кнопку. Хедер показує той самий бренд і «МЕНЮ» на кожному
+ * екрані, а назву сторінки бере з її оголошення (`useScreenChrome`).
  *
  * @module web-platform-dev/src/layout/PlatformShell
  */
 
 import { useCallback, useEffect, useState, type ReactElement } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { AppBar, ScreenChromeProvider } from "@wwwuabot/ui/nav";
-import { useStyleTheme } from "@wwwuabot/shared";
 import { apiFetch } from "@/shared/api/client";
 import { JournalBridge } from "./JournalBridge";
 import { PlatformSidebar } from "./PlatformSidebar";
@@ -46,11 +46,8 @@ function useBotUsername(): string | null {
 }
 
 export function PlatformShell(): ReactElement {
-  const navigate = useNavigate();
   const { pathname } = useLocation();
-  const goBack = useCallback(() => void navigate(-1), [navigate]);
   const [navOpen, setNavOpen] = useState(false);
-  const { toggleScheme } = useStyleTheme();
   const closeNav = useCallback(() => setNavOpen(false), []);
   const toggleNav = useCallback(() => setNavOpen((current) => !current), []);
   const botUsername = useBotUsername();
@@ -93,12 +90,7 @@ export function PlatformShell(): ReactElement {
           />
         )}
         <div className="wb-platform-main">
-          <AppBar
-            onBack={goBack}
-            onMenu={toggleNav}
-            onTheme={toggleScheme}
-            botUsername={botUsername}
-          />
+          <AppBar onMenu={toggleNav} menuOpen={navOpen} botUsername={botUsername} />
           <Outlet />
         </div>
       </div>

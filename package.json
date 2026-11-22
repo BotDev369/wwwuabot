@@ -68,5 +68,9 @@
     "clean:tmp": "node scripts/clean-tmp.mjs",
     "prepare": "node scripts/install-hooks.mjs",
     "check:verify-stamp": "node scripts/verify-stamp.mjs --check"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "workerd@1.20260926.1": true
   }
 }

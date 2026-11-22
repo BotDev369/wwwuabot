@@ -47,9 +47,14 @@ describe("меню платформи", () => {
     expect(activeKeys(`${ACCOUNT_PATH}/`)).toEqual(["me"]);
   });
 
-  it("«Ще» підсвічує свій пункт, а не головне меню", () => {
+  it("розділи без «Ще» підсвічують рівно свій пункт", () => {
     expect(activeKeys(TRACKERS_PATH)).toEqual(["trackers"]);
     expect(activeKeys(`${USERS_PATH}/42`)).toEqual(["hurt"]);
+  });
+
+  it("«Ще» більше немає — усі пункти в одному списку", () => {
+    expect(PLATFORM_NAV.map((section) => section.title)).not.toContain("Ще");
+    expect(PLATFORM_NAV.flatMap((section) => section.items)).toHaveLength(12);
   });
 
   it("чужа адреса не підсвічує нічого", () => {

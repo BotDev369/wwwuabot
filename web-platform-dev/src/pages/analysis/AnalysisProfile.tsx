@@ -17,7 +17,7 @@ import {
 } from "@wwwuabot/shared/qualities";
 import { readDates, readLenses, readSubject, readSurvey } from "@wwwuabot/ui/analysis/params";
 import { useDossiers } from "@wwwuabot/ui/analysis/useDossiers";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { useAnalysisChrome } from "./analysis-chrome";
 import {
   ANALYSIS_COMPARE_PATH,
   ANALYSIS_MATCH_PATH,
@@ -108,7 +108,7 @@ function QualityRow({ reading }: { reading: QualityReading }): ReactElement {
 }
 
 export function AnalysisProfile({ mode }: AnalysisProfileProps): ReactElement {
-  useScreenChrome({ title: TITLES[mode] });
+  useAnalysisChrome(TITLES[mode], { hero: false });
   const search = window.location.search;
   const dates = readDates(search);
   const subject = readSubject(search, dates.length);

@@ -13,7 +13,7 @@ import { isValidDate } from "@wwwuabot/shared/utils/mydate-helpers";
 import type { MyDate } from "@wwwuabot/shared/types/mydate";
 import { deleteMyDate, fetchMyDates, saveMyDate } from "@wwwuabot/ui/analysis/api";
 import { readDates, readSubject } from "@wwwuabot/ui/analysis/params";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { useAnalysisChrome } from "./analysis-chrome";
 import { ANALYSIS_PATH, analysisStepPath, type AnalysisMode } from "@/app/routes";
 import { EntityRow, RowAction } from "./EntityRow";
 
@@ -72,7 +72,7 @@ function compareRows(search: string): Row[] {
 
 export function SubjectStep({ mode }: SubjectStepProps): ReactElement {
   const copy = COPY[mode];
-  useScreenChrome({ title: copy.title });
+  useAnalysisChrome(copy.title);
   const navigate = useNavigate();
   const [rows, setRows] = useState<Row[]>(() =>
     mode === "compare" ? compareRows(window.location.search) : [{ date: "", name: "" }],
@@ -175,7 +175,9 @@ export function SubjectStep({ mode }: SubjectStepProps): ReactElement {
         </a>
 
         <header className="an-setup__head">
-          <h1 className="an-setup__title">{copy.title}</h1>
+          <h1 className="an-setup__title" data-screen-title>
+            {copy.title}
+          </h1>
           <p className="an-setup__lead">{copy.lead}</p>
         </header>
 

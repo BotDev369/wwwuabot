@@ -24,7 +24,7 @@ import {
 import { isValidDate } from "@wwwuabot/shared/utils/mydate-helpers";
 import { readDates, readLenses, readSubject, readSurvey } from "@wwwuabot/ui/analysis/params";
 import { useDossiers } from "@wwwuabot/ui/analysis/useDossiers";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { useAnalysisChrome } from "./analysis-chrome";
 import { ANALYSIS_MATCH_PATH, ANALYSIS_PATH } from "@/app/routes";
 
 const ALL_LENSES = LENSES.map((lens) => lens.id);
@@ -147,7 +147,7 @@ function RolePicker({ active }: { active: RoleId }): ReactElement {
 }
 
 export function AnalysisMatch(): ReactElement {
-  useScreenChrome({ title: "Підбір ролі" });
+  useAnalysisChrome("Підбір ролі");
   const navigate = useNavigate();
   const { search } = useLocation();
   const dates = readDates(search);
@@ -208,7 +208,9 @@ export function AnalysisMatch(): ReactElement {
 
         <header className="an-hero an-hero--slim">
           <p className="an-hero__kicker">Роль у парі</p>
-          <h1 className="an-hero__title">{ready ? role.name : "Під кого підбираємо?"}</h1>
+          <h1 className="an-hero__title" data-screen-title>
+            {ready ? role.name : "Під кого підбираємо?"}
+          </h1>
           <p className="an-hero__lead">
             {ready
               ? role.lead

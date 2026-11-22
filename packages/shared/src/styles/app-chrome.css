@@ -118,52 +118,115 @@
   top: 0;
   z-index: var(--z-sticky);
   display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-1);
   /* Підлога, не стеля: справжню висоту хедер публікує сам (`useAppBarHeight`) —
      вона залежить від шрифту людини й довжини назви, тож числом із токена
      її не задати. Та сама мірка, що в адмінці. */
   min-height: var(--appbar-h);
-  /* Нижній кант — тон теми, а не сіра лінія: хром каже, яка тема ввімкнена,
-     ще до того, як людина дійде до вмісту. */
-  border-bottom: 2px solid color-mix(in srgb, var(--data-1) 55%, var(--border));
+  /* Нижній кант — скляний, а не кольорова смуга: бренд мусить читатись як
+     поверхня, крізь яку видно вміст, а не як окрема панель. */
+  border-bottom: 1px solid var(--glass-stroke-soft);
   /* Відступ від хедера клієнта («Закрити» в Telegram): safe-area на цьому
      місці зазвичай 0, і рядок прилипав до смуги вгорі впритул. Той самий
      крок додає `--appbar-h`, тож міра лишається однією. */
-  padding: calc(var(--safe-top) + var(--sp-2)) var(--sp-2) 0;
+  padding: calc(var(--safe-top) + var(--sp-2)) var(--sp-5) var(--sp-2);
   /* Фолбек для рушіїв без `color-mix()`/`backdrop-filter`: той самий колір,
      лише непрозорий — читається так само, просто без розмитості. */
   background: var(--chrome-header-bg);
-  background: color-mix(in srgb, var(--chrome-header-bg) 84%, transparent);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  backdrop-filter: blur(14px) saturate(140%);
+  background: var(--glass-fill-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
 }
 
-.wb-appbar__lead {
+/* На hero-екрані хедер однорядковий: назва лежить у контенті, а не в
+   потоці хедера. */
+.wb-appbar--hero {
+  gap: 0;
+}
+
+/* Перший рядок хедера: слово й «МЕНЮ». Другий — назва сторінки: так на
+   прокрутці вгорі лишаються рівно два рядки, а не один, що змінюється. */
+.wb-appbar__top {
   display: flex;
   align-items: center;
-  gap: var(--sp-1);
-  min-width: 0;
-  flex: 1 1 auto;
+  gap: var(--sp-2);
+  min-height: 42px;
 }
 
-.wb-appbar__title {
+.wb-appbar__brand {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-width: 0;
+}
+
+/* Колір — скоринка паляниці, а не фіалковий акцент: слово належить бренду,
+   решта інтерфейсу — інтерфейсу. */
+.wb-appbar__brand-name {
   font-size: var(--text-lg);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  letter-spacing: var(--tracking-title);
-  line-height: 1.2;
-  /* Довга назва обрізається одним рядом: вона не повинна витісняти дії. */
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  line-height: 1;
+  color: var(--brand-bread);
+  white-space: nowrap;
+}
+
+/*
+ * Шлях сторінки: один рядок — один рівень. На телефоні немає місця для
+ * горизонтального «хлібного» ланцюжка, тому глибина читається зверху вниз.
+ * Перший рівень (розділ) більший за бренд, інакше не видно, що ми вже
+ * всередині нього; кожен наступний — на щабель менший.
+ */
+.wb-appbar__trail {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wb-appbar__crumb {
+  margin: 0;
+  min-width: 0;
   overflow: hidden;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: 1.2;
+  letter-spacing: var(--tracking-title);
+  color: var(--text-primary);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Поточна сторінка — останній рядок стека; це вона, а не проміжний рівень. */
+.wb-appbar__crumb--current {
+  color: var(--text-primary);
+}
+
+/* Розділ — акцентний рівень стека: 26px, більший за 20px бренду. */
+.wb-appbar__trail > .wb-appbar__crumb:first-child:not(:last-child) {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+/* Проміжні рівні — 20px; останній рядок лишається 17px. */
+.wb-appbar__trail > .wb-appbar__crumb:not(:first-child):not(:last-child) {
+  font-size: var(--text-lg);
+  line-height: 1.15;
+}
+
+/* На hero-екрані стек не має власного шару: коли велика назва йде під хедер,
+   рядки стають звичайним другим рядком хедера — так само, як на сторінці без
+   `h1`. Тому жодних абсолютних смуг і окремих поверхонь тут немає. */
 
 .wb-appbar__actions {
   display: flex;
   align-items: center;
   gap: var(--sp-1);
   flex: 0 0 auto;
+  margin-left: auto;
 }
 
 /* Знак без підпису: 44×44 — тап-таргет пальця (правило §3 AGENTS.md), заливки
@@ -206,17 +269,47 @@
   color: var(--accent);
 }
 
-/* На телефоні назва має **два** рядки, а не один: її дає вміст (назва рядка
-   `scenarios`), тож довжину ніхто не обмежує, а між «Назад» і трьома знаками
-   праворуч лишається ~160px — довга назва рядка обрізалась на середині
-   слова. Два рядки — межа: назва не росте далі й не витісняє дії. */
-@media (max-width: 520px) {
-  .wb-appbar__title {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    white-space: normal;
+/* МЕНЮ — скляна текстова кнопка: це вхід у навігацію, а не ще один знак у
+   рядку дій. Окрема поверхня відділяє її від «поділитись» і серця. */
+.wb-appbar__menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  margin-left: var(--sp-1);
+  padding: 0 var(--sp-4);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--glass-stroke));
+  border-radius: var(--radius-full);
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--accent) 9%, var(--glass-fill-strong)),
+    var(--glass-fill-strong)
+  );
+  box-shadow:
+    inset 0 1px 0 var(--glass-stroke),
+    0 8px 22px -18px rgba(40, 30, 90, 0.5);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  transition:
+    background var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease),
+    transform var(--duration-fast) var(--ease);
+}
+
+.wb-appbar__menu:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) {
+  .wb-appbar__menu:hover {
+    background: color-mix(in srgb, var(--accent) 14%, var(--glass-fill-strong));
+    border-color: color-mix(in srgb, var(--accent) 36%, var(--glass-stroke));
   }
 }
 
@@ -279,12 +372,13 @@
 .wb-nav {
   width: var(--sidebar-w);
   min-width: var(--sidebar-w);
-  /* Плита, а не скло: тло й тінь праворуч відділяють меню від вмісту, а
-     розмиття під ним з'їдало контраст тексту на телефоні. */
-  background: var(--sidebar-bg);
+  /* Скло на рівні всього продукту: меню лежить поверх вмісту, і розмиття
+     тримає його окремою поверхнею, не ховаючи сторінку під непрозорою плитою. */
+  border-right: 1px solid var(--glass-stroke-soft);
+  background: var(--glass-fill-strong);
   box-shadow: var(--sidebar-shadow);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
   display: flex;
   flex-direction: column;
   overflow: hidden;

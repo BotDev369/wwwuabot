@@ -18,7 +18,7 @@ import {
 } from "@wwwuabot/shared/qualities";
 import { readDates, readLenses, readSubject, readSurvey } from "@wwwuabot/ui/analysis/params";
 import { useDossiers } from "@wwwuabot/ui/analysis/useDossiers";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { useAnalysisChrome } from "./analysis-chrome";
 import { ANALYSIS_PATH, ANALYSIS_COMPARE_PATH } from "@/app/routes";
 
 const ALL_LENSES = LENSES.map((lens) => lens.id);
@@ -85,7 +85,7 @@ function Section({
 }
 
 export function AnalysisCompare(): ReactElement {
-  useScreenChrome({ title: "Співставити" });
+  useAnalysisChrome("Результат співставлення");
   const search = window.location.search;
   const dates = readDates(search);
   const subject = readSubject(search, dates.length);
@@ -122,7 +122,7 @@ export function AnalysisCompare(): ReactElement {
 
         <header className="an-hero an-hero--slim">
           <p className="an-hero__kicker">Співставити</p>
-          <h1 className="an-hero__title">
+          <h1 className="an-hero__title" data-screen-title>
             {dates.length >= 2 ? "Що вас об'єднує" : "Кого співставляємо?"}
           </h1>
           <p className="an-hero__lead">

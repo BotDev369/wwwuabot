@@ -28,6 +28,8 @@ export function useScreenChrome(chrome: ScreenChromePatch, enabled = true): void
   // порівнюємо лише як «є / немає» — вона змінюється на кожному рендері.
   const key = [
     chrome.title ?? "",
+    JSON.stringify(chrome.ancestors ?? []),
+    chrome.titleMode ?? "header",
     chrome.menu ? "1" : "",
     chrome.share?.slug ?? "",
     JSON.stringify(chrome.favorite ?? null),

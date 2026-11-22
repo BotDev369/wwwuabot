@@ -12,7 +12,7 @@ import { Icon } from "@wwwuabot/shared";
 import { MEASURED_NAME, QUALITY_DOMAINS, type Quality } from "@wwwuabot/shared/qualities";
 import type { MyDate } from "@wwwuabot/shared/types/mydate";
 import { fetchDossiers, fetchMyDates } from "@wwwuabot/ui/analysis/api";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { useAnalysisChrome } from "./analysis-chrome";
 import { ANALYSIS_PATH, ANALYSIS_TESTS_PATH } from "@/app/routes";
 import { AnalysisQualityEntry } from "./AnalysisQualityEntry";
 import {
@@ -40,7 +40,7 @@ function initialProfile(): QualityProfile {
 }
 
 export function AnalysisQualitiesPage(): ReactElement {
-  useScreenChrome({ title: "Типові якості людей і подій" });
+  useAnalysisChrome("Типові якості людей і подій");
   const [profile, setProfile] = useState<QualityProfile>(initialProfile);
   const [saved, setSaved] = useState<MyDate[]>([]);
   const [determined, setDetermined] = useState<StoredMap>(() => readStored(storageKeyFor(profile)));
@@ -181,7 +181,9 @@ export function AnalysisQualitiesPage(): ReactElement {
         </a>
 
         <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title">Типові якості людей і подій</h1>
+          <h1 className="an-hero__title" data-screen-title>
+            Типові якості людей і подій
+          </h1>
           <p className="an-hero__lead">
             Що це, як проявляється у високому й низькому рівні та які системи це визначають.
           </p>

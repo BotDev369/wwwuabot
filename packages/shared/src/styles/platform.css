@@ -410,52 +410,140 @@
   min-width: 0;
 }
 
-/* Колонка в потоці: на десктопі меню не їде за сторінкою, а стоїть на місці —
-   інакше довгий список прокручувався б разом із контентом і зникав. */
+/* Правий сайдбар-поверхня: і на телефоні, і на десктопі він виїжджає з
+   правого краю поверх сторінки. У потоці його більше немає — відкриває його
+   «МЕНЮ» в хедері, закриває хрестик, скрим або Escape. */
 .wb-platform-sidebar {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 1000;
+  width: min(360px, var(--sidebar-w-vw));
+  min-width: min(360px, var(--sidebar-w-vw));
   height: 100dvh;
-  flex: 0 0 auto;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+  border-right: 0;
+  border-left: 1px solid var(--glass-stroke);
+  box-shadow: var(--glass-shadow);
+  transform: translateX(100%);
+  transition: transform var(--duration-slow) var(--ease);
+}
+
+.wb-platform-sidebar--open {
+  transform: none;
+}
+
+/* Хрестик видно на всіх ширинах: правий сайдбар — завжди поверхня. */
+.wb-platform-sidebar .wb-nav-close-row {
+  display: flex;
 }
 
 .wb-platform-sidebar .wb-nav-menu {
   flex: 1;
+  gap: var(--sp-2);
   overflow-y: auto;
   padding: var(--sidebar-pad);
 }
 
-.wb-platform-scrim {
-  display: none;
+/* Тема — перша скляна плашка меню. Вона не пункт переходу, але стоїть у тій
+   самій колонці й на тій самій лінії, що решта пунктів. */
+.wb-platform-theme {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: var(--sidebar-pad) var(--sidebar-pad) 0;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--glass-stroke-soft);
+  border-radius: var(--radius-lg);
+  background: var(--glass-fill);
+  box-shadow: inset 0 1px 0 var(--glass-stroke-soft);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
 }
 
-@media (width <= 1023px) {
-  .wb-platform-sidebar {
-    position: fixed;
-    inset: 0 auto 0 0;
-    z-index: 1000;
-    width: var(--sidebar-w-vw);
-    min-width: var(--sidebar-w-vw);
-    padding-top: var(--safe-top);
-    padding-bottom: var(--safe-bottom);
-    transform: translateX(-100%);
-    transition: transform var(--duration-slow) var(--ease);
-  }
+.wb-platform-theme__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
 
-  .wb-platform-sidebar--open {
-    transform: none;
-    box-shadow: 4px 0 24px rgb(0 0 0 / 30%);
-  }
+.wb-platform-theme .wb-switch-row {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+}
 
-  /* Скрим — кнопка, а не div: дотик повз меню мусить закривати його й бути
-     доступним із клавіатури, як у модалки. */
-  .wb-platform-scrim {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 999;
-    border: 0;
-    background: var(--scrim);
-    backdrop-filter: blur(2px);
+.wb-platform-theme .wb-switch-label {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+/* Пункти платформи — більші за базові й кожен на скляній плашці. Обраний
+   пункт заливається акцентом: у відкритому меню це єдине місце, де видно,
+   де людина стоїть. */
+.wb-platform-sidebar .wb-nav-section {
+  gap: var(--sp-2);
+  margin-bottom: 0;
+}
+
+.wb-platform-sidebar .wb-nav-item {
+  min-height: 56px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--glass-stroke-soft);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #ffffff 12%, var(--glass-fill)),
+    var(--glass-fill)
+  );
+  box-shadow:
+    inset 0 1px 0 var(--glass-stroke-soft),
+    0 10px 24px -24px rgba(40, 30, 90, 0.35);
+  font-size: var(--text-md);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+  transition:
+    background var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease),
+    transform var(--duration-fast) var(--ease);
+}
+
+.wb-platform-sidebar .wb-nav-item:active {
+  transform: scale(0.985);
+}
+
+@media (hover: hover) {
+  .wb-platform-sidebar .wb-nav-item:hover {
+    border-color: var(--glass-stroke);
+    background: var(--glass-fill-strong);
   }
+}
+
+.wb-platform-sidebar .wb-nav-item--active {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--glass-stroke));
+  background: color-mix(in srgb, var(--accent) 16%, var(--glass-fill-strong));
+  color: var(--accent);
+  box-shadow:
+    inset 0 1px 0 var(--glass-stroke),
+    0 12px 28px -22px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+/* Скрим — кнопка, а не div: дотик повз меню мусить закривати його й бути
+   доступним із клавіатури, як у модалки. */
+.wb-platform-scrim {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  border: 0;
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(4px) saturate(120%);
+  backdrop-filter: blur(4px) saturate(120%);
 }
