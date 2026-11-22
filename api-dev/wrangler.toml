@@ -50,6 +50,13 @@ bucket_name = "wwwuabot-shop-dev"
 binding = "SPENDING_SNAPSHOTS"
 bucket_name = "wwwuabot-spending-dev"
 
+# Підписаний канал до бота: Telegram редагує й видаляє той, хто надіслав
+# повідомлення. Service binding не виходить у публічну мережу, а підпис
+# (`@wwwuabot/shared/security/bot-channel`) тримає канал закритим.
+[[services]]
+binding = "BOT"
+service = "bot-dev"
+
 [vars]
 # ADMIN_SECRET, BOT_TOKEN, SECRET_TOKEN, SENTRY_DSN, GITHUB_MONITOR_TOKEN і
 # CF_MONITOR_TOKEN — задаються через Cloudflare Dashboard (Secrets).

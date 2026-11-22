@@ -17,6 +17,8 @@ import {
   blockUser,
   bulkAction,
   deleteUser,
+  deleteUserMessage,
+  editUserMessage,
   listUsers,
   readUser,
   readUserProfile,
@@ -137,6 +139,31 @@ describe("записи", () => {
     expect(init.method).toBe("POST");
     expect(lastBody(fetchMock)).toEqual({ action: "block", ids: [1, 2] });
     expect(processed).toBe(2);
+  });
+
+  it("правка повідомлення йде PATCH-ом на пару user + message", async () => {
+    const fetchMock = stubFetch(
+      response(200, { ok: true, message: { id: 3, message_id: 100, text: "нове" } }),
+    );
+    const updated = await editUserMessage(42, 100, "нове");
+
+    const [url, init] = lastCall(fetchMock);
+    expect(url).toBe("/api/admin/users/42/messages/100");
+    expect(init.method).toBe("PATCH");
+    expect(lastBody(fetchMock)).toEqual({ text: "нове" });
+    expect(updated.text).toBe("нове");
+  });
+
+  it("видалення йде DELETE-ом і повертає рядок із deleted_at", async () => {
+    const fetchMock = stubFetch(
+      response(200, { ok: true, message: { id: 3, deleted_at: "2026-11-22 12:00:00" } }),
+    );
+    const updated = await deleteUserMessage(42, 100);
+
+    const [url, init] = lastCall(fetchMock);
+    expect(url).toBe("/api/admin/users/42/messages/100");
+    expect(init.method).toBe("DELETE");
+    expect(updated.deleted_at).toBe("2026-11-22 12:00:00");
   });
 
   it("повідомлення надсилається людині за user_id, а не в чат", async () => {

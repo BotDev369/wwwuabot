@@ -43,6 +43,12 @@ export interface Env {
   DESK_FILES?: R2Bucket;
   /** Токен Telegram бота — виклики api.telegram.org (налаштування вебхука). */
   BOT_TOKEN?: string;
+  /**
+   * Service binding до `bot-dev`: редагування й видалення повідомлень у
+   * Telegram робить бот, а не API. Канал підписаний
+   * (`@wwwuabot/shared/security/bot-channel`); без біндингу — 503.
+   */
+  BOT?: Fetcher;
   /** Секрет Telegram webhook — ставиться в secret_token при setWebhook. */
   SECRET_TOKEN?: string;
   /**

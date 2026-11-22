@@ -114,6 +114,8 @@
 | `ANY` | `/api/admin/spending/transactions` | `handleSpendingTransactions` |
 | `ANY` | `/api/admin/spending<…>` | `—` |
 | `GET` | `/api/admin/users/<…>` | `handleUserMessages` |
+| `PATCH` | `/api/admin/users/<…>` | `handleEditUserMessage` |
+| `DELETE` | `/api/admin/users/<…>` | `handleDeleteUserMessage` |
 | `POST` | `/api/admin/users/block` | `handleBlockUser` |
 | `POST` | `/api/admin/users/bulk` | `handleBulkUsers` |
 | `POST` | `/api/admin/users/delete` | `handleDeleteUser` |
@@ -134,4 +136,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **105**.
+Усього шляхів: **107**.

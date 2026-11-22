@@ -4,6 +4,7 @@ import type { Env } from "../shared/types/env";
 const handlers = vi.hoisted(() => ({
   handleTelegramWebhook: vi.fn(),
   handleReportsRequest: vi.fn(),
+  handleBotChannel: vi.fn(),
 }));
 
 vi.mock("./controllers/telegram.controller", () => ({
@@ -12,6 +13,10 @@ vi.mock("./controllers/telegram.controller", () => ({
 
 vi.mock("./controllers/reports.controller", () => ({
   handleReportsRequest: handlers.handleReportsRequest,
+}));
+
+vi.mock("./controllers/bot-channel.controller", () => ({
+  handleBotChannel: handlers.handleBotChannel,
 }));
 
 import { handleRequest } from "./router";
@@ -38,6 +43,16 @@ describe("bot http router", () => {
       ctx,
     );
     expect(await response.text()).toBe("report");
+  });
+
+  it("sends the signed admin channel to its handler", async () => {
+    handlers.handleBotChannel.mockResolvedValue(new Response("channel"));
+    const response = await handleRequest(
+      new Request("https://bot.test/internal/message", { method: "POST" }),
+      env,
+      ctx,
+    );
+    expect(await response.text()).toBe("channel");
   });
 
   it("answers 404 for an unknown path", async () => {

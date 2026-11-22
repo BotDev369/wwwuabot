@@ -1,5 +1,5 @@
 {
-  "version": "f9c4af8",
+  "version": "a40dcf8",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -164,7 +164,7 @@
     {
       "file": "messages.css",
       "tokens": 0,
-      "classes": 47
+      "classes": 51
     },
     {
       "file": "page-layout.css",
@@ -5753,11 +5753,15 @@
           "wb-botlog",
           "wb-btn",
           "wb-bubble",
+          "wb-bubble--deleted",
           "wb-bubble--in",
           "wb-bubble--out",
+          "wb-bubble-note",
           "wb-bubble-photo",
           "wb-bubble-text",
           "wb-bubble-time",
+          "wb-bubble-tool",
+          "wb-bubble-tools",
           "wb-thread",
           "wb-thread-action",
           "wb-thread-actions",

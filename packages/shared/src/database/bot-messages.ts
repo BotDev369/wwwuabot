@@ -6,6 +6,7 @@
  */
 
 import { ensureTables } from "./ensure-tables";
+import { sqliteTimestamp } from "../utils/datetime";
 
 /** Хто сказав: `in` — людина, `out` — бот (зокрема адмін із панелі). */
 export type BotMessageDirection = "in" | "out";
@@ -34,6 +35,17 @@ export interface BotMessageInput {
  * повідомлення не влізе, тож решта — це вже не переказ розмови, а дамп.
  */
 export const BOT_MESSAGE_TEXT_MAX = 4096;
+
+/** Скільки Telegram дає правити й видаляти надіслане повідомлення. */
+export const BOT_MESSAGE_EDIT_WINDOW_HOURS = 48;
+
+/** Чи вже пізно правити/видаляти: рахуємо від `created_at`, а не від правки. */
+export function botMessageExpired(createdAt: string | null | undefined, now = Date.now()): boolean {
+  if (!createdAt) return true;
+  const stamp = sqliteTimestamp(createdAt);
+  if (!stamp) return true;
+  return now - stamp > BOT_MESSAGE_EDIT_WINDOW_HOURS * 60 * 60 * 1000;
+}
 
 /** Дописати рядок у переписку. `created_at` ставить сама база. */
 export async function recordBotMessage(db: D1Database, input: BotMessageInput): Promise<void> {

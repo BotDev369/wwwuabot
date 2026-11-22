@@ -124,6 +124,31 @@ export async function listUserMessages(
   };
 }
 
+/**
+ * Новий текст ботівського повідомлення. Сервер спершу редагує його в
+ * Telegram і лише після успіху ставить `edited_at`; відмова приходить текстом.
+ */
+export async function editUserMessage(
+  userId: number,
+  messageId: number,
+  text: string,
+): Promise<BotMessageRow> {
+  const res = await apiFetch<{ ok: boolean; message: BotMessageRow }>(
+    `/api/admin/users/${userId}/messages/${messageId}`,
+    { method: "PATCH", body: JSON.stringify({ text }) },
+  );
+  return res.message;
+}
+
+/** Видалити повідомлення (до 48 годин); у базі воно лишається з `deleted_at`. */
+export async function deleteUserMessage(userId: number, messageId: number): Promise<BotMessageRow> {
+  const res = await apiFetch<{ ok: boolean; message: BotMessageRow }>(
+    `/api/admin/users/${userId}/messages/${messageId}`,
+    { method: "DELETE" },
+  );
+  return res.message;
+}
+
 export async function sendMessage(userId: number, text: string): Promise<void> {
   await apiFetch("/api/admin/users/message", {
     method: "POST",

@@ -53,6 +53,7 @@
     "./observability/sentry": "./src/observability/sentry.ts",
     "./security/access": "./src/security/access.ts",
     "./security/session": "./src/security/session.ts",
+    "./security/bot-channel": "./src/security/bot-channel.ts",
     "./security/telegram": "./src/security/telegram.ts",
     "./security/preview-session": "./src/security/preview-session.ts",
     "./user/platform-username": "./src/user/platform-username.ts",

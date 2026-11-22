@@ -6,6 +6,7 @@ function env(): Env {
   const statement = {
     bind: () => statement,
     all: async () => ({ results: [] }),
+    first: async () => null,
   };
   return { DB: { prepare: () => statement } } as unknown as Env;
 }
@@ -41,6 +42,37 @@ describe("matchBotMessagesRoute", () => {
         "/api/admin/users/7/messages/extra",
       ),
     ).toBeNull();
+  });
+
+  it("PATCH і DELETE повідомлення доходять до дій", async () => {
+    const patch = await matchBotMessagesRoute(
+      new Request("https://example.com/api/admin/users/7/messages/100", {
+        method: "PATCH",
+        body: JSON.stringify({ text: "нове" }),
+      }),
+      env(),
+      "/api/admin/users/7/messages/100",
+    );
+    expect(patch).not.toBeNull();
+    expect((patch as Response).status).toBe(404);
+
+    const remove = await matchBotMessagesRoute(
+      request("DELETE", "/api/admin/users/7/messages/100"),
+      env(),
+      "/api/admin/users/7/messages/100",
+    );
+    expect(remove).not.toBeNull();
+    expect((remove as Response).status).toBe(404);
+  });
+
+  it("кривий хвіст дії — не наш шлях", () => {
+    for (const path of [
+      "/api/admin/users/7/messages/extra",
+      "/api/admin/users/7/messages/100/extra",
+      "/api/admin/users/abc/messages/100",
+    ]) {
+      expect(matchBotMessagesRoute(request("DELETE", path), env(), path)).toBeNull();
+    }
   });
 
   it("інший метод і кривий id — не наш шлях", () => {

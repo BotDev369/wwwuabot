@@ -6,7 +6,12 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { listUserMessages, type BotMessageRow } from "../../shared/api/users.api";
+import {
+  deleteUserMessage,
+  editUserMessage,
+  listUserMessages,
+  type BotMessageRow,
+} from "../../shared/api/users.api";
 
 export function useUserChat(userId: number) {
   const [messages, setMessages] = useState<BotMessageRow[]>([]);
@@ -54,5 +59,26 @@ export function useUserChat(userId: number) {
     }
   }, [userId, nextBefore, loadingMore]);
 
-  return { messages, hasMore, loading, loadingMore, error, loadMore };
+  /** Рядок повертається з сервера вже оновленим — замінюємо його на місці. */
+  const replace = useCallback((message: BotMessageRow) => {
+    setMessages((previous) => previous.map((item) => (item.id === message.id ? message : item)));
+  }, []);
+
+  const edit = useCallback(
+    async (message: BotMessageRow, text: string) => {
+      if (message.message_id === null) return;
+      replace(await editUserMessage(userId, message.message_id, text));
+    },
+    [userId, replace],
+  );
+
+  const remove = useCallback(
+    async (message: BotMessageRow) => {
+      if (message.message_id === null) return;
+      replace(await deleteUserMessage(userId, message.message_id));
+    },
+    [userId, replace],
+  );
+
+  return { messages, hasMore, loading, loadingMore, error, loadMore, edit, remove };
 }

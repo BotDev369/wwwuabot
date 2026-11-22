@@ -245,6 +245,46 @@
   align-self: center;
 }
 
+/* Дії над повідомленням — окремим рядком під текстом, а не поруч із ним:
+   у бульбашці вже є час, і третій елемент у тому ж рядку тісний. */
+.wb-bubble-tools {
+  flex-basis: 100%;
+  display: flex;
+  gap: var(--sp-2);
+  justify-content: flex-end;
+}
+
+.wb-bubble-tool {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.wb-bubble--out .wb-bubble-tool {
+  color: var(--text-inverse);
+  opacity: 0.85;
+}
+
+/* Видалене видно: текст лишається для контексту, але приглушений і
+   перекреслений — «це вже не стоїть у чаті». */
+.wb-bubble--deleted {
+  opacity: 0.75;
+}
+
+.wb-bubble--deleted .wb-bubble-text {
+  text-decoration: line-through;
+}
+
+.wb-bubble-note {
+  font-size: var(--text-xs);
+  font-style: italic;
+}
+
 .wb-thread-note {
   margin: auto;
   padding: var(--sp-4);

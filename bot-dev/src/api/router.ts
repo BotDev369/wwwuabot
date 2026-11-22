@@ -1,5 +1,7 @@
 import { handleTelegramWebhook } from "./controllers/telegram.controller";
 import { handleReportsRequest } from "./controllers/reports.controller";
+import { handleBotChannel } from "./controllers/bot-channel.controller";
+import { BOT_CHANNEL_PATH } from "@wwwuabot/shared/security/bot-channel";
 import type { Env } from "../shared/types/env";
 
 /**
@@ -23,6 +25,11 @@ export async function handleRequest(
   // апдейтів. Див. `docs/AGENT_REPORTS.md`.
   if (url.pathname === "/reports") {
     return handleReportsRequest(request, env);
+  }
+
+  // api-dev → bot: правка й видалення повідомлень. Підпис обов'язковий.
+  if (request.method === "POST" && url.pathname === BOT_CHANNEL_PATH) {
+    return handleBotChannel(request, env);
   }
 
   return new Response("Not Found", { status: 404 });
