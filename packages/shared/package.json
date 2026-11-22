@@ -48,6 +48,7 @@
     "./database/tables": "./src/database/tables.ts",
     "./database/ensure-tables": "./src/database/ensure-tables.ts",
     "./database/user-events": "./src/database/user-events.ts",
+    "./database/bot-messages": "./src/database/bot-messages.ts",
     "./config/environment": "./src/config/environment.ts",
     "./observability/sentry": "./src/observability/sentry.ts",
     "./security/access": "./src/security/access.ts",

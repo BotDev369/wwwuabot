@@ -314,6 +314,34 @@ export const TABLES = {
   },
 
   /**
+   * Переписка людини з ботом: обидва боки в одній таблиці — розмова
+   * читається одним запитом за `user_id`. `direction` — `in` (людина) або
+   * `out` (бот); `message_id` — номер у Telegram; `text` — текст або HTML
+   * rich-екрана; `meta` — решта (запит, кількість збігів); `edited_at` і
+   * `deleted_at` ставить адмін, рядок при цьому не стирається.
+   */
+  bot_messages: {
+    name: "bot_messages",
+    owner: "bot-dev",
+    purpose:
+      "Переписка людини з ботом: напрямок (`in`/`out`), номер у Telegram, вид, текст і позначки правки та видалення.",
+    create: `CREATE TABLE IF NOT EXISTS bot_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        chat_id INTEGER NOT NULL,
+        direction TEXT NOT NULL,
+        message_id INTEGER,
+        kind TEXT NOT NULL DEFAULT 'text',
+        text TEXT NOT NULL DEFAULT '',
+        meta TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        edited_at TEXT,
+        deleted_at TEXT
+      )`,
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_bot_messages_user ON bot_messages(user_id, id)"],
+  },
+
+  /**
    * Адреси, які сторінка мала раніше: `alias` → `slug`.
    *
    * Адреса — контракт, тож переїзд лишає по собі рядок, а не 404: за ним

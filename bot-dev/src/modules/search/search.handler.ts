@@ -11,6 +11,7 @@ import { sendRichMessage } from "../../shared/telegram/widgets";
 import { log } from "../../shared/utils/debug";
 import { loadSearchIndex } from "./search.repository";
 import { searchScreenHtml } from "./search-screen";
+import { recordOutgoingMessage } from "../history/record";
 
 /**
  * Відповісти на текст пошуком; `false` — це не наш випадок (група, порожній
@@ -36,6 +37,10 @@ export async function handleSearch(ctx: AppContext, text: string): Promise<boole
   try {
     const sent = await sendRichMessage(ctx.env.BOT_TOKEN, chatId, html);
     ctx.screenHandled = true;
+    await recordOutgoingMessage(ctx, sent.message_id, "rich", html, {
+      query,
+      matches: matches.length,
+    });
     log("SEARCH", "sent", {
       query,
       matches: matches.length,

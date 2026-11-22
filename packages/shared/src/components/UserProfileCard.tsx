@@ -32,7 +32,14 @@ export type { UserProfileCardProps, UserProfileData };
  * на платформі, а як його ще немає — те, що дає Telegram), і другий блок з тим
  * самим іменем був би другою копією одного факту (AGENTS.md §7).
  */
-export function UserProfileCard({ user, loading, error, onEdit, onMessage }: UserProfileCardProps) {
+export function UserProfileCard({
+  user,
+  loading,
+  error,
+  onEdit,
+  onMessage,
+  onChat,
+}: UserProfileCardProps) {
   if (loading) {
     return (
       <div className="wb-empty">
@@ -85,7 +92,7 @@ export function UserProfileCard({ user, loading, error, onEdit, onMessage }: Use
 
       {user.rawFields && <RawFieldsSection fields={user.rawFields} />}
 
-      <ActionsRow userId={user.id} onEdit={onEdit} onMessage={onMessage} />
+      <ActionsRow userId={user.id} onEdit={onEdit} onMessage={onMessage} onChat={onChat} />
     </div>
   );
 }

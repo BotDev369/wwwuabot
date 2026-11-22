@@ -1,4 +1,5 @@
 import { withAutoMigrate } from "@wwwuabot/shared/database/auto-migrate";
+import { recordBotMessage } from "@wwwuabot/shared/database/bot-messages";
 import type { Env } from "../shared/types";
 
 const SAFE_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
@@ -164,9 +165,28 @@ export class UsersService {
       }),
     });
 
-    const tgData = (await tgRes.json()) as { ok?: boolean; description?: string };
+    const tgData = (await tgRes.json()) as {
+      ok?: boolean;
+      description?: string;
+      result?: { message_id?: number };
+    };
     if (!tgData.ok) {
       throw new Error(tgData.description ?? "Telegram API error");
+    }
+
+    // Лист адміна — теж повідомлення бота в переписці: без цього рядка адмінка
+    // показувала б половину розмови.
+    const messageId = tgData.result?.message_id;
+    if (typeof messageId === "number") {
+      await recordBotMessage(this.env.DB, {
+        userId,
+        chatId: userId,
+        direction: "out",
+        messageId,
+        kind: "text",
+        text,
+        meta: { admin: true },
+      }).catch(() => undefined);
     }
   }
 

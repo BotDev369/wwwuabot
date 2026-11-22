@@ -81,6 +81,49 @@ export async function bulkAction(
   return res.processed;
 }
 
+/** Один рядок переписки людини з ботом (`bot_messages`). */
+export interface BotMessageRow {
+  id: number;
+  direction: "in" | "out";
+  message_id: number | null;
+  kind: string;
+  text: string;
+  meta: string | null;
+  created_at: string | null;
+  edited_at: string | null;
+  deleted_at: string | null;
+}
+
+/** Порція переписки: рядки в хронологічному порядку + курсор для старших. */
+export interface UserMessagesPage {
+  messages: BotMessageRow[];
+  hasMore: boolean;
+  nextBefore: number | null;
+}
+
+/**
+ * Остання порція переписки (6 повідомлень); `before` — курсор для старших.
+ * Курсор — номер рядка, тож друга порція не переплутається з першою навіть
+ * тоді, коли повідомлення прийшли однієї секунди.
+ */
+export async function listUserMessages(
+  userId: number,
+  before?: number | null,
+): Promise<UserMessagesPage> {
+  const query = typeof before === "number" ? `?before=${before}` : "";
+  const res = await apiFetch<{
+    ok: boolean;
+    messages: BotMessageRow[];
+    hasMore: boolean;
+    nextBefore: number | null;
+  }>(`/api/admin/users/${userId}/messages${query}`);
+  return {
+    messages: res.messages ?? [],
+    hasMore: Boolean(res.hasMore),
+    nextBefore: res.nextBefore ?? null,
+  };
+}
+
 export async function sendMessage(userId: number, text: string): Promise<void> {
   await apiFetch("/api/admin/users/message", {
     method: "POST",

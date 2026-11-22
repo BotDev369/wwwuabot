@@ -2,7 +2,9 @@ import { useMemo, useState, useEffect, useCallback } from "react";
 import { useUsersStore, type SortField } from "../../features/users/store";
 import type { UserRow } from "../../shared/api/users.api";
 import { UserCardModal } from "./UserCardModal";
+import { UserChatModal } from "./UserChatModal";
 import { UserEditModal } from "./UserEditModal";
+import { formatName, relativeTime } from "./user-row";
 import { icons } from "@wwwuabot/shared";
 import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
 import { useDialog } from "@wwwuabot/ui/dialog";
@@ -22,11 +24,6 @@ const ico = (name: keyof typeof icons, extraStyle?: React.CSSProperties) => (
   </span>
 );
 
-function formatName(u: UserRow): string {
-  const parts = [u.first_name, u.last_name].filter(Boolean);
-  return parts.length > 0 ? parts.join(" ") : "—";
-}
-
 /** Палітра ролі: роль — це позначка, а не заливка рядка. */
 function roleTone(role: string): React.CSSProperties {
   const tone: Record<string, React.CSSProperties> = {
@@ -34,25 +31,6 @@ function roleTone(role: string): React.CSSProperties {
     vip: { marginLeft: 4, background: "#ede9fe", color: "#5b21b6" },
   };
   return tone[role] ?? { marginLeft: 4, background: "#e0e7ff", color: "#3730a3" };
-}
-
-function relativeTime(value: string | null): string {
-  if (!value) return "—";
-  const date = new Date(value.replace(" ", "T") + (value.includes("Z") ? "" : "Z"));
-  if (Number.isNaN(date.getTime())) return value;
-  const diffMin = Math.floor((Date.now() - date.getTime()) / 60000);
-  if (diffMin < 1) return "щойно";
-  if (diffMin < 60) return `${diffMin} хв тому`;
-  const hours = Math.floor(diffMin / 60);
-  if (hours < 24) return `${hours} год тому`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "вчора";
-  if (days < 7) return `${days} дн тому`;
-  return new Intl.DateTimeFormat("uk-UA", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(date);
 }
 
 interface Props {
@@ -68,16 +46,19 @@ export function UsersTable({ onMessage }: Props) {
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
   const [cardUserId, setCardUserId] = useState<number | null>(null);
   const [editUserId, setEditUserId] = useState<number | null>(null);
+  const [chatUserId, setChatUserId] = useState<number | null>(null);
 
   const openMenu = useCallback((id: number) => {
     setMenuOpen(id);
     setCardUserId(null);
     setEditUserId(null);
+    setChatUserId(null);
   }, []);
   const closeAll = useCallback(() => {
     setMenuOpen(null);
     setCardUserId(null);
     setEditUserId(null);
+    setChatUserId(null);
   }, []);
 
   // Close modal on Escape
@@ -85,11 +66,11 @@ export function UsersTable({ onMessage }: Props) {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") closeAll();
     }
-    if (menuOpen !== null || cardUserId !== null || editUserId !== null) {
+    if (menuOpen !== null || cardUserId !== null || editUserId !== null || chatUserId !== null) {
       document.addEventListener("keydown", handleKey);
       return () => document.removeEventListener("keydown", handleKey);
     }
-  }, [menuOpen, cardUserId, editUserId, closeAll]);
+  }, [menuOpen, cardUserId, editUserId, chatUserId, closeAll]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -142,6 +123,7 @@ export function UsersTable({ onMessage }: Props) {
   }
 
   const menuUser = menuOpen !== null ? items.find((u) => u.user_id === menuOpen) : null;
+  const chatUser = chatUserId !== null ? items.find((u) => u.user_id === chatUserId) : null;
 
   const columns: readonly DataTableColumn<UserRow>[] = [
     {
@@ -267,7 +249,7 @@ export function UsersTable({ onMessage }: Props) {
       </div>
 
       {/* Action modal menu */}
-      {menuUser && !cardUserId && !editUserId && (
+      {menuUser && !cardUserId && !editUserId && chatUserId === null && (
         <div className="wb-modal-overlay" onClick={closeAll}>
           <div className="wb-modal" onClick={(e) => e.stopPropagation()}>
             <div className="wb-modal-header">
@@ -299,6 +281,15 @@ export function UsersTable({ onMessage }: Props) {
                 {ico("edit")} Змінити
               </button>
               <div className="wb-modal-divider" />
+              <button
+                className="wb-modal-menu-item"
+                onClick={() => {
+                  setMenuOpen(null);
+                  setChatUserId(menuUser.user_id);
+                }}
+              >
+                {ico("message-square")} Переписка
+              </button>
               <button
                 className="wb-modal-menu-item"
                 onClick={() => {
@@ -355,6 +346,23 @@ export function UsersTable({ onMessage }: Props) {
           onMessage={(id) => {
             closeAll();
             onMessage(id);
+          }}
+          onChat={(id) => {
+            setCardUserId(null);
+            setChatUserId(id);
+          }}
+        />
+      )}
+
+      {/* Переписка з ботом: зі стрічки — назад у картку, тим самим кліком */}
+      {chatUserId !== null && cardUserId === null && (
+        <UserChatModal
+          userId={chatUserId}
+          title={chatUser ? formatName(chatUser) : undefined}
+          onClose={closeAll}
+          onOpenCard={(id) => {
+            setChatUserId(null);
+            setCardUserId(id);
           }}
         />
       )}

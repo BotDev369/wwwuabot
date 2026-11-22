@@ -124,6 +124,21 @@ describe("UserProfileCard", () => {
     expect(html).toContain("@olya_tg");
   });
 
+  it("показує дії адміна, коли вони передані, разом із перепискою", () => {
+    const html = renderToStaticMarkup(
+      <UserProfileCard
+        user={USER}
+        onEdit={() => undefined}
+        onMessage={() => undefined}
+        onChat={() => undefined}
+      />,
+    );
+
+    expect(html).toContain("Переписка");
+    expect(html).toContain("Написати");
+    expect(html).toContain("Змінити");
+  });
+
   it("розрізняє завантаження й помилку", () => {
     expect(renderToStaticMarkup(<UserProfileCard user={USER} loading />)).toContain(
       "Завантаження даних",

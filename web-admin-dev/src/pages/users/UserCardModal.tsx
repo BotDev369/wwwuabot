@@ -7,6 +7,8 @@ interface Props {
   onClose: () => void;
   onEdit: (userId: number) => void;
   onMessage: (userId: number) => void;
+  /** Перехід у переписку: картка й розмова посилаються одна на одну. */
+  onChat: (userId: number) => void;
 }
 
 /**
@@ -17,7 +19,7 @@ interface Props {
  * рядка `users` у його дані живе в `shared/api/user-profile-row` (ним же
  * користується і сторінка `/profile`).
  */
-export function UserCardModal({ userId, onClose, onEdit, onMessage }: Props) {
+export function UserCardModal({ userId, onClose, onEdit, onMessage, onChat }: Props) {
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +66,7 @@ export function UserCardModal({ userId, onClose, onEdit, onMessage }: Props) {
             error={error}
             onEdit={onEdit}
             onMessage={onMessage}
+            onChat={onChat}
           />
         </div>
       </div>

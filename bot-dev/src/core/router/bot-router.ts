@@ -24,9 +24,15 @@ import { handleContactCallback } from "../../modules/access/contact/panel";
 import { handleReportCommand } from "../../modules/reports/history";
 import { splitInviteCode } from "../../modules/access/payload";
 import { handleSearch } from "../../modules/search/search.handler";
+import { recordIncomingMessage } from "../../modules/history/record";
 
 export async function botRouter(ctx: AppContext): Promise<void> {
   if (!ctx.user) return;
+
+  // Переписка: вхідне — у `bot_messages`. Саме тут, а не в `pre`: роутер
+  // виконується вже після блокувань і ліміту, тож у історію не потрапляє те,
+  // що бот відкинув.
+  await recordIncomingMessage(ctx);
 
   if (!hasAccess(ctx.user, ctx.env.ADMIN_TELEGRAM_ID)) {
     if (ctx.callbackQuery && (await handleContactCallback(ctx))) return;

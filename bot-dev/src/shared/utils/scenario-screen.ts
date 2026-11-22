@@ -15,6 +15,7 @@ import { editRichMessage, getChat, getMe, sendRichMessage, sendWidget } from "..
 import { applyPlatformUrl } from "./widget-html";
 import { buildUserEvent } from "../../modules/logging/builder";
 import { recordUserEvent } from "@wwwuabot/shared/database/user-events";
+import { recordOutgoingMessage } from "../../modules/history/record";
 import { log } from "./debug";
 
 /**
@@ -136,6 +137,7 @@ export async function deliverRichScreen(
 
   try {
     const sent = await sendRichMessage(ctx.env.BOT_TOKEN, chatId, html);
+    await recordOutgoingMessage(ctx, sent.message_id, "rich", html);
     log("SCENARIO", "rich sent", { message_id: sent.message_id });
     return { message_id: sent.message_id, widgetId: null };
   } catch (error: unknown) {

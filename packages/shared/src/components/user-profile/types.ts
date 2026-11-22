@@ -61,4 +61,6 @@ export interface UserProfileCardProps {
   error?: string | null;
   onEdit?: (userId: number) => void;
   onMessage?: (userId: number) => void;
+  /** Перехід у переписку людини з ботом — адмінський погляд на розмову. */
+  onChat?: (userId: number) => void;
 }

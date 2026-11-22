@@ -50,6 +50,7 @@ import {
   handleUserMessage,
 } from "./controllers/users.controller";
 import { matchMessagesRoute } from "./routes/messages";
+import { matchBotMessagesRoute } from "./routes/bot-messages";
 import { matchAccessRequestAdminRoute } from "./routes/access-requests";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
 import { matchDeskRoute } from "./routes/desk";
@@ -261,6 +262,9 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   if (pathname === "/api/admin/users/message" && request.method === "POST") {
     return handleUserMessage(request, env);
   }
+  // Переписка з ботом — частина картки користувача, тож і шлях під нею.
+  const botMessages = matchBotMessagesRoute(request, env, pathname);
+  if (botMessages) return botMessages;
 
   // ── Admin: Notes (нотатки про проєкт; власник — акаунт сесії) ───
   if (pathname === "/api/admin/notes") {
