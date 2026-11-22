@@ -41,6 +41,8 @@ export interface ShopCartModalProps {
   onSetQty: (productId: number, qty: number) => void;
   onRemove: (productId: number) => void;
   onCheckout: () => void;
+  /** Швидке замовлення всього кошика: без анкети, дані з Telegram. */
+  onQuickOrder?: () => void;
 }
 
 export function ShopCartModal({
@@ -51,6 +53,7 @@ export function ShopCartModal({
   onSetQty,
   onRemove,
   onCheckout,
+  onQuickOrder,
 }: ShopCartModalProps): ReactElement {
   const filled = cartProducts(lines, products);
   const total = cartTotal(lines, products);
@@ -132,6 +135,13 @@ export function ShopCartModal({
                 <Icon name="check" size={16} />
                 Оформити замовлення
               </button>
+
+              {onQuickOrder && (
+                <button type="button" className="wb-btn wb-btn-secondary" onClick={onQuickOrder}>
+                  <Icon name="sparkles" size={16} />
+                  Замовити відразу
+                </button>
+              )}
             </>
           )}
         </div>

@@ -7,6 +7,7 @@
  *   DELETE /api/user/shop/orders        — прибрати замовлення зі своєї черги
  *   GET    /api/user/shop/statuses      — статуси магазину (типові з його правками)
  *   POST   /api/public/shop/orders      — **замовити** у відкритому магазині за адресою
+ *   POST   /api/public/shop/orders/quick — замовити одним тапом, дані з Telegram
  *
  * **Зміна й статус — один шлях у двох адресах.** `POST /orders` несе все, що
  * продавець міняє (`docs/SHOPS.md` §6), а `/orders/status` лишається тим самим
@@ -38,6 +39,8 @@ import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
 import { resolveUserId } from "../shared/identity";
 import { ShopOrdersService } from "../services/shop/orders.service";
+import { QuickOrderService } from "../services/shop/quick-order.service";
+import { attachBuyerProfiles } from "../services/shop/buyer-profiles";
 
 /** Текст невдачі — без подробиць: у винятку бувають назви таблиць і значення. */
 const FAILURE = "Не вдалося виконати дію";
@@ -93,7 +96,7 @@ export async function handleUserShopOrders(request: Request, env: Env): Promise<
 
       const orders = await service.listOwn(shopId, identity.userId);
       if (orders === null) return json({ ok: false, error: "Not found" }, 404);
-      return json({ ok: true, orders });
+      return json({ ok: true, orders: await attachBuyerProfiles(env.DB, orders) });
     }
 
     if (request.method === "POST") {
@@ -109,7 +112,8 @@ export async function handleUserShopOrders(request: Request, env: Env): Promise<
       if (outcome.kind === "not_found") return json({ ok: false, error: "Not found" }, 404);
       if (outcome.kind === "rejected") return json({ ok: false, error: outcome.message }, 400);
 
-      return json({ ok: true, order: outcome.order });
+      const [order] = await attachBuyerProfiles(env.DB, [outcome.order]);
+      return json({ ok: true, order });
     }
 
     // Прибирання — теж номер у запиті, а не в шляху: це дія над записом, і
@@ -151,6 +155,34 @@ export async function handleUserShopStatuses(request: Request, env: Env): Promis
   } catch (e: unknown) {
     apiLog.error("Shop statuses error", e);
     return json({ ok: false, error: FAILURE }, 500);
+  }
+}
+
+/**
+ * `POST /api/public/shop/orders/quick` — швидке замовлення одним тапом.
+ *
+ * Тіло — лише позиції: контакт і фото покупця сервер бере з Telegram, тож
+ * анкети тут немає. Магазин, як і в звичайному замовленні, приходить адресою і
+ * перевіряється запитом до бази.
+ */
+export async function handlePublicShopQuickOrder(request: Request, env: Env): Promise<Response> {
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+
+  const slug = (new URL(request.url).searchParams.get("shop") ?? "").trim();
+  if (!slug) return json({ ok: false, error: "Missing shop" }, 400);
+
+  const parsed = await readBody(request, orderBody);
+  if (!parsed.ok) return parsed.response;
+
+  try {
+    const outcome = await new QuickOrderService(env).place(slug, identity.userId, parsed.body);
+    if (outcome.kind === "not_found") return json({ ok: false, error: "Not found" }, 404);
+    if (outcome.kind === "rejected") return json({ ok: false, error: outcome.message }, 400);
+    return json({ ok: true, order: outcome.order });
+  } catch (e: unknown) {
+    apiLog.error("Quick shop order error", e);
+    return json({ ok: false, error: "Не вдалося надіслати замовлення" }, 500);
   }
 }
 

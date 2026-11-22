@@ -124,12 +124,36 @@ export interface OrderItem {
   qty: number;
 }
 
+/**
+ * Покупець так, як його дав Telegram на момент замовлення.
+ *
+ * **Знімок, а не посилання:** ім'я, @нік і фото людина може змінити, а
+ * замовлення мусить лишитись таким, яким його прийняли. Фото тут — наша
+ * адреса в R2, а не тимчасове посилання Telegram (`docs/SHOPS.md` §8).
+ */
+export interface BuyerProfile {
+  name: string;
+  username: string;
+  language: string;
+  /** Адреса фото в нашому шлюзі; порожня — показуємо дефолтне. */
+  photo: string;
+  /** `true` — замовлення створене одним тапом, без анкети. */
+  quick: boolean;
+}
+
 /** Замовлення магазину разом із позиціями. */
 export interface ShopOrder {
   id: number;
   shopId: number;
   /** Telegram-id покупця: ідентичність із **підписаного** `initData`. */
   buyerId: number;
+  /**
+   * Дані покупця з Telegram на момент замовлення.
+   *
+   * `undefined` — рядок створено до появи знімка (або покупця немає в
+   * `users`): картка показує лише контакт, який заповнили руками.
+   */
+  buyerProfile?: BuyerProfile | null;
   /** Ключ статусу (`new`, `done`, …), а не підпис: підпис — слово магазину. */
   status: string;
   contact: OrderContact;

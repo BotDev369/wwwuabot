@@ -64,7 +64,7 @@ describe("контакт покупця", () => {
   });
 
   it("⛔ без обов'язкового поля замовлення не приймається", () => {
-    const contact = sanitizeOrderContact({ name: "Олена", phone: "" }, true);
+    const contact = sanitizeOrderContact({ name: "Олена", phone: "" }, true, true);
     expect(contact).toEqual({ ok: false, message: "«Телефон» — обов'язкове поле" });
   });
 

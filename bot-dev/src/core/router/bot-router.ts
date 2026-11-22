@@ -24,6 +24,7 @@ import { handleContactCallback } from "../../modules/access/contact/panel";
 import { handleReportCommand } from "../../modules/reports/history";
 import { splitInviteCode } from "../../modules/access/payload";
 import { handleSearch } from "../../modules/search/search.handler";
+import { handleStart } from "../../modules/start/start.handler";
 import { recordIncomingMessage } from "../../modules/history/record";
 
 export async function botRouter(ctx: AppContext): Promise<void> {
@@ -64,6 +65,10 @@ export async function botRouter(ctx: AppContext): Promise<void> {
       await deleteIncomingMessage(ctx);
       return;
     }
+
+    // Голий `/start` — вітання rich-екраном. Діплінк іде далі: там конкретна
+    // сторінка або контакт, а не стартовий екран.
+    if (!payload.trim() && (await handleStart(ctx))) return;
 
     const { inviteCode, pagePayload } = splitInviteCode(payload.trim());
     if (inviteCode) {

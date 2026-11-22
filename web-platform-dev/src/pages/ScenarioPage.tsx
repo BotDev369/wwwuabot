@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import type { PageConfig, BlockContext, UserProfile } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { HOME_SLUG } from "@wwwuabot/shared/content";
@@ -22,6 +22,7 @@ import { apiFetchRaw } from "@/shared/api/client";
 import { useShopCatalog } from "@/pages/shop/useShopCatalog";
 import { ShopStore } from "@/pages/shop/store/ShopStore";
 import { ShopOwnerPanel } from "@/pages/shop/ShopOwnerPanel";
+import { PRODUCT_SEGMENT } from "@/pages/shop/shop-view";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { ResearchArticleFrame } from "@/pages/research/ResearchArticleFrame";
@@ -92,6 +93,7 @@ export function ScenarioPage() {
   // `*`-сплэт дає всю адресу; порожній шлях — головна.
   const { ["*"]: splat } = useParams<{ "*": string }>();
   const scenarioSlug = splat ?? HOME_SLUG;
+  const location = useLocation();
 
   const [pageConfig, setPageConfig] = useState<PageConfig | null>(null);
   // Номер рядка `scenarios` — саме число, бо по ньому йде лайк (`favorites`).
@@ -196,6 +198,17 @@ export function ScenarioPage() {
 
   const isShop = status !== "fallback" && templateKey === "shop";
 
+  // Хвіст адреси товару (`/<магазин>/p/<товар>`) і намір із запиту
+  // (`?add=1`, `?order=1`) — це **вхід**, а не стан: кнопки з бота ведуть саме
+  // сюди, і без цього вони відкидали покупця на початок вітрини.
+  const routeSegments = (splat ?? "").split("/").filter(Boolean);
+  const pageSegments = pageSlug.split("/").filter(Boolean);
+  const routeTail = routeSegments.slice(pageSegments.length);
+  const routeProductSlug = routeTail[0] === PRODUCT_SEGMENT && routeTail[1] ? routeTail[1] : null;
+  const query = new URLSearchParams(location.search);
+  const storeIntent =
+    query.get("order") === "1" ? "order" : query.get("add") === "1" ? "add" : null;
+
   // Хедер знає про сторінку те, що знає вона: як її звати, що можна
   // скопіювати й на що поставити серце. Фолбек — це не сторінка, тож дій у
   // ньому немає.
@@ -254,6 +267,8 @@ export function ScenarioPage() {
           products={catalog.products}
           media={catalog.media}
           loading={catalog.loading}
+          routeProductSlug={routeProductSlug}
+          intent={storeIntent}
         />
       </>
     );

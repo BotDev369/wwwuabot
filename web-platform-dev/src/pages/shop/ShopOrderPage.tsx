@@ -170,6 +170,8 @@ export function ShopOrderPage(): ReactElement {
 
     // Перевіряємо тими самими правилами, що й сервер: коментар і контакт не
     // мають доїжджати до нього, щоб дізнатись про пропущене поле.
+    // Поля не обов'язкові: швидке замовлення приходить без анкети, і продавець
+    // заповнює телефон та адресу в міру домовленості.
     const contact = sanitizeOrderContact(
       form.contact,
       orderNeedsShipping(form.items.map((item) => item.kind)),
@@ -272,6 +274,7 @@ export function ShopOrderPage(): ReactElement {
       <ShopOrderBuyerCard
         fields={fields}
         contact={form.contact}
+        buyerProfile={order.buyerProfile ?? null}
         note={order.note}
         sellerNote={form.sellerNote}
         onContact={(key, value) =>

@@ -605,18 +605,23 @@ export const TABLES = {
    * товару (фізичному потрібна адреса, цифровому — канал), тож колонки під
    * кожне поле змусили б `ALTER TABLE` на кожен новий вид. Пише його сервер і
    * лише за переліком `orderContactFields` — зайвих ключів у JSON не буває.
+   *
+   * **`buyer_profile` — знімок Telegram-профілю**, а не посилання: швидке
+   * замовлення не питає нічого, тож ім'я, @нік, мова й фото покупця мусять
+   * лишитись такими, якими були на момент замовлення.
    */
   shop_orders: {
     name: "shop_orders",
     owner: "api-dev",
     purpose:
-      "Замовлення магазину: покупець, ключ статусу, контакт покупця JSON-ом, нотатка покупця й окремо коментар продавця. Позиції — знімком у `shop_order_items`.",
+      "Замовлення магазину: покупець, ключ статусу, контакт покупця JSON-ом, знімок Telegram-профілю, нотатка покупця й окремо коментар продавця. Позиції — знімком у `shop_order_items`.",
     create: `CREATE TABLE IF NOT EXISTS shop_orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         shop_id INTEGER NOT NULL,
         buyer_id INTEGER NOT NULL,
         status TEXT NOT NULL DEFAULT 'new',
         contact TEXT NOT NULL DEFAULT '{}',
+        buyer_profile TEXT,
         note TEXT NOT NULL DEFAULT '',
         seller_note TEXT NOT NULL DEFAULT '',
         created_at TEXT NOT NULL DEFAULT (datetime('now')),

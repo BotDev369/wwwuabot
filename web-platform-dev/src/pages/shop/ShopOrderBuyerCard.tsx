@@ -20,6 +20,8 @@ import type { ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import {
   ORDER_SELLER_NOTE_MAX,
+  mediaUrl,
+  type BuyerProfile,
   type OrderContact,
   type OrderContactField,
 } from "@wwwuabot/shared/shop";
@@ -28,6 +30,8 @@ export interface ShopOrderBuyerCardProps {
   /** Поля контакту для **цього** складу замовлення (`orderContactFields`). */
   fields: readonly OrderContactField[];
   contact: OrderContact;
+  /** Знімок Telegram-профілю покупця; `null` — замовлення без нього. */
+  buyerProfile?: BuyerProfile | null;
   /** Примітка покупця: показується, а не правиться. */
   note: string;
   sellerNote: string;
@@ -38,6 +42,7 @@ export interface ShopOrderBuyerCardProps {
 export function ShopOrderBuyerCard({
   fields,
   contact,
+  buyerProfile,
   note,
   sellerNote,
   onContact,
@@ -53,6 +58,25 @@ export function ShopOrderBuyerCard({
           </span>
         </div>
         <div className="wb-card-body">
+          {buyerProfile && (
+            <div className="shop-buyer">
+              <img
+                className="shop-buyer-avatar"
+                src={buyerProfile.photo || mediaUrl("shop/defaults/buyer.jpg")}
+                alt=""
+              />
+              <div className="shop-buyer-info">
+                <span className="shop-buyer-name">{buyerProfile.name}</span>
+                {buyerProfile.username && (
+                  <span className="wb-text-muted">@{buyerProfile.username}</span>
+                )}
+                {buyerProfile.language && (
+                  <span className="wb-text-muted">Мова: {buyerProfile.language}</span>
+                )}
+              </div>
+            </div>
+          )}
+
           {fields.map((field) => (
             <div className="wb-field" key={field.key}>
               <label className="wb-label" htmlFor={`shop-order-${field.key}`}>

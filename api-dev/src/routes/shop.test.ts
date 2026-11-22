@@ -20,6 +20,7 @@ const handlers = {
   handleUserShopOrders: vi.fn(),
   handleUserShopStatuses: vi.fn(),
   handlePublicShopOrders: vi.fn(),
+  handlePublicShopQuickOrder: vi.fn(),
 };
 
 vi.mock("../controllers/shop.controller", () => ({
@@ -34,6 +35,7 @@ vi.mock("../controllers/shop-orders.controller", () => ({
   handleUserShopOrders: handlers.handleUserShopOrders,
   handleUserShopStatuses: handlers.handleUserShopStatuses,
   handlePublicShopOrders: handlers.handlePublicShopOrders,
+  handlePublicShopQuickOrder: handlers.handlePublicShopQuickOrder,
 }));
 
 const { matchShopRoute } = await import("./shop");
@@ -138,6 +140,15 @@ describe("публічні шляхи", () => {
     expect(
       matchShopRoute(request("GET", "/api/public/shop/orders"), ENV, "/api/public/shop/orders"),
     ).toBeNull();
+  });
+
+  it("швидке замовлення — окремий шлях, а не той самий з іншим тілом", async () => {
+    answersWithMarker("quick");
+    const req = request("POST", "/api/public/shop/orders/quick");
+
+    await matchShopRoute(req, ENV, "/api/public/shop/orders/quick");
+    expect(handlers.handlePublicShopQuickOrder).toHaveBeenCalledWith(req, ENV);
+    expect(handlers.handlePublicShopOrders).not.toHaveBeenCalled();
   });
 });
 

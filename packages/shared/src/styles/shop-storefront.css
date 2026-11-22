@@ -1368,3 +1368,46 @@
 .shop-cart-line-price {
   font-size: var(--text-sm);
 }
+
+/* Покупець у картці замовлення: фото з Telegram і підпис — одним рядком.
+   Це той самий покупець, що й контакт нижче, але контакт правиться, а
+   профіль — знімок, тому вони й стоять окремо. */
+.shop-buyer {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+  padding-bottom: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.shop-buyer-avatar {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  background: var(--field-bg);
+  border-radius: var(--radius-full);
+  flex: none;
+}
+
+.shop-buyer-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: var(--sp-1);
+}
+
+.shop-buyer-name {
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+/* Рядок швидкого замовлення: назва й сума позиції — без фото й кроків,
+   бо підтвердження показує вже вибране, а не пропонує вибирати. */
+.shop-quick-line {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+}

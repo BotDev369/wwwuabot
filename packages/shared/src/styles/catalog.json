@@ -1,5 +1,5 @@
 {
-  "version": "a40dcf8",
+  "version": "cfc8abb",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -194,7 +194,7 @@
     {
       "file": "shop-storefront.css",
       "tokens": 0,
-      "classes": 94
+      "classes": 99
     },
     {
       "file": "shop.css",
@@ -6341,6 +6341,10 @@
       {
         "section": "Товар поверхнею: галерея, опис і кількість",
         "names": [
+          "shop-buyer",
+          "shop-buyer-avatar",
+          "shop-buyer-info",
+          "shop-buyer-name",
           "shop-cart-line-body",
           "shop-cart-line-price",
           "shop-cart-line-title",
@@ -6352,7 +6356,8 @@
           "shop-modal-desc",
           "shop-qty",
           "shop-qty-btn",
-          "shop-qty-value"
+          "shop-qty-value",
+          "shop-quick-line"
         ]
       }
     ],

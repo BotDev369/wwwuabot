@@ -113,7 +113,15 @@ export function orderNeedsShipping(kinds: readonly unknown[]): boolean {
  * полями перетворила б контакт на друге сховище, яке читають «як домовились»
  * — тобто ніяк.
  */
-export function sanitizeOrderContact(raw: unknown, needsShipping: boolean): OrderContactResult {
+export function sanitizeOrderContact(
+  raw: unknown,
+  needsShipping: boolean,
+  /**
+   * `false` — правка продавця й швидке замовлення: порожнє поле означає «ще
+   * не домовились». Прийом замовлення передає `true` явно.
+   */
+  requireFields = false,
+): OrderContactResult {
   const source = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>;
   const contact: Record<string, string> = {};
 
@@ -122,7 +130,9 @@ export function sanitizeOrderContact(raw: unknown, needsShipping: boolean): Orde
     const text =
       typeof value === "string" ? value.replace(/\s+/gu, " ").trim().slice(0, field.max) : "";
     if (!text) {
-      if (field.required) return { ok: false, message: `«${field.label}» — обов'язкове поле` };
+      if (field.required && requireFields) {
+        return { ok: false, message: `«${field.label}» — обов'язкове поле` };
+      }
       continue;
     }
     contact[field.key] = text;
@@ -247,7 +257,7 @@ export function validateOrderDraft(raw: unknown, needsShipping: boolean): OrderV
   const items = cleanOrderItems(source.items);
   if (items.length === 0) return { ok: false, message: EMPTY_ORDER_CART };
 
-  const contact = sanitizeOrderContact(source.contact, needsShipping);
+  const contact = sanitizeOrderContact(source.contact, needsShipping, true);
   if (!contact.ok) return contact;
 
   const note = typeof source.note === "string" ? source.note.trim().slice(0, ORDER_NOTE_MAX) : "";
@@ -264,11 +274,16 @@ export function validateOrderDraft(raw: unknown, needsShipping: boolean): OrderV
 export function orderNoticeText(order: ShopOrder, shopTitle: string): string {
   const items = orderItemsLabel(order.items);
   const contact = Object.values(order.contact).filter(Boolean).join(" · ");
+  const buyer = order.buyerProfile;
+  const fromTelegram = buyer
+    ? [buyer.name, buyer.username ? `@${buyer.username}` : ""].filter(Boolean).join(" · ")
+    : "";
 
   const lines = [
     `Нове замовлення №${order.id} — ${shopTitle.trim() || "магазин"}`,
     items,
     contact,
+    fromTelegram ? `Покупець: ${fromTelegram}` : "",
     order.note ? `Примітка: ${order.note}` : "",
   ].filter(Boolean);
 

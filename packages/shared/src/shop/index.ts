@@ -130,6 +130,7 @@ export type {
 } from "./orders";
 
 export type {
+  BuyerProfile,
   CatalogResponse,
   MediaDeleteResponse,
   MediaListResponse,

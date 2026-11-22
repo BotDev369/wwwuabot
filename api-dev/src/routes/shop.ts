@@ -29,6 +29,7 @@ import {
   handleUserShopOrders,
   handleUserShopStatuses,
   handlePublicShopOrders,
+  handlePublicShopQuickOrder,
 } from "../controllers/shop-orders.controller";
 
 /**
@@ -91,6 +92,12 @@ export function matchShopRoute(
   // Покупець при цьому обов'язковий: замовлення мусить бути кому відповісти.
   if (pathname === "/api/public/shop/orders" && request.method === "POST") {
     return handlePublicShopOrders(request, env);
+  }
+
+  // Швидке замовлення — той самий покупець і та сама адреса магазину, але без
+  // анкети: контакт і фото бере сервер із Telegram (docs/SHOPS.md §8).
+  if (pathname === "/api/public/shop/orders/quick" && request.method === "POST") {
+    return handlePublicShopQuickOrder(request, env);
   }
 
   return null;

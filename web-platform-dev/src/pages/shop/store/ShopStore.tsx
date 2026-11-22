@@ -33,7 +33,6 @@ import {
 } from "@wwwuabot/shared/shop";
 import { ShopCardTile } from "@wwwuabot/ui/blocks/ShopCardTile";
 import { MenuModal, type MenuItem } from "@wwwuabot/ui/menu";
-import { ZoneRenderer } from "@wwwuabot/ui/ZoneRenderer";
 import type { BlockContext, PageConfig } from "@wwwuabot/shared/types/page-config";
 import {
   ALL_CATALOG_LABEL,
@@ -42,7 +41,6 @@ import {
   cartCountLabel,
   cartTotalLabel,
   filterCards,
-  storeSections,
   storeStatsLabel,
   storeTagline,
 } from "./store-view";
@@ -51,9 +49,9 @@ import { ShopProductModal } from "./ShopProductModal";
 import { ShopCartModal } from "./ShopCartModal";
 import { ShopCheckoutModal } from "./ShopCheckoutModal";
 import { ShopHero } from "./ShopHero";
-
-/** Тип блока, який малює каталог: решта блоків — текст про магазин. */
-const GRID_BLOCK = "shop-grid";
+import { ShopQuickOrderModal } from "./ShopQuickOrderModal";
+import { ShopAbout } from "./ShopAbout";
+import { useStoreEntry } from "./useStoreEntry";
 
 export interface ShopStoreProps {
   /** Адреса магазину — нею ж замовляють (`placeOrder`). */
@@ -65,6 +63,10 @@ export interface ShopStoreProps {
   products: ShopProduct[];
   media: ShopMedia[];
   loading: boolean;
+  /** Товар із хвоста адреси (`/<магазин>/p/<товар>`); `null` — вітрина. */
+  routeProductSlug?: string | null;
+  /** Намір із запиту: `?add=1` — у кошик, `?order=1` — швидке замовлення. */
+  intent?: "add" | "order" | null;
 }
 
 export function ShopStore({
@@ -76,6 +78,8 @@ export function ShopStore({
   products,
   media,
   loading,
+  routeProductSlug = null,
+  intent = null,
 }: ShopStoreProps): ReactElement {
   const cards = useMemo(() => productCards(products, media), [products, media]);
   const catalogs = useMemo(() => shopCatalogs(products), [products]);
@@ -89,6 +93,15 @@ export function ShopStore({
   const [cartOpen, setCartOpen] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
 
+  const entry = useStoreEntry({
+    products,
+    routeProductSlug,
+    intent,
+    cart,
+    onOpenProduct: setOpenedProduct,
+    onOpenCart: () => setCartOpen(true),
+  });
+
   const shown = useMemo(() => filterCards(cards, catalog, query), [cards, catalog, query]);
 
   // Кількість по товару — з кошика, і **одним переглядом**: крок стоїть у
@@ -98,23 +111,6 @@ export function ShopStore({
     () => new Map(cart.lines.map((line) => [line.productId, line.qty])),
     [cart.lines],
   );
-
-  // Текст про магазин — усе, що продавець написав на сторінці **крім** сітки
-  // та блоку заголовка магазину (id: "head" чи "-head"):
-  // назва та опис уже в шапці вітрини, а каталог читає живі товари.
-  const info = useMemo(
-    () =>
-      (config.zones?.main ?? []).filter((block) => {
-        if (block.type === GRID_BLOCK) return false;
-        if (block.id === "head" || block.id?.endsWith("-head")) return false;
-        return true;
-      }),
-    [config],
-  );
-  // Кожен текст продавця — **окремий розділ зі своєю шапкою**: три абзаци в
-  // спільній панелі читались як один текст без меж, і покупець не бачив, де
-  // кінчається «Про магазин» і починається «Доставка».
-  const sections = useMemo(() => storeSections(info), [info]);
 
   const product = products.find((item) => item.id === openedProduct) ?? null;
   const total = cartTotal(cart.lines, products);
@@ -276,32 +272,7 @@ export function ShopStore({
         </p>
       </section>
 
-      {sections.length > 0 && (
-        <section className="shop-store-info" id="shop-store-about">
-          {sections.map((item) => (
-            <article className="shop-section" key={item.id}>
-              {item.title && (
-                <header className="shop-section-head">
-                  {/* Знак у шапці — не прикраса: це єдине, чим розділ
-                      відрізняється від сусіднього, ще до читання назви. */}
-                  <span className="shop-section-icon" aria-hidden="true">
-                    <Icon name={item.icon} size={16} />
-                  </span>
-                  <h3 className="shop-section-title">{item.title}</h3>
-                </header>
-              )}
-              {item.blocks.length > 0 && (
-                <ZoneRenderer
-                  blocks={item.blocks}
-                  zone="main"
-                  context={context}
-                  className="shop-section-body"
-                />
-              )}
-            </article>
-          ))}
-        </section>
-      )}
+      <ShopAbout config={config} context={context} />
 
       {/* Вибір розділу — та сама поверхня, що й решта виборів у продукті:
           повноекранний список із галочкою на вибраному (правило 4). Довідка
@@ -327,6 +298,10 @@ export function ShopStore({
           inCart={inCart.get(product.id) ?? 0}
           onClose={() => setOpenedProduct(null)}
           onAdd={addToCart}
+          onQuickOrder={(qty) => {
+            setOpenedProduct(null);
+            entry.openQuick([{ productId: product.id, qty }]);
+          }}
           onSetQty={(qty) => cart.setQty(product.id, qty)}
           onOpenCart={() => {
             setOpenedProduct(null);
@@ -344,6 +319,24 @@ export function ShopStore({
           onSetQty={cart.setQty}
           onRemove={cart.remove}
           onCheckout={() => setCheckingOut(true)}
+          onQuickOrder={() => {
+            setCartOpen(false);
+            entry.openQuick(cart.lines);
+          }}
+        />
+      )}
+
+      {entry.quickLines && (
+        <ShopQuickOrderModal
+          shopSlug={slug}
+          lines={entry.quickLines}
+          products={products}
+          onClose={entry.closeQuick}
+          onPlaced={() => {
+            cart.clear();
+            entry.closeQuick();
+            setCartOpen(false);
+          }}
         />
       )}
 

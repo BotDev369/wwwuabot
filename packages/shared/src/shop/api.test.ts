@@ -21,6 +21,7 @@ const PATHS: ShopApiPaths = {
   orders: "/api/user/shop/orders",
   orderStatus: "/api/user/shop/orders/status",
   placeOrder: "/api/public/shop/orders",
+  quickOrder: "/api/public/shop/orders/quick",
   statuses: "/api/user/shop/statuses",
 };
 
@@ -133,6 +134,15 @@ describe("номер магазину — завжди в адресі", () => {
       contact: { name: "Ім'я", phone: "+380" },
       note: "",
     });
+  });
+
+  it("швидке замовлення несе лише позиції: контакт бере сервер", async () => {
+    const { client, calls } = api({ ok: true, order: { id: 4 } });
+
+    await client.quickOrder("kava", [{ productId: 2, qty: 1 }]);
+
+    expect(calls[0].path).toBe("/api/public/shop/orders/quick?shop=kava");
+    expect(bodyOf(calls[0])).toEqual({ items: [{ productId: 2, qty: 1 }] });
   });
 
   it("файл їде формою, і номер магазину в ній — не в адресі", async () => {

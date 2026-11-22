@@ -24,6 +24,7 @@
 | `GET` | `/api/public/redirect` | `handlePublicRedirect` |
 | `GET` | `/api/public/research` | `handlePublicResearch` |
 | `POST` | `/api/public/shop/orders` | `handlePublicShopOrders` |
+| `POST` | `/api/public/shop/orders/quick` | `handlePublicShopQuickOrder` |
 | `GET` | `/api/public/shop/products` | `handlePublicShopProducts` |
 | `GET` | `/api/public/shops` | `handlePublicShops` |
 | `GET` | `/api/public/users` | `handlePublicUsers` |
@@ -136,4 +137,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **107**.
+Усього шляхів: **108**.

@@ -26,5 +26,6 @@ export const shopApi = createShopApi(apiFetch, apiUpload, {
   orderStatus: "/api/user/shop/orders/status",
   // Замовляють **за адресою** магазину: номера покупцеві ніхто не казав.
   placeOrder: "/api/public/shop/orders",
+  quickOrder: "/api/public/shop/orders/quick",
   statuses: "/api/user/shop/statuses",
 });

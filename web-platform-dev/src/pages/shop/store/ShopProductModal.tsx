@@ -57,6 +57,8 @@ export interface ShopProductModalProps {
   onClose: () => void;
   /** Додати в кошик; кількість уже вибрана тут. */
   onAdd: (qty: number) => void;
+  /** Швидке замовлення: один тап без анкети, дані покупця з Telegram. */
+  onQuickOrder?: (qty: number) => void;
   /** Поставити кількість у кошику; `0` прибирає позицію. */
   onSetQty?: (qty: number) => void;
   /** Показати кошик — наступний крок, коли товар уже в ньому. */
@@ -69,6 +71,7 @@ export function ShopProductModal({
   inCart = 0,
   onClose,
   onAdd,
+  onQuickOrder,
   onSetQty,
   onOpenCart,
 }: ShopProductModalProps): ReactElement {
@@ -260,6 +263,17 @@ export function ShopProductModal({
               <button type="button" className="wb-btn wb-btn-primary" onClick={() => onAdd(qty)}>
                 <Icon name="cart" size={16} />
                 Додати в кошик
+              </button>
+            )}
+
+            {onQuickOrder && (
+              <button
+                type="button"
+                className="wb-btn wb-btn-secondary"
+                onClick={() => onQuickOrder(units)}
+              >
+                <Icon name="sparkles" size={16} />
+                Замовити відразу
               </button>
             )}
           </div>

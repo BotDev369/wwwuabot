@@ -25,7 +25,7 @@
  * @module @wwwuabot/shared/shop
  */
 
-import type { OrderDraftInput } from "./orders";
+import type { OrderDraftInput, OrderItemInput } from "./orders";
 import type { OrderStatus } from "./statuses";
 import type {
   CatalogResponse,
@@ -85,6 +85,13 @@ export interface ShopApi {
   orders: (shopId: number) => Promise<ShopOrder[]>;
   /** Замовити у **відкритому** магазині за його адресою. */
   placeOrder: (shopSlug: string, draft: OrderDraftInput) => Promise<ShopOrder>;
+  /**
+   * Замовити одним тапом: дані покупця бере сервер із Telegram.
+   *
+   * Контакт і примітка не питаються зовсім — телефон та адресу сторони
+   * узгоджують у розмові, яку відкриває саме замовлення.
+   */
+  quickOrder: (shopSlug: string, items: readonly OrderItemInput[]) => Promise<ShopOrder>;
   /** Поставити статус замовленню свого магазину. */
   setOrderStatus: (shopId: number, orderId: number, status: string) => Promise<void>;
   /** Змінити замовлення свого магазину: позиції, контакт, коментар (і статус теж). */
@@ -106,6 +113,8 @@ export interface ShopApiPaths {
   /** Зміна статусу — окремий шлях: список і дія не плутаються навіть адресою. */
   orderStatus: string;
   placeOrder: string;
+  /** Швидке замовлення — окремий шлях: без анкети й з іншими перевірками. */
+  quickOrder: string;
   statuses: string;
 }
 
@@ -183,6 +192,17 @@ export function createShopApi(
       const response = await fetchJson<OrderSaveResponse>(
         withQuery(paths.placeOrder, { shop: shopSlug }),
         { method: "POST", body: JSON.stringify(draft) },
+      );
+      if (!response.ok || !response.order) {
+        throw new Error(response.error ?? "Не вдалося надіслати замовлення");
+      }
+      return response.order;
+    },
+
+    quickOrder: async (shopSlug, items) => {
+      const response = await fetchJson<OrderSaveResponse>(
+        withQuery(paths.quickOrder, { shop: shopSlug }),
+        { method: "POST", body: JSON.stringify({ items }) },
       );
       if (!response.ok || !response.order) {
         throw new Error(response.error ?? "Не вдалося надіслати замовлення");
