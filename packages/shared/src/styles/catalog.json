@@ -1,5 +1,5 @@
 {
-  "version": "77282f7",
+  "version": "7494b4f",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -203,8 +203,8 @@
     },
     {
       "file": "showcase.css",
-      "tokens": 0,
-      "classes": 15
+      "tokens": 6,
+      "classes": 14
     },
     {
       "file": "subbar.css",
@@ -2870,6 +2870,48 @@
       "selector": ".wb-tracker-form .wb-tabs",
       "value": "44px",
       "section": "Новий трекер"
+    },
+    {
+      "name": "--tile-tone",
+      "file": "showcase.css",
+      "selector": ".wb-showcase-row-icon[data-tone=\"1\"]",
+      "value": "var(--data-1)",
+      "section": ""
+    },
+    {
+      "name": "--tile-tone",
+      "file": "showcase.css",
+      "selector": ".wb-showcase-row-icon[data-tone=\"2\"]",
+      "value": "var(--data-2)",
+      "section": ""
+    },
+    {
+      "name": "--tile-tone",
+      "file": "showcase.css",
+      "selector": ".wb-showcase-row-icon[data-tone=\"3\"]",
+      "value": "var(--data-3)",
+      "section": ""
+    },
+    {
+      "name": "--tile-tone",
+      "file": "showcase.css",
+      "selector": ".wb-showcase-row-icon[data-tone=\"4\"]",
+      "value": "var(--data-4)",
+      "section": ""
+    },
+    {
+      "name": "--tile-tone",
+      "file": "showcase.css",
+      "selector": ".wb-showcase-row-icon[data-tone=\"5\"]",
+      "value": "var(--data-5)",
+      "section": ""
+    },
+    {
+      "name": "--tile-tone",
+      "file": "showcase.css",
+      "selector": ".wb-showcase-row-icon[data-tone=\"6\"]",
+      "value": "var(--data-6)",
+      "section": ""
     },
     {
       "name": "--tools-cell",
@@ -6475,7 +6517,6 @@
           "wb-showcase",
           "wb-showcase-brand",
           "wb-showcase-group",
-          "wb-showcase-group-title",
           "wb-showcase-groups",
           "wb-showcase-hero",
           "wb-showcase-list",

@@ -39,24 +39,41 @@ describe("головна", () => {
     expect(screen.getByText("платформа для своїх")).toBeTruthy();
   });
 
-  it("дублює меню групами в порядку реєстру", () => {
+  it("дублює меню картками без підписів, у порядку груп", () => {
     render(<EntryPage />);
 
-    expect(labels(".wb-showcase-group-title")).toEqual(["Щоденне", "Покупки", "Робота", "Зв'язок"]);
+    // Підписів груп на головній немає: групу читає сама картка, як у Tribute.
+    expect(document.querySelectorAll(".wb-showcase-group-title")).toHaveLength(0);
+    expect(document.querySelectorAll(".wb-showcase-list")).toHaveLength(5);
     expect(labels(".wb-showcase-row-label")).toEqual([
       "Мій день",
       "Аналіз людей і подій",
-      "Гурт",
-      "Акаунт",
+      "Трекери",
+      "Нотатки",
       "Крамниці",
       "Замовлення",
       "Обране",
-      "Сервіси",
-      "Трекери",
-      "Нотатки",
+      "Гурт",
       "Повідомлення",
       "Контакти",
+      "Оголошення",
+      "Ігри",
+      "Дослідження",
+      "Сервіси",
+      "Акаунт",
     ]);
+  });
+
+  it("кожна плитка залита своїм тоном палітри", () => {
+    render(<EntryPage />);
+
+    const tones = [...document.querySelectorAll(".wb-showcase-row-icon")].map((node) =>
+      node.getAttribute("data-tone"),
+    );
+
+    expect(tones).toHaveLength(15);
+    expect(new Set(tones).size).toBeGreaterThan(3);
+    for (const tone of tones) expect(Number(tone)).toBeGreaterThanOrEqual(1);
   });
 
   it("кожен рядок веде на свій екран", async () => {

@@ -14,7 +14,7 @@
     "path": "/day",
     "parent": null,
     "title": "Мій день",
-    "icon": "home",
+    "icon": "sun",
     "sort": 10,
     "inMenu": true
   },
@@ -23,7 +23,7 @@
     "path": "/analysis",
     "parent": null,
     "title": "Аналіз людей і подій",
-    "icon": "my-dates",
+    "icon": "flask",
     "sort": 20,
     "inMenu": true
   },
@@ -50,7 +50,7 @@
     "path": "/shops",
     "parent": null,
     "title": "Крамниці",
-    "icon": "cart",
+    "icon": "shop",
     "sort": 50,
     "inMenu": true
   },
@@ -59,7 +59,7 @@
     "path": "/favorites",
     "parent": null,
     "title": "Обране",
-    "icon": "thumbs-up",
+    "icon": "heart",
     "sort": 60,
     "inMenu": true
   },
@@ -77,7 +77,7 @@
     "path": "/notes",
     "parent": null,
     "title": "Нотатки",
-    "icon": "list",
+    "icon": "text",
     "sort": 80,
     "inMenu": true
   },
@@ -122,18 +122,18 @@
     "path": "/ads",
     "parent": null,
     "title": "Оголошення",
-    "icon": null,
+    "icon": "announce",
     "sort": 130,
-    "inMenu": false
+    "inMenu": true
   },
   {
     "key": "games",
     "path": "/games",
     "parent": null,
     "title": "Ігри",
-    "icon": null,
+    "icon": "game",
     "sort": 140,
-    "inMenu": false
+    "inMenu": true
   },
   {
     "key": "games.play",
@@ -149,9 +149,9 @@
     "path": "/research",
     "parent": null,
     "title": "Дослідження",
-    "icon": null,
+    "icon": "book",
     "sort": 150,
-    "inMenu": false
+    "inMenu": true
   },
   {
     "key": "analysis.variants",

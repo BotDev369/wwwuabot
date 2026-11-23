@@ -1,8 +1,7 @@
 /**
- * Головна — обкладинка й меню в одному екрані.
- *
- * На фото — `ПАЛЯНИЦЯ` і «платформа для своїх», під ним те саме меню, що в
- * сайдбарі, але групами; поки `/api/screens` не відповів, групи йдуть з реєстру.
+ * Головна — обкладинка й меню: на обкладинці назва, нижче самі пункти картками
+ * без підписів груп (як у Tribute). Поки `/api/screens` не відповів, меню йде
+ * з реєстру. Розкладка — `docs/DESIGN_AGREED.md`, розділ 4а.
  *
  * @module web-platform-dev/src/pages/entry/EntryPage
  */
@@ -25,6 +24,25 @@ const REGISTRY_ROWS: readonly ScreenRow[] = SCREENS.map((screen) => ({
   texts: {},
 }));
 
+/** Тон плитки рядка: голос із палітри даних, а не колір у коді. */
+const TONES: Record<string, number> = {
+  day: 3,
+  analysis: 4,
+  trackers: 2,
+  notes: 6,
+  shops: 1,
+  orders: 5,
+  favorites: 5,
+  users: 2,
+  messages: 4,
+  contacts: 6,
+  ads: 3,
+  games: 5,
+  research: 4,
+  services: 6,
+  account: 3,
+};
+
 export function EntryPage(): ReactElement {
   const navigate = useNavigate();
   const { rows } = useScreens();
@@ -44,9 +62,6 @@ export function EntryPage(): ReactElement {
       <div className="wb-showcase-groups">
         {groups.map((group) => (
           <section className="wb-showcase-group" key={group.key}>
-            {group.title === null ? null : (
-              <h2 className="wb-showcase-group-title">{group.title}</h2>
-            )}
             <ul className="wb-showcase-list">
               {group.items.map((item) => (
                 <li key={item.key}>
@@ -55,7 +70,11 @@ export function EntryPage(): ReactElement {
                     className="wb-showcase-row"
                     onClick={() => void navigate(item.href)}
                   >
-                    <span className="wb-showcase-row-icon" aria-hidden="true">
+                    <span
+                      className="wb-showcase-row-icon"
+                      data-tone={TONES[item.key] ?? 1}
+                      aria-hidden="true"
+                    >
                       <Icon name={item.icon} size={20} />
                     </span>
                     <span className="wb-showcase-row-label">{item.label}</span>

@@ -16,7 +16,7 @@ ON CONFLICT(key) DO UPDATE SET
 INSERT INTO platform_screens
   (key, parent_key, title, icon, sort_order, in_menu, is_active, updated_at)
 VALUES ('day', NULL, 'Мій день',
-        'home', 10, 1, 1, datetime('now'))
+        'sun', 10, 1, 1, datetime('now'))
 ON CONFLICT(key) DO UPDATE SET
   parent_key = excluded.parent_key,
   title = excluded.title,
@@ -27,7 +27,7 @@ ON CONFLICT(key) DO UPDATE SET
 INSERT INTO platform_screens
   (key, parent_key, title, icon, sort_order, in_menu, is_active, updated_at)
 VALUES ('analysis', NULL, 'Аналіз людей і подій',
-        'my-dates', 20, 1, 1, datetime('now'))
+        'flask', 20, 1, 1, datetime('now'))
 ON CONFLICT(key) DO UPDATE SET
   parent_key = excluded.parent_key,
   title = excluded.title,
@@ -60,7 +60,7 @@ ON CONFLICT(key) DO UPDATE SET
 INSERT INTO platform_screens
   (key, parent_key, title, icon, sort_order, in_menu, is_active, updated_at)
 VALUES ('shops', NULL, 'Крамниці',
-        'cart', 50, 1, 1, datetime('now'))
+        'shop', 50, 1, 1, datetime('now'))
 ON CONFLICT(key) DO UPDATE SET
   parent_key = excluded.parent_key,
   title = excluded.title,
@@ -71,7 +71,7 @@ ON CONFLICT(key) DO UPDATE SET
 INSERT INTO platform_screens
   (key, parent_key, title, icon, sort_order, in_menu, is_active, updated_at)
 VALUES ('favorites', NULL, 'Обране',
-        'thumbs-up', 60, 1, 1, datetime('now'))
+        'heart', 60, 1, 1, datetime('now'))
 ON CONFLICT(key) DO UPDATE SET
   parent_key = excluded.parent_key,
   title = excluded.title,
@@ -93,7 +93,7 @@ ON CONFLICT(key) DO UPDATE SET
 INSERT INTO platform_screens
   (key, parent_key, title, icon, sort_order, in_menu, is_active, updated_at)
 VALUES ('notes', NULL, 'Нотатки',
-        'list', 80, 1, 1, datetime('now'))
+        'text', 80, 1, 1, datetime('now'))
 ON CONFLICT(key) DO UPDATE SET
   parent_key = excluded.parent_key,
   title = excluded.title,
@@ -148,7 +148,7 @@ ON CONFLICT(key) DO UPDATE SET
 INSERT INTO platform_screens
   (key, parent_key, title, icon, sort_order, in_menu, is_active, updated_at)
 VALUES ('ads', NULL, 'Оголошення',
-        NULL, 130, 0, 1, datetime('now'))
+        'announce', 130, 1, 1, datetime('now'))
 ON CONFLICT(key) DO UPDATE SET
   parent_key = excluded.parent_key,
   title = excluded.title,
@@ -159,7 +159,7 @@ ON CONFLICT(key) DO UPDATE SET
 INSERT INTO platform_screens
   (key, parent_key, title, icon, sort_order, in_menu, is_active, updated_at)
 VALUES ('games', NULL, 'Ігри',
-        NULL, 140, 0, 1, datetime('now'))
+        'game', 140, 1, 1, datetime('now'))
 ON CONFLICT(key) DO UPDATE SET
   parent_key = excluded.parent_key,
   title = excluded.title,
@@ -181,7 +181,7 @@ ON CONFLICT(key) DO UPDATE SET
 INSERT INTO platform_screens
   (key, parent_key, title, icon, sort_order, in_menu, is_active, updated_at)
 VALUES ('research', NULL, 'Дослідження',
-        NULL, 150, 0, 1, datetime('now'))
+        'book', 150, 1, 1, datetime('now'))
 ON CONFLICT(key) DO UPDATE SET
   parent_key = excluded.parent_key,
   title = excluded.title,

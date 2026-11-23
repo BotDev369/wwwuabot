@@ -64,14 +64,14 @@
 
 | Що | Значення з макета | У коді |
 |---|---|---|
-| обкладинка | фото `public/media/home-hero.jpg`, `object-fit: cover`, висота `clamp(260px, 44vh, 420px)`, кути 28 px знизу | `.wb-showcase-hero`, `.wb-showcase-photo`, `.wb-showcase-veil` |
-| затемнення | лінійний градієнт від прозорого (20%) до `rgba(26,20,44,.84)` — лише під текстом | `.wb-showcase-veil` |
-| назва | «ПАЛЯНИЦЯ» 36 px / 900 / `-0.045em`, біла | `.wb-showcase-title`, `--display-size-hero` |
-| обіцянка | «платформа для своїх» 15 px / 600, білий 90% | `.wb-showcase-tagline` |
-| групи меню | ті самі пункти, що в сайдбарі, поділені тематично: Щоденне · Покупки · Робота · Зв'язок | `web-platform-dev/src/layout/screen-nav.ts` + `packages/shared/src/screens/menu-groups.json` |
-| підпис групи | 12 px / 900 / `0.14em` капсом, `--text-muted` | `.wb-showcase-group-title` |
+| обкладинка | фото `public/media/home-hero.jpg` (світла графіка), `object-fit: cover`, на всю ширину під хедером, без кутів, висота `clamp(300px, 54vh, 520px)` | `.wb-showcase-hero`, `.wb-showcase-photo` |
+| пелена | світлий градієнт від прозорого (42%) до `rgba(255,247,235,.97)` — лише під текстом | `.wb-showcase-veil` |
+| назва | «ПАЛЯНИЦЯ» 36 px / 900 / `-0.045em`, `#3b2412` | `.wb-showcase-title`, `--display-size-hero` |
+| обіцянка | «платформа для своїх» 15 px / 600, `#6a4a31` | `.wb-showcase-tagline` |
+| групи меню | усі екрани платформи: Щоденне · Крамниці · Спільнота · Дозвілля · Кабінет | `web-platform-dev/src/layout/screen-nav.ts` + `packages/shared/src/screens/menu-groups.json` |
+| підпис групи | **на головній немає** — групу читає сама картка; у сайдбарі підпис лишається | `PlatformSidebar` |
 | картка групи | `--surface`, кути 20 px, волосяна межа, `--shadow-card` | `.wb-showcase-list` |
-| рядок | знак 38×38 у `--accent-soft`, назва 15 px / 600, шеврон праворуч | `.wb-showcase-row`, `.wb-showcase-row-icon/-label/-more` |
+| рядок | плитка 40×40 залита тоном `--data-1…6`, знак світлий `--text-inverse`, назва 15 px / 600, шеврон праворуч | `.wb-showcase-row`, `.wb-showcase-row-icon/-label/-more` |
 | бренд у хедері | «ПАЛЯНИЦЯ» 12 px капсом у спільному хедері каркаса | `.wb-appbar__brand-name` (`PlatformShell`) |
 
 **Одна свідома розбіжність з макетом:**

@@ -1,27 +1,27 @@
 /*
- * Головна — обкладинка з фото й меню групами: фото з затемненням унизу, на
- * ньому назва; нижче — картки груп із рядками.
+ * Головна — обкладинка й меню: фото на всю ширину під хедером і назва на ньому;
+ * нижче картки груп без підписів, рядок = кольорова плитка, підпис і шеврон.
  *
- * Висота — `100dvh - --appbar-h`: спільний хедер уже займає верхній край.
+ * Мобільне поле `main` тут скасоване: обкладинка мусить упиратися в краї.
  */
 
 .wb-showcase {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-5);
+  gap: var(--sp-4);
   min-height: calc(100dvh - var(--appbar-h));
-  padding-bottom: calc(var(--sp-8) + var(--safe-bottom));
+  padding: 0 0 calc(var(--sp-8) + var(--safe-bottom));
   background: var(--bg-page);
   color: var(--text-primary);
 }
 
+/* Обкладинка — не картка: жодних полів і заокруглень. */
 .wb-showcase-hero {
   position: relative;
   display: flex;
   align-items: flex-end;
-  height: clamp(260px, 44vh, 420px);
+  height: clamp(300px, 54vh, 520px);
   overflow: hidden;
-  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
   background: var(--gradient-hero);
 }
 
@@ -33,23 +33,23 @@
   object-fit: cover;
 }
 
-/* Затемнення — лише під текстом: середина фото лишається видимою. */
+/* Світла пелена під назвою: фото яскраве, тож текст темний, а не білий. */
 .wb-showcase-veil {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(26, 20, 44, 0) 20%,
-    rgba(26, 20, 44, 0.55) 64%,
-    rgba(26, 20, 44, 0.84) 100%
+    rgba(255, 249, 240, 0) 42%,
+    rgba(255, 247, 235, 0.6) 74%,
+    rgba(255, 247, 235, 0.97) 100%
   );
 }
 
 .wb-showcase-brand {
   position: relative;
   z-index: 1;
-  padding: var(--sp-5) var(--sp-5) var(--sp-4);
-  color: var(--text-on-scrim);
+  padding: 0 var(--sp-5) var(--sp-4);
+  color: #3b2412;
 }
 
 .wb-showcase-title {
@@ -59,14 +59,14 @@
   font-weight: var(--weight-black);
   letter-spacing: -0.045em;
   line-height: 1;
-  color: #ffffff;
+  color: #3b2412;
 }
 
 .wb-showcase-tagline {
   margin: var(--sp-2) 0 0;
   font-size: var(--text-base);
   font-weight: var(--weight-semibold);
-  color: rgba(255, 255, 255, 0.9);
+  color: #6a4a31;
 }
 
 .wb-showcase-groups {
@@ -79,15 +79,6 @@
 .wb-showcase-group {
   display: flex;
   flex-direction: column;
-}
-
-.wb-showcase-group-title {
-  margin: 0 0 var(--sp-2) var(--sp-1);
-  font-size: var(--cap-size);
-  font-weight: var(--cap-weight);
-  letter-spacing: var(--cap-tracking);
-  text-transform: uppercase;
-  color: var(--text-muted);
 }
 
 .wb-showcase-list {
@@ -125,16 +116,41 @@
   background: var(--surface-active);
 }
 
+/* Плитка залита своїм тоном: знак світлий, як у Tribute, а не бліда підкладка. */
 .wb-showcase-row-icon {
   display: flex;
-  flex: 0 0 38px;
+  flex: 0 0 40px;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--tile-tone, var(--accent));
+  color: var(--text-inverse);
+}
+
+.wb-showcase-row-icon[data-tone="1"] {
+  --tile-tone: var(--data-1);
+}
+
+.wb-showcase-row-icon[data-tone="2"] {
+  --tile-tone: var(--data-2);
+}
+
+.wb-showcase-row-icon[data-tone="3"] {
+  --tile-tone: var(--data-3);
+}
+
+.wb-showcase-row-icon[data-tone="4"] {
+  --tile-tone: var(--data-4);
+}
+
+.wb-showcase-row-icon[data-tone="5"] {
+  --tile-tone: var(--data-5);
+}
+
+.wb-showcase-row-icon[data-tone="6"] {
+  --tile-tone: var(--data-6);
 }
 
 .wb-showcase-row-label {

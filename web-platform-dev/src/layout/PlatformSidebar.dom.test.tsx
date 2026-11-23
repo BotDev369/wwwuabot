@@ -36,13 +36,13 @@ describe("navFromScreens", () => {
   it("бере лише пункти меню, тематичними групами, без пунктів без знака", () => {
     const sections = navFromScreens(ROWS, "/trackers");
 
-    expect(sections.map((section) => section.key)).toEqual(["everyday", "work"]);
+    expect(sections.map((section) => section.key)).toEqual(["everyday", "cabinet"]);
     expect(sections[0].title).toBe("Щоденне");
     // Група тримає свій порядок із `menu-groups.json`, а не `sort_order`.
-    expect(sections[0].items.map((item) => item.key)).toEqual(["analysis", "account"]);
-    // «Нотатки» без знака не малюються, тож у групі лишаються самі «Трекери».
-    expect(sections[1].items.map((item) => item.key)).toEqual(["trackers"]);
-    expect(sections[1].items[0].href).toBe("/trackers");
+    expect(sections[0].items.map((item) => item.key)).toEqual(["analysis", "trackers"]);
+    // «Акаунт» стоїть у "Кабінеті", а «Нотатки» без знака не малюються взагалі.
+    expect(sections[1].items.map((item) => item.key)).toEqual(["account"]);
+    expect(sections[0].items[1].href).toBe("/trackers");
   });
 
   it("підсвічує корінь і його підсторінки, але не сусідній розділ", () => {
