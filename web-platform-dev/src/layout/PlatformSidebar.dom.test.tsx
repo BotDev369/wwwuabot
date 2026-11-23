@@ -37,7 +37,8 @@ describe("navFromScreens", () => {
     const sections = navFromScreens(ROWS, "/trackers");
 
     expect(sections.map((section) => section.key)).toEqual(["everyday", "cabinet"]);
-    expect(sections[0].title).toBe("Щоденне");
+    // Підписів груп у меню немає: як і на головній, групу читає сам блок.
+    expect(sections.every((section) => section.title === undefined)).toBe(true);
     // Група тримає свій порядок із `menu-groups.json`, а не `sort_order`.
     expect(sections[0].items.map((item) => item.key)).toEqual(["analysis", "trackers"]);
     // «Акаунт» стоїть у "Кабінеті", а «Нотатки» без знака не малюються взагалі.

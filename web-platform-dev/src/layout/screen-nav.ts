@@ -66,12 +66,15 @@ export function platformNav(rows: readonly ScreenRow[], pathname: string): Platf
     .filter((group) => group.items.length > 0);
 }
 
-/** Ті самі групи у формі сайдбара: одна дорога для головної й меню. */
+/**
+ * Ті самі групи у формі сайдбара: одна дорога для головної й меню.
+ *
+ * Підписів груп у меню немає: як і на головній, групу читає сам блок пунктів.
+ * Підписи лишаються в `menu-groups.json` — для тексту й порядку, не для меню.
+ */
 export function navFromScreens(rows: readonly ScreenRow[], pathname: string): SideBarSection[] {
   return platformNav(rows, pathname).map((group): SideBarSection => {
     const items: SideBarItem[] = group.items;
-    return group.title === null
-      ? { key: group.key, items }
-      : { key: group.key, title: group.title, items };
+    return { key: group.key, items };
   });
 }
