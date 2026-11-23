@@ -25,6 +25,7 @@ import {
   handlePublicShops,
 } from "../controllers/shop.controller";
 import { handleUserShopMedia, handleShopMediaFile } from "../controllers/shop-media.controller";
+import { handleUserShopCart } from "../controllers/shop-cart.controller";
 import {
   handleUserShopOrders,
   handleUserShopStatuses,
@@ -50,6 +51,10 @@ export function matchShopRoute(
   // від клієнта, тож право продавця перевіряє запит до бази.
   if (pathname === "/api/user/shop/products") return handleUserShopProducts(request, env);
   if (pathname === "/api/user/shop/media") return handleUserShopMedia(request, env);
+
+  // Кошик — спільний із ботом: та сама пара «покупець + магазин», ті самі
+  // правила. `GET` читає, `PUT` ставить/додає, `DELETE` прибирає або чистить.
+  if (pathname === "/api/user/shop/cart") return handleUserShopCart(request, env);
 
   // Замовлення: `GET` — свого магазину (за `shop`), `POST` — правка (статус,
   // контакт, позиції, коментар), `DELETE` — прибрати з черги. Три шляхи в

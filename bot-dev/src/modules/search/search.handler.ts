@@ -9,6 +9,7 @@ import { matchSearch } from "@wwwuabot/shared/search";
 import type { AppContext } from "../../shared/types/env";
 import { sendRichMessage } from "../../shared/telegram/widgets";
 import { log } from "../../shared/utils/debug";
+import { loadCartQuantities } from "./cart.repository";
 import { loadSearchIndex } from "./search.repository";
 import { searchScreenHtml } from "./search-screen";
 import { recordOutgoingMessage } from "../history/record";
@@ -31,7 +32,20 @@ export async function handleSearch(ctx: AppContext, text: string): Promise<boole
 
   const matches = matchSearch(index, query);
   const webApp = Boolean(ctx.env.WEB_PLATFORM_URL);
-  const html = searchScreenHtml(query, matches, ctx.env.WEB_PLATFORM_URL, webApp);
+
+  // Кількість у картці — зі спільного кошика; збій D1 не робить пошук помилкою.
+  const userId = ctx.from?.id;
+  const cart = userId
+    ? await loadCartQuantities(
+        ctx.env,
+        userId,
+        matches.flatMap((match) =>
+          match.entry.kind === "product" && match.entry.shopSlug ? [match.entry.shopSlug] : [],
+        ),
+      ).catch(() => new Map<number, number>())
+    : new Map<number, number>();
+
+  const html = searchScreenHtml(query, matches, ctx.env.WEB_PLATFORM_URL, webApp, { cart });
   const chatId = ctx.chat.id;
 
   try {

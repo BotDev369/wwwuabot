@@ -42,6 +42,7 @@ function renderEntry(
   intent: "add" | "order" | null,
   products: ShopProduct[] = [PRODUCT],
   loading = false,
+  intentQty = 1,
 ): void {
   render(
     <ShopStore
@@ -55,6 +56,7 @@ function renderEntry(
       loading={loading}
       routeProductSlug={routeProductSlug}
       intent={intent}
+      intentQty={intentQty}
     />,
   );
 }
@@ -80,6 +82,13 @@ describe("ShopStore — вхід з адреси", () => {
   it("?order=1 відкриває підтвердження швидкого замовлення", () => {
     renderEntry("kava-v-zernakh", "order");
     expect(screen.getByRole("dialog", { name: /Швидке замовлення/ })).toBeTruthy();
+  });
+
+  it("?order=1&qty=3 бере кількість із бота, а не одну штуку", () => {
+    renderEntry("kava-v-zernakh", "order", [PRODUCT], false, 3);
+
+    const dialog = screen.getByRole("dialog", { name: /Швидке замовлення/ });
+    expect(dialog.textContent).toContain("750 ₴");
   });
 
   it("невідомий товар лишає покупця на вітрині", () => {

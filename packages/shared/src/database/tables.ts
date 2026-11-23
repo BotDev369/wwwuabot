@@ -610,6 +610,29 @@ export const TABLES = {
    * замовлення не питає нічого, тож ім'я, @нік, мова й фото покупця мусять
    * лишитись такими, якими були на момент замовлення.
    */
+  /**
+   * Кошик покупця — **рядок на товар**, а не JSON у профілі.
+   *
+   * Один кошик на пару «покупець + магазин»: ключ із трьох колонок не дає
+   * змішати магазини й не заводить другий рядок на той самий товар. Пишуть
+   * обидві оболонки — веб через `api-dev`, бот напряму в D1, — а читає кожен
+   * перед показом, тож кошик один, а не два.
+   */
+  shop_carts: {
+    name: "shop_carts",
+    owner: "api-dev",
+    purpose:
+      "Кошик покупця: по рядку на товар магазину (`user_id` + `shop_id` + `product_id`), кількість і час зміни. Читають веб і бот; веб пише через api-dev, бот — прямо в D1.",
+    create: `CREATE TABLE IF NOT EXISTS shop_carts (
+        user_id INTEGER NOT NULL,
+        shop_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        qty INTEGER NOT NULL DEFAULT 1,
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (user_id, shop_id, product_id)
+      )`,
+  },
+
   shop_orders: {
     name: "shop_orders",
     owner: "api-dev",

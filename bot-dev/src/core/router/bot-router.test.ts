@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   contactCallback: vi.fn(),
   deleteIncoming: vi.fn(),
   words: vi.fn(),
+  cart: vi.fn(),
 }));
 
 vi.mock("../../repositories/scenario.repository", () => ({
@@ -39,6 +40,7 @@ vi.mock("../../shared/utils/message", () => ({
   deleteIncomingMessage: mocks.deleteIncoming,
 }));
 vi.mock("../../modules/search/words.handler", () => ({ handleWords: mocks.words }));
+vi.mock("../../modules/search/cart.handler", () => ({ handleCartCallback: mocks.cart }));
 
 const { botRouter } = await import("./bot-router");
 
@@ -62,6 +64,7 @@ beforeEach(() => {
   mocks.contactFlow.mockResolvedValue(false);
   mocks.contactCallback.mockResolvedValue(false);
   mocks.words.mockResolvedValue(true);
+  mocks.cart.mockResolvedValue(true);
 });
 
 describe("botRouter", () => {
@@ -78,6 +81,17 @@ describe("botRouter", () => {
     // `about` — не окремий сценарій, а вид головного віджета.
     expect(mocks.find).toHaveBeenCalledWith("/start");
     expect(mocks.render).toHaveBeenCalledWith(expect.anything(), SCENARIO, "about");
+  });
+
+  it("тап кошика — дія, а не ключ сценарію", async () => {
+    await botRouter(
+      context({
+        callbackQuery: { data: "cart:add:12", message: { message_id: 9 } },
+      }),
+    );
+
+    expect(mocks.cart).toHaveBeenCalled();
+    expect(mocks.find).not.toHaveBeenCalled();
   });
 
   it("callback_data виду теж веде в головний документ", async () => {

@@ -8,13 +8,15 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import type { CartLine, ShopProduct } from "@wwwuabot/shared/shop";
+import { ORDER_QTY_MAX, type CartLine, type ShopProduct } from "@wwwuabot/shared/shop";
 import type { ShopCartState } from "./useShopCart";
 
 interface StoreEntryArgs {
   products: ShopProduct[];
   routeProductSlug: string | null;
   intent: "add" | "order" | null;
+  /** Кількість із адреси `?order=1&qty=N`; без неї — одна штука. */
+  intentQty?: number;
   cart: ShopCartState;
   onOpenProduct: (id: number) => void;
   onOpenCart: () => void;
@@ -31,6 +33,7 @@ export function useStoreEntry({
   products,
   routeProductSlug,
   intent,
+  intentQty = 1,
   cart,
   onOpenProduct,
   onOpenCart,
@@ -45,8 +48,9 @@ export function useStoreEntry({
 
     handled.current = true;
     if (intent === "order") {
+      const qty = Math.min(Math.max(Math.floor(intentQty) || 1, 1), ORDER_QTY_MAX);
       // eslint-disable-next-line react-hooks/set-state-in-effect -- вхід з адреси: стан задається один раз, коли товари вже прийшли
-      setQuickLines([{ productId: target.id, qty: 1 }]);
+      setQuickLines([{ productId: target.id, qty }]);
       return;
     }
     if (intent === "add") {
@@ -55,7 +59,7 @@ export function useStoreEntry({
       return;
     }
     onOpenProduct(target.id);
-  }, [routeProductSlug, intent, products, cart, onOpenProduct, onOpenCart]);
+  }, [routeProductSlug, intent, intentQty, products, cart, onOpenProduct, onOpenCart]);
 
   return {
     quickLines,

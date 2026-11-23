@@ -98,6 +98,41 @@ describe("searchScreenHtml", () => {
     expect(html).not.toContain("<details");
   });
 
+  it("товар без кошика має «Додати в кошик» — колбек, не текст", () => {
+    const html = searchScreenHtml("астрагал", [match("product", { id: 12 })], platform, true);
+
+    expect(html).toContain('<tg-button type="callback_data" data="cart:add:12">Додати в кошик');
+    expect(html).not.toContain("cart:inc");
+  });
+
+  it("кількість із серверного кошика показує крок і checkout", () => {
+    const html = searchScreenHtml("астрагал", [match("product", { id: 12 })], platform, true, {
+      cart: new Map([[12, 2]]),
+    });
+
+    expect(html).toContain('data="cart:dec:12"');
+    expect(html).toContain('<tg-button type="disabled">2 шт</tg-button>');
+    expect(html).toContain('data="cart:inc:12"');
+    expect(html).toContain(`url="${platform}/galyashop/p/astrahal?order=1&amp;qty=2"`);
+    expect(html).toContain("Замовити відразу");
+  });
+
+  it("після тапу відкритий саме цей акордеон", () => {
+    const html = searchScreenHtml(
+      "трава",
+      [
+        match("page", { title: "GalyaShop", description: "" }),
+        match("product", { title: "Астрагал", id: 12, description: "" }),
+      ],
+      platform,
+      true,
+      { cart: new Map([[12, 1]]), openProductId: 12 },
+    );
+
+    expect(html).toContain("<details><summary>GalyaShop</summary>");
+    expect(html).toContain("<details open><summary>Астрагал</summary>");
+  });
+
   it("екранує лапки й амперсанди в назві та описі", () => {
     const evil = match("page", {
       title: 'Трава "А" & B',

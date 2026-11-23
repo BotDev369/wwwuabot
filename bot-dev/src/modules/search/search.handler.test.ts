@@ -4,10 +4,14 @@ const state = vi.hoisted(() => ({
   index: null as unknown,
   sent: [] as { chatId: number; html: string }[],
   fail: false,
+  cart: new Map<number, number>(),
 }));
 
 vi.mock("./search.repository", () => ({
   loadSearchIndex: async () => state.index,
+}));
+vi.mock("./cart.repository", () => ({
+  loadCartQuantities: async () => state.cart,
 }));
 vi.mock("../../shared/telegram/widgets", () => ({
   sendRichMessage: async (_token: string, chatId: number, html: string) => {
@@ -31,12 +35,24 @@ const INDEX = {
       terms: ["галяшоп", "галя шоп"],
       href: "/galyashop",
     },
+    {
+      kind: "product" as const,
+      id: 12,
+      slug: "astrahal",
+      shopSlug: "galyashop",
+      title: "Астрагал",
+      subtitle: "GalyaShop",
+      price: "120 ₴",
+      terms: ["астрагал"],
+      href: "/galyashop/p/astrahal",
+    },
   ],
 };
 
 function ctx(overrides: Record<string, unknown> = {}) {
   return {
     chat: { id: 42, type: "private" },
+    from: { id: 42 },
     env: { BOT_TOKEN: "x", WEB_PLATFORM_URL: "https://platform.test" },
     screenHandled: false,
     ...overrides,
@@ -47,6 +63,7 @@ beforeEach(() => {
   state.index = INDEX;
   state.sent = [];
   state.fail = false;
+  state.cart = new Map();
 });
 
 describe("handleSearch", () => {
@@ -80,6 +97,14 @@ describe("handleSearch", () => {
     const context = ctx();
     expect(await handleSearch(context, "галяшоп")).toBe(false);
     expect((context as { screenHandled: boolean }).screenHandled).toBe(false);
+  });
+
+  it("кількість у картці береться зі спільного кошика", async () => {
+    state.cart = new Map([[12, 2]]);
+    await handleSearch(ctx(), "астрагал");
+
+    expect(state.sent[0].html).toContain('<tg-button type="disabled">2 шт</tg-button>');
+    expect(state.sent[0].html).toContain("?order=1&amp;qty=2");
   });
 
   it("без WEB_PLATFORM_URL картка лишається без кнопок", async () => {

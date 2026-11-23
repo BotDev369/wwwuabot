@@ -21,6 +21,7 @@
  *   а також позначка платформи в розмові з продавцем (`orderNoticeText`);
  * - `media.ts` — **файли магазину**: ключ R2, межі, адреса з ключа й перевірка
  *   завантаження (`validateMediaUpload`);
+ * - `cart-store.ts` — **кошик у D1**: однакові запити для веба й бота;
  * - `api.ts` — **клієнт** магазину: форма запиту, спільна для обох оболонок;
  * - `types.ts` — товар, файл, замовлення й знімок позиції.
  *
@@ -102,6 +103,16 @@ export {
   priceDecimals,
 } from "./cart";
 export type { CartLine, CartTotal } from "./cart";
+
+export {
+  addCartLine,
+  clearCart,
+  pruneCart,
+  readCartLines,
+  readCartQuantities,
+  removeCartLine,
+  setCartLine,
+} from "./cart-store";
 
 export {
   EMPTY_ORDER_CART,

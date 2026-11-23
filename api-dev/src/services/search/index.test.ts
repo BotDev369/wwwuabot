@@ -126,6 +126,7 @@ describe("buildSearchIndex", () => {
     const index = await buildSearchIndex(env, "https://api.test");
     expect(index.entries[0]).toMatchObject({
       kind: "product",
+      id: 9,
       subtitle: "GalyaShop",
       description: "Трава",
       price: "120 ₴",

@@ -64,6 +64,7 @@
 | `POST` | `/api/user/event` | `handleUserEvent` |
 | `ANY` | `/api/user/pages` | `handleUserPages` |
 | `GET` | `/api/user/profile` | `handleUserProfile` |
+| `ANY` | `/api/user/shop/cart` | `handleUserShopCart` |
 | `ANY` | `/api/user/shop/media` | `handleUserShopMedia` |
 | `ANY` | `/api/user/shop/orders` | `handleUserShopOrders` |
 | `ANY` | `/api/user/shop/orders/status` | `handleUserShopOrders` |
@@ -137,4 +138,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **108**.
+Усього шляхів: **109**.

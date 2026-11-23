@@ -23,6 +23,7 @@ import { handleContactFlow } from "../../modules/access/contact/reply";
 import { handleContactCallback } from "../../modules/access/contact/panel";
 import { handleReportCommand } from "../../modules/reports/history";
 import { splitInviteCode } from "../../modules/access/payload";
+import { handleCartCallback } from "../../modules/search/cart.handler";
 import { handleSearch } from "../../modules/search/search.handler";
 import { handleWords } from "../../modules/search/words.handler";
 import { handleStart } from "../../modules/start/start.handler";
@@ -42,6 +43,13 @@ export async function botRouter(ctx: AppContext): Promise<void> {
   }
 
   const text = ctx.message?.text;
+
+  // Кнопки кошика в rich-екрані — дія, а не ключ сценарію.
+  if (ctx.callbackQuery?.data?.startsWith("cart:")) {
+    ctx.screenHandled = true;
+    await handleCartCallback(ctx);
+    return;
+  }
 
   // Звіти агента — службовий екран власника, не сценарій: кнопка «Історія» в
   // звіті веде саме сюди, а не в контент.

@@ -23,6 +23,7 @@ const PATHS: ShopApiPaths = {
   placeOrder: "/api/public/shop/orders",
   quickOrder: "/api/public/shop/orders/quick",
   statuses: "/api/user/shop/statuses",
+  cart: "/api/user/shop/cart",
 };
 
 interface Call {
@@ -179,6 +180,45 @@ describe("список магазинів — без параметрів", () =
     const { client } = api({ ok: true });
 
     expect(await client.shops()).toEqual([]);
+  });
+});
+
+describe("кошик — один шлях на всі дії", () => {
+  it("читання й очищення питають адресу магазину, без тіла", async () => {
+    const { client, calls } = api({ ok: true, lines: [{ productId: 4, qty: 2 }] });
+
+    expect(await client.cart("kava")).toEqual([{ productId: 4, qty: 2 }]);
+    await client.clearCart("kava");
+
+    expect(calls[0].path).toBe("/api/user/shop/cart?shop=kava");
+    expect(calls[0].init?.body).toBeUndefined();
+    expect(calls[1].init?.method).toBe("DELETE");
+  });
+
+  it("додати — дельта, поставити — абсолютна кількість", async () => {
+    const { client, calls } = api({ ok: true, lines: [] });
+
+    await client.addCartLine("kava", 4, 2);
+    await client.setCartLine("kava", 4, 5);
+
+    expect(bodyOf(calls[0])).toEqual({ productId: 4, delta: 2 });
+    expect(bodyOf(calls[1])).toEqual({ productId: 4, qty: 5 });
+    expect(calls[0].init?.method).toBe("PUT");
+  });
+
+  it("прибрати позицію — номер товару в адресі", async () => {
+    const { client, calls } = api({ ok: true, lines: [] });
+
+    await client.removeCartLine("kava", 4);
+
+    expect(calls[0].path).toBe("/api/user/shop/cart?shop=kava&productId=4");
+    expect(calls[0].init?.method).toBe("DELETE");
+  });
+
+  it("відмова сервера — помилка з текстом, а не порожній кошик", async () => {
+    const { client } = api({ ok: false, error: "Товару більше немає" });
+
+    await expect(client.addCartLine("kava", 4)).rejects.toThrow("Товару більше немає");
   });
 });
 

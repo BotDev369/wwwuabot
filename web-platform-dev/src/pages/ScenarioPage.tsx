@@ -18,6 +18,7 @@ import { HOME_SLUG } from "@wwwuabot/shared/content";
 import { favoriteTargetId } from "@wwwuabot/shared/favorites";
 import { isResearchBlockSlug } from "@wwwuabot/shared/research";
 import { PageCanvas } from "@wwwuabot/ui";
+import { ORDER_QTY_MAX } from "@wwwuabot/shared/shop";
 import { apiFetchRaw } from "@/shared/api/client";
 import { useShopCatalog } from "@/pages/shop/useShopCatalog";
 import { ShopStore } from "@/pages/shop/store/ShopStore";
@@ -208,6 +209,9 @@ export function ScenarioPage() {
   const query = new URLSearchParams(location.search);
   const storeIntent =
     query.get("order") === "1" ? "order" : query.get("add") === "1" ? "add" : null;
+  const requestedQty = Number(query.get("qty"));
+  const storeIntentQty =
+    Number.isInteger(requestedQty) && requestedQty > 0 ? Math.min(requestedQty, ORDER_QTY_MAX) : 1;
 
   // Хедер знає про сторінку те, що знає вона: як її звати, що можна
   // скопіювати й на що поставити серце. Фолбек — це не сторінка, тож дій у
@@ -269,6 +273,7 @@ export function ScenarioPage() {
           loading={catalog.loading}
           routeProductSlug={routeProductSlug}
           intent={storeIntent}
+          intentQty={storeIntentQty}
         />
       </>
     );

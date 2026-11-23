@@ -67,6 +67,8 @@ export interface ShopStoreProps {
   routeProductSlug?: string | null;
   /** Намір із запиту: `?add=1` — у кошик, `?order=1` — швидке замовлення. */
   intent?: "add" | "order" | null;
+  /** Кількість із `?order=1&qty=N`: бот замовляє саме стільки, скільки в кошику. */
+  intentQty?: number;
 }
 
 export function ShopStore({
@@ -80,6 +82,7 @@ export function ShopStore({
   loading,
   routeProductSlug = null,
   intent = null,
+  intentQty = 1,
 }: ShopStoreProps): ReactElement {
   const cards = useMemo(() => productCards(products, media), [products, media]);
   const catalogs = useMemo(() => shopCatalogs(products), [products]);
@@ -97,6 +100,7 @@ export function ShopStore({
     products,
     routeProductSlug,
     intent,
+    intentQty,
     cart,
     onOpenProduct: setOpenedProduct,
     onOpenCart: () => setCartOpen(true),
@@ -333,7 +337,8 @@ export function ShopStore({
           products={products}
           onClose={entry.closeQuick}
           onPlaced={() => {
-            cart.clear();
+            // Замовлено лише ці позиції: решта кошика лишається покупцеві.
+            entry.quickLines?.forEach((line) => cart.remove(line.productId));
             entry.closeQuick();
             setCartOpen(false);
           }}

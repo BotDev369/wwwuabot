@@ -212,6 +212,7 @@ export async function buildSearchIndex(env: Env, base: string): Promise<SearchIn
     const cover = keys.get(imageIds(row.images)[0] ?? 0);
     return {
       kind: "product",
+      id: Number(row.id),
       slug: row.slug,
       shopSlug: row.shop_slug,
       title,

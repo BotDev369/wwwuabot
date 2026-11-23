@@ -25,6 +25,7 @@
  * @module @wwwuabot/shared/shop
  */
 
+import type { CartLine } from "./cart";
 import type { OrderDraftInput, OrderItemInput } from "./orders";
 import type { OrderStatus } from "./statuses";
 import type {
@@ -100,6 +101,15 @@ export interface ShopApi {
   removeOrder: (shopId: number, orderId: number) => Promise<void>;
   /** Статуси магазину: типові з його правками — те, з чого вибирає екран. */
   statuses: (shopId: number) => Promise<OrderStatus[]>;
+  /** Кошик покупця в магазині — спільний із ботом. */
+  cart: (shopSlug: string) => Promise<CartLine[]>;
+  /** Поставити кількість позиції; нуль і менше — прибрати. */
+  setCartLine: (shopSlug: string, productId: number, qty: number) => Promise<CartLine[]>;
+  /** Додати до позиції — атомарно на сервері, а не «останній переміг». */
+  addCartLine: (shopSlug: string, productId: number, delta?: number) => Promise<CartLine[]>;
+  removeCartLine: (shopSlug: string, productId: number) => Promise<CartLine[]>;
+  /** Порожній кошик після замовлення. */
+  clearCart: (shopSlug: string) => Promise<CartLine[]>;
 }
 
 /** Шляхи поверхонь: свої товари, файли, каталог і замовлення. */
@@ -116,6 +126,8 @@ export interface ShopApiPaths {
   /** Швидке замовлення — окремий шлях: без анкети й з іншими перевірками. */
   quickOrder: string;
   statuses: string;
+  /** Кошик покупця: читання, позиція й очищення — один шлях. */
+  cart: string;
 }
 
 /** Шлях із параметрами: `?shop=…&limit=…`. */
@@ -123,6 +135,12 @@ function withQuery(path: string, params: Record<string, string | number>): strin
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) search.set(key, String(value));
   return `${path}?${search.toString()}`;
+}
+
+interface CartResponse {
+  ok: boolean;
+  lines?: CartLine[];
+  error?: string;
 }
 
 export function createShopApi(
@@ -244,5 +262,43 @@ export function createShopApi(
     statuses: async (shopId) =>
       (await fetchJson<StatusListResponse>(withQuery(paths.statuses, { shop: shopId }))).statuses ??
       [],
+
+    cart: async (shopSlug) =>
+      (await fetchJson<CartResponse>(withQuery(paths.cart, { shop: shopSlug }))).lines ?? [],
+
+    setCartLine: async (shopSlug, productId, qty) => {
+      const response = await fetchJson<CartResponse>(withQuery(paths.cart, { shop: shopSlug }), {
+        method: "PUT",
+        body: JSON.stringify({ productId, qty }),
+      });
+      if (!response.ok) throw new Error(response.error ?? "Не вдалося оновити кошик");
+      return response.lines ?? [];
+    },
+
+    addCartLine: async (shopSlug, productId, delta = 1) => {
+      const response = await fetchJson<CartResponse>(withQuery(paths.cart, { shop: shopSlug }), {
+        method: "PUT",
+        body: JSON.stringify({ productId, delta }),
+      });
+      if (!response.ok) throw new Error(response.error ?? "Не вдалося оновити кошик");
+      return response.lines ?? [];
+    },
+
+    removeCartLine: async (shopSlug, productId) => {
+      const response = await fetchJson<CartResponse>(
+        withQuery(paths.cart, { shop: shopSlug, productId }),
+        { method: "DELETE" },
+      );
+      if (!response.ok) throw new Error(response.error ?? "Не вдалося оновити кошик");
+      return response.lines ?? [];
+    },
+
+    clearCart: async (shopSlug) => {
+      const response = await fetchJson<CartResponse>(withQuery(paths.cart, { shop: shopSlug }), {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error(response.error ?? "Не вдалося очистити кошик");
+      return response.lines ?? [];
+    },
   };
 }

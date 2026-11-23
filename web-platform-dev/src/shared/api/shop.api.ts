@@ -28,4 +28,5 @@ export const shopApi = createShopApi(apiFetch, apiUpload, {
   placeOrder: "/api/public/shop/orders",
   quickOrder: "/api/public/shop/orders/quick",
   statuses: "/api/user/shop/statuses",
+  cart: "/api/user/shop/cart",
 });

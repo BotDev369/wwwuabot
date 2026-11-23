@@ -11,6 +11,8 @@ import { editDistance, normalizeSearchKey, searchTokens } from "./normalize";
 /** Що показує картка результату; адресу будує той, хто рендерить. */
 export interface SearchEntry {
   kind: "page" | "product";
+  /** Номер товару для дій у чаті; у сторінок його немає. */
+  id?: number;
   /** Адреса сторінки (`galyashop`) або магазин товару. */
   slug: string;
   /** Для товару — адреса магазину. */

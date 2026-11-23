@@ -47,6 +47,7 @@ export async function ensureShopSchema(db: D1Database): Promise<void> {
     "platform_pages",
     "shop_products",
     "shop_media",
+    "shop_carts",
     "shop_orders",
     "shop_order_items",
     "shop_order_statuses",
