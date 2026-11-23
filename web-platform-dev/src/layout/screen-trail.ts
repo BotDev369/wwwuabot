@@ -24,7 +24,7 @@ export interface Crumb {
  * замінює статичну назву останнього рівня; батьки — завжди з реєстру.
  *
  * Порожнього шляху не буває: `/` — рядок реєстру `entry`, а сторінка контенту
- * без рядка отримує рівень «Сторінки» з журналу ще до завантаження сценарію.
+ * без рядка отримує рівень «Крамниці» з журналу ще до завантаження сценарію.
  */
 export function screenTrail(
   rows: readonly ScreenRow[],
@@ -35,7 +35,7 @@ export function screenTrail(
   const entry = pathname === "/" ? screenByKey("entry") : null;
   const match = entry ? { screen: entry, params: {} } : matchScreen(pathname);
   if (!match) {
-    // Сторінка контенту: рівень «Сторінки» — підпис із журналу (`pages`), а не
+    // Сторінка контенту: рівень «Крамниці» — підпис із журналу (`pages`), а не
     // нове слово в коді. Назва сторінки долучається, щойно прийде з даних.
     const parent: Crumb = { label: screenLabel("pages"), href: null };
     return title ? [parent, { label: title, href: null }] : [parent];

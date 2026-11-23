@@ -22,5 +22,8 @@ export {
 } from "./registry";
 export type { ScreenDef, ScreenMatch, ScreenRow } from "./registry";
 
+export { MENU_GROUPS, MENU_REST_KEY, menuGroupsFromRows } from "./menu";
+export type { MenuGroup, MenuGroupDef } from "./menu";
+
 export { formatScreenText, missingScreenTexts, readScreenTexts, screenText } from "./texts";
 export type { ScreenTexts } from "./texts";

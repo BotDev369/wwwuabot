@@ -118,7 +118,7 @@ export const USERS_PATH = pathOf("users");
 export const SCENARIOS_ROUTE = pathOf("scenarios.products").split("/")[1] ?? "scenarios";
 export const SCENARIOS_PATH = `/${SCENARIOS_ROUTE}`;
 
-/** Магазини — **список** відкритих магазинів, а не сторінка контенту. */
+/** Крамниці — **список** відкритих крамниць, а не сторінка контенту. */
 export const SHOPS_ROUTE = segmentOf("shops");
 export const SHOPS_PATH = pathOf("shops");
 

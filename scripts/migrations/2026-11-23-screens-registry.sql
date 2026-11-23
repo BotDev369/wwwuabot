@@ -59,7 +59,7 @@ ON CONFLICT(key) DO UPDATE SET
   updated_at = excluded.updated_at;
 INSERT INTO platform_screens
   (key, parent_key, title, icon, sort_order, in_menu, is_active, updated_at)
-VALUES ('shops', NULL, 'Магазини',
+VALUES ('shops', NULL, 'Крамниці',
         'cart', 50, 1, 1, datetime('now'))
 ON CONFLICT(key) DO UPDATE SET
   parent_key = excluded.parent_key,
@@ -433,7 +433,7 @@ ON CONFLICT(key) DO UPDATE SET
   updated_at = excluded.updated_at;
 INSERT INTO platform_screens
   (key, parent_key, title, icon, sort_order, in_menu, is_active, updated_at)
-VALUES ('scenarios.orders', 'shops', 'Замовлення магазину',
+VALUES ('scenarios.orders', 'shops', 'Замовлення крамниці',
         NULL, 10, 0, 1, datetime('now'))
 ON CONFLICT(key) DO UPDATE SET
   parent_key = excluded.parent_key,

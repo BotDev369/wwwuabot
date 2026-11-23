@@ -93,8 +93,10 @@ describe("каркас", () => {
   it("вітрина `/` живе в тому самому каркасі й має крохи «Вхід»", () => {
     renderEntry();
 
-    expect(screen.getByRole("heading", { name: "Ділова платформа для Своїх" })).toBeTruthy();
-    expect(screen.getByText("ПАЛЯНИЦЯ")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "ПАЛЯНИЦЯ" })).toBeTruthy();
+    expect(screen.getByText("платформа для своїх")).toBeTruthy();
+    // Бренд є і в хедері, і на обкладинці — це той самий продукт, а не дубль.
+    expect(screen.getAllByText("ПАЛЯНИЦЯ").length).toBeGreaterThan(1);
     expect(document.querySelector(".wb-appbar__trail")?.textContent).toBe("Вхід");
     expect(screen.getByRole("button", { name: "Меню" })).toBeTruthy();
   });

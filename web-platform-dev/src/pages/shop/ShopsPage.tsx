@@ -1,5 +1,5 @@
 /**
- * «Магазини» — список відкритих магазинів: вхід, а не друга вітрина. Рядок
+ * «Крамниці» — список відкритих крамниць: вхід, а не друга вітрина. Рядок
  * веде на ту саму сторінку (`/<slug>`), яку відкриває пряме посилання, а
  * відбір (відкритий, увімкнений, власник не заблокований) робить запит до бази
  * (`docs/SHOPS.md` §9, `docs/VISIBILITY.md`).
@@ -22,7 +22,7 @@ interface ShopsState {
 }
 
 export function ShopsPage(): ReactElement {
-  useScreenChrome({ title: "Магазини" });
+  useScreenChrome({ title: "Крамниці" });
   const navigate = useNavigate();
   const [state, setState] = useState<ShopsState>({ shops: [], loading: true, error: null });
 
@@ -42,7 +42,7 @@ export function ShopsPage(): ReactElement {
         setState({
           shops: [],
           loading: false,
-          error: e instanceof Error ? e.message : "Не вдалося завантажити магазини",
+          error: e instanceof Error ? e.message : "Не вдалося завантажити крамниці",
         });
       });
 
@@ -56,7 +56,7 @@ export function ShopsPage(): ReactElement {
       {state.loading && (
         <div className="wb-empty">
           <div className="wb-skeleton" style={{ width: 160, height: 20 }} />
-          <p className="wb-text-muted">Завантаження магазинів…</p>
+          <p className="wb-text-muted">Завантаження крамниць…</p>
         </div>
       )}
 
@@ -74,9 +74,9 @@ export function ShopsPage(): ReactElement {
           <span className="wb-empty-icon">
             <Icon name="cart" size={32} />
           </span>
-          <p className="wb-empty-text">Відкритих магазинів ще немає.</p>
+          <p className="wb-empty-text">Відкритих крамниць ще немає.</p>
           <p className="wb-empty-text">
-            Магазин відкриває його власник: коли сторінку з каталогом оприлюднять, вона з'явиться
+            Крамницю відкриває її власник: коли сторінку з каталогом оприлюднять, вона з'явиться
             тут.
           </p>
         </div>

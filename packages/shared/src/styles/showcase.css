@@ -1,126 +1,88 @@
 /*
- * Вітрина — головний екран (макет 08): залите фіалкою поле зверху, біла панель
- * входів знизу. Висота — `100dvh - --appbar-h`: спільний хедер уже займає
- * верхній край, інакше біла панель їхала б за нижній край.
+ * Головна — обкладинка з фото й меню групами: фото з затемненням унизу, на
+ * ньому назва; нижче — картки груп із рядками.
  *
- * Плями — шари `radial-gradient`, а не `filter: blur()`: у TWA розмиття
- * коштує кадрів, а на око різниці на 260 px немає.
+ * Висота — `100dvh - --appbar-h`: спільний хедер уже займає верхній край.
  */
 
 .wb-showcase {
-  position: relative;
   display: flex;
   flex-direction: column;
+  gap: var(--sp-5);
   min-height: calc(100dvh - var(--appbar-h));
-  padding: var(--sp-5) var(--sp-5) 0;
-  background: var(--gradient-hero);
-  color: var(--hero-ink);
-  overflow: hidden;
-}
-
-/* Дві плями з макета: 260 px у правому верхньому куті, 240 px — у лівому
-   нижньому. Широкі заливки на пів екрана, які тут стояли раніше, з'їдали
-   насиченість фіалки й робили обкладинку сірою. */
-.wb-showcase-blob {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--hero-glow) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.wb-showcase-blob-a {
-  width: 260px;
-  height: 260px;
-  top: -70px;
-  right: -80px;
-}
-
-.wb-showcase-blob-b {
-  width: 240px;
-  height: 240px;
-  bottom: 120px;
-  left: -90px;
-}
-
-/* Плескатий знак хліба — біле коло на 13% із двома лініями «столу». Тримає
-   порожнечу між слоганом і панеллю, не додаючи жодного слова. */
-.wb-showcase-watermark {
-  position: absolute;
-  left: 50%;
-  top: 42%;
-  width: 320px;
-  height: 320px;
-  transform: translate(-50%, -50%);
-  opacity: 0.13;
-  pointer-events: none;
+  padding-bottom: calc(var(--sp-8) + var(--safe-bottom));
+  background: var(--bg-page);
+  color: var(--text-primary);
 }
 
 .wb-showcase-hero {
   position: relative;
-  z-index: 1;
-  padding-top: var(--sp-5);
+  display: flex;
+  align-items: flex-end;
+  height: clamp(260px, 44vh, 420px);
+  overflow: hidden;
+  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+  background: var(--gradient-hero);
 }
 
-.wb-showcase-cap {
-  margin: 0;
-  font-size: var(--cap-size);
-  font-weight: var(--cap-weight);
-  letter-spacing: var(--cap-tracking);
-  text-transform: uppercase;
-  color: var(--hero-cap);
+.wb-showcase-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Затемнення — лише під текстом: середина фото лишається видимою. */
+.wb-showcase-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(26, 20, 44, 0) 20%,
+    rgba(26, 20, 44, 0.55) 64%,
+    rgba(26, 20, 44, 0.84) 100%
+  );
+}
+
+.wb-showcase-brand {
+  position: relative;
+  z-index: 1;
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
+  color: var(--text-on-scrim);
 }
 
 .wb-showcase-title {
-  margin: var(--sp-2) 0 0;
+  margin: 0;
   font-family: var(--font-display);
   font-size: var(--display-size-hero);
   font-weight: var(--weight-black);
   letter-spacing: -0.045em;
-  line-height: 0.98;
+  line-height: 1;
   color: #ffffff;
 }
 
-.wb-showcase-sub {
-  margin: var(--sp-3) 0 0;
+.wb-showcase-tagline {
+  margin: var(--sp-2) 0 0;
   font-size: var(--text-base);
-  font-weight: var(--weight-bold);
-  line-height: 1.45;
-  color: #ffffff;
+  font-weight: var(--weight-semibold);
+  color: rgba(255, 255, 255, 0.9);
 }
 
-/* Панель входів: білий аркуш, що приїжджає знизу. */
-.wb-showcase-panel {
-  position: relative;
-  z-index: 1;
-  margin-top: auto;
-  margin-inline: calc(-1 * var(--sp-5));
-  padding: var(--sp-5) var(--sp-4) calc(var(--sp-5) + var(--safe-bottom));
-  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
-  background: var(--panel-sheet);
-  box-shadow: 0 -18px 44px -24px var(--surface-overlay);
-  color: var(--text-primary);
+.wb-showcase-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: 0 var(--sp-4);
 }
 
-.wb-showcase-go {
-  width: 100%;
-  padding: var(--sp-4);
-  border: 0;
-  border-radius: var(--radius-full);
-  background: var(--gradient-cta);
-  box-shadow: var(--cta-shadow);
-  color: var(--cta-ink);
-  font: inherit;
-  font-size: var(--text-base);
-  font-weight: var(--weight-black);
+.wb-showcase-group {
+  display: flex;
+  flex-direction: column;
 }
 
-.wb-showcase-go:active {
-  transform: scale(0.99);
-}
-
-.wb-showcase-or {
-  margin: var(--sp-3) 0;
-  text-align: center;
+.wb-showcase-group-title {
+  margin: 0 0 var(--sp-2) var(--sp-1);
   font-size: var(--cap-size);
   font-weight: var(--cap-weight);
   letter-spacing: var(--cap-tracking);
@@ -128,74 +90,61 @@
   color: var(--text-muted);
 }
 
-.wb-showcase-ghost {
-  width: 100%;
-  padding: var(--sp-4);
-  border: 1.5px solid var(--field-line);
-  border-radius: var(--radius-full);
-  background: transparent;
-  color: var(--text-primary);
-  font: inherit;
-  font-size: var(--text-base);
-  font-weight: var(--weight-black);
-}
-
-.wb-showcase-ask {
+.wb-showcase-list {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
-}
-
-.wb-showcase-send {
-  width: 100%;
-}
-
-.wb-showcase-sent {
   margin: 0;
-  text-align: center;
-  font-size: var(--text-base);
-  color: var(--green);
-}
-
-.wb-showcase-feats {
-  display: flex;
-  gap: var(--sp-4);
-  margin-top: 18px;
-}
-
-/* Входи — кнопки, а не підписи: те, що виглядає як вхід, мусить ним бути. */
-.wb-showcase-feat {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
   padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  list-style: none;
+}
+
+.wb-showcase-list > li + li {
+  border-top: 1px solid var(--card-border);
+}
+
+/* Рядок — кнопка на всю ширину: те, що виглядає як вхід, мусить ним бути. */
+.wb-showcase-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
   border: 0;
   background: none;
-  text-align: left;
   color: var(--text-primary);
   font: inherit;
+  text-align: left;
 }
 
-.wb-showcase-num {
-  font-size: var(--text-xs);
-  font-weight: var(--weight-black);
-  letter-spacing: 0.14em;
-  color: var(--text-muted);
+.wb-showcase-row:active {
+  background: var(--surface-active);
 }
 
-.wb-showcase-feat-label {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-black);
-  line-height: 1.25;
+.wb-showcase-row-icon {
+  display: flex;
+  flex: 0 0 38px;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
-.wb-showcase-foot {
-  margin: var(--sp-4) 0 0;
-  text-align: center;
-  font-size: var(--cap-size);
-  font-weight: var(--cap-weight);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.wb-showcase-row-label {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-showcase-row-more {
+  display: flex;
   color: var(--text-muted);
 }

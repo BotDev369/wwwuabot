@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * «Магазини» — список відкритих магазинів, який повернувся в меню.
+ * «Крамниці» — список відкритих крамниць, який повернувся в меню.
  *
  * Тест тримає те, що ламається мовчки: рядок веде на **адресу магазину**
  * (`/<slug>`), порожній список каже, що він порожній (а не вдає поломку
@@ -29,7 +29,7 @@ beforeEach(() => {
   shops = async () => [];
 });
 
-describe("екран «Магазини»", () => {
+describe("екран «Крамниці»", () => {
   it("показує магазини, які віддав запит", async () => {
     shops = async () => [
       { id: 3, slug: "kava", title: "Кав'ярня" },
@@ -50,10 +50,10 @@ describe("екран «Магазини»", () => {
     expect(navigate).toHaveBeenCalledWith("/kava");
   });
 
-  it("порожній список каже, що магазинів немає", async () => {
+  it("порожній список каже, що крамниць немає", async () => {
     render(<ShopsPage />);
 
-    expect(await screen.findByText("Відкритих магазинів ще немає.")).toBeTruthy();
+    expect(await screen.findByText("Відкритих крамниць ще немає.")).toBeTruthy();
     expect(screen.queryByRole("button")).toBeNull();
   });
 
@@ -64,6 +64,6 @@ describe("екран «Магазини»", () => {
     render(<ShopsPage />);
 
     expect(await screen.findByText("Немає зв'язку")).toBeTruthy();
-    expect(screen.queryByText("Відкритих магазинів ще немає.")).toBeNull();
+    expect(screen.queryByText("Відкритих крамниць ще немає.")).toBeNull();
   });
 });

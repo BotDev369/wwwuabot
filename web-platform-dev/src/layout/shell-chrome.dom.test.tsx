@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /**
  * Хедер на кожному екрані — без винятків: тест іде по всьому реєстру й будує
- * хедер тією самою функцією, що й каркас. Сторінки контенту перевіряються
+ * хедер тією самою функцією, що й каркас. Крамниці як сторінки контенту перевіряються
  * окремо — їхні адреси в реєстрі не живуть.
  *
  * @module web-platform-dev/src/layout/shell-chrome.dom.test
@@ -141,10 +141,10 @@ describe("хедер на кожному екрані реєстру", () => {
         labels.every((label) => label !== ""),
         path,
       ).toBe(true);
-      expect(labels[0], path).toBe("Сторінки");
+      expect(labels[0], path).toBe("Крамниці");
     }
 
-    // Коли назва приїхала, рівень сторінки стає другим, а «Сторінки» лишається.
-    expect(crumbLabels(renderBar("/galyashop", "GalyaShop"))).toEqual(["Сторінки", "GalyaShop"]);
+    // Коли назва приїхала, рівень крамниці стає другим, а «Крамниці» лишається.
+    expect(crumbLabels(renderBar("/galyashop", "GalyaShop"))).toEqual(["Крамниці", "GalyaShop"]);
   });
 });

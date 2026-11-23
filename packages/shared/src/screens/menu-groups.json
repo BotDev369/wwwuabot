@@ -1,0 +1,6 @@
+[
+  { "key": "everyday", "title": "Щоденне", "screens": ["day", "analysis", "users", "account"] },
+  { "key": "shopping", "title": "Покупки", "screens": ["shops", "orders", "favorites"] },
+  { "key": "work", "title": "Робота", "screens": ["services", "trackers", "notes"] },
+  { "key": "contact", "title": "Зв'язок", "screens": ["messages", "contacts"] }
+]

@@ -1,5 +1,5 @@
 {
-  "version": "9e7a700",
+  "version": "77282f7",
   "page": {
     "title": "Єдиний UI",
     "intro": "Справжній зразок, клас і присуд ужитку. Розділи згорнуті — відкривай потрібний.",
@@ -74,7 +74,7 @@
           "sampleText": "Кнопка",
           "note": "Базова кнопка: мірки, радіус і вага — з токенів.",
           "usage": {
-            "platform": 44,
+            "platform": 43,
             "admin": 26,
             "ui": 16,
             "shared": 4
@@ -89,7 +89,7 @@
           "sampleText": "Зберегти",
           "note": "Одна основна дія на екран.",
           "usage": {
-            "platform": 26,
+            "platform": 25,
             "admin": 15,
             "ui": 13,
             "shared": 4
@@ -231,7 +231,7 @@
           "sampleText": "Кілька рядків тексту",
           "note": "Той самий вигляд, інша висота.",
           "usage": {
-            "platform": 5,
+            "platform": 4,
             "admin": 8,
             "ui": 4,
             "shared": 0
@@ -2390,7 +2390,7 @@
           "note": "",
           "icon": "chevron-right",
           "usage": {
-            "platform": 10,
+            "platform": 11,
             "admin": 3,
             "ui": 2,
             "shared": 3

@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 /**
- * Вітрина — головний екран.
+ * Головна: обкладинка з назвою й меню, що дублює сайдбар.
  *
- * Ламається мовчки у двох місцях: вхід, що веде не на екран (обіцянка без
- * сторінки), і «Попросити доступ», який нічого не надсилає — тоді людина
- * чекає відповіді, якої ніхто не отримає.
+ * Ламається мовчки у двох місцях: обкладинка без назви продукту й меню, у
+ * якому пункт веде не на свій екран. Тому перевіряємо склад груп і адресу
+ * кожного рядка, а не сам факт наявності кнопок.
  *
  * @module web-platform-dev/src/pages/entry/EntryPage.dom.test
  */
@@ -12,64 +12,59 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { DAY_PATH, ORDERS_PATH, USERS_PATH } from "@/app/routes";
 
-const hooks = {
-  navigate: vi.fn(),
-  sendAccessRequest: vi.fn(async () => true),
-};
+const hooks = { navigate: vi.fn() };
 
 vi.mock("react-router-dom", () => ({ useNavigate: () => hooks.navigate }));
-vi.mock("@/shared/api/access.api", () => ({
-  sendAccessRequest: hooks.sendAccessRequest,
+// Перший кадр: `/api/screens` ще не відповів — меню будується з реєстру.
+vi.mock("@/layout/useScreens", () => ({
+  useScreens: () => ({ rows: [], ready: false, byKey: new Map() }),
 }));
 
 const { EntryPage } = await import("./EntryPage");
 
+function labels(selector: string): string[] {
+  return [...document.querySelectorAll(selector)].map((node) => node.textContent?.trim() ?? "");
+}
+
 beforeEach(() => {
   hooks.navigate.mockReset();
-  hooks.sendAccessRequest.mockClear();
-  hooks.sendAccessRequest.mockResolvedValue(true);
 });
 
-describe("вітрина", () => {
-  it("називає продукт і обіцянку, а не порожній екран", () => {
+describe("головна", () => {
+  it("називає продукт і обіцянку на обкладинці", () => {
     render(<EntryPage />);
 
-    expect(screen.getByRole("heading", { name: "Ділова платформа для Своїх" })).toBeTruthy();
-    expect(screen.getByText("Вхід за запрошенням")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "ПАЛЯНИЦЯ" })).toBeTruthy();
+    expect(screen.getByText("платформа для своїх")).toBeTruthy();
   });
 
-  it("«Увійти» веде в «Мій день»", async () => {
+  it("дублює меню групами в порядку реєстру", () => {
     render(<EntryPage />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Увійти" }));
-
-    expect(hooks.navigate).toHaveBeenCalledWith(DAY_PATH);
-  });
-
-  it("кожен вхід веде на свій наявний екран", async () => {
-    render(<EntryPage />);
-
-    await userEvent.click(screen.getByRole("button", { name: /Замовлення/ }));
-    await userEvent.click(screen.getByRole("button", { name: /Гурт/ }));
-    await userEvent.click(screen.getByRole("button", { name: /Мій день/ }));
-
-    expect(hooks.navigate.mock.calls.map((call) => call[0])).toEqual([
-      ORDERS_PATH,
-      USERS_PATH,
-      DAY_PATH,
+    expect(labels(".wb-showcase-group-title")).toEqual(["Щоденне", "Покупки", "Робота", "Зв'язок"]);
+    expect(labels(".wb-showcase-row-label")).toEqual([
+      "Мій день",
+      "Аналіз людей і подій",
+      "Гурт",
+      "Акаунт",
+      "Крамниці",
+      "Замовлення",
+      "Обране",
+      "Сервіси",
+      "Трекери",
+      "Нотатки",
+      "Повідомлення",
+      "Контакти",
     ]);
   });
 
-  it("прохання про доступ відкривається формою й справді надсилається", async () => {
+  it("кожен рядок веде на свій екран", async () => {
     render(<EntryPage />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Попросити доступ" }));
-    await userEvent.type(screen.getByLabelText("Прохання про доступ"), "Хочу всередину");
-    await userEvent.click(screen.getByRole("button", { name: "Відправити" }));
+    await userEvent.click(screen.getByRole("button", { name: "Крамниці" }));
+    await userEvent.click(screen.getByRole("button", { name: "Нотатки" }));
 
-    expect(hooks.sendAccessRequest).toHaveBeenCalledWith("Хочу всередину");
-    expect(await screen.findByText(/Звернення надіслано/)).toBeTruthy();
+    expect(hooks.navigate.mock.calls.map((call) => call[0])).toEqual(["/shops", "/notes"]);
   });
 });

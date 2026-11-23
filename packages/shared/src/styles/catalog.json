@@ -1,5 +1,5 @@
 {
-  "version": "9e7a700",
+  "version": "77282f7",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -204,7 +204,7 @@
     {
       "file": "showcase.css",
       "tokens": 0,
-      "classes": 21
+      "classes": 15
     },
     {
       "file": "subbar.css",
@@ -6473,26 +6473,20 @@
         "section": "",
         "names": [
           "wb-showcase",
-          "wb-showcase-ask",
-          "wb-showcase-blob",
-          "wb-showcase-blob-a",
-          "wb-showcase-blob-b",
-          "wb-showcase-cap",
-          "wb-showcase-feat",
-          "wb-showcase-feat-label",
-          "wb-showcase-feats",
-          "wb-showcase-foot",
-          "wb-showcase-ghost",
-          "wb-showcase-go",
+          "wb-showcase-brand",
+          "wb-showcase-group",
+          "wb-showcase-group-title",
+          "wb-showcase-groups",
           "wb-showcase-hero",
-          "wb-showcase-num",
-          "wb-showcase-or",
-          "wb-showcase-panel",
-          "wb-showcase-send",
-          "wb-showcase-sent",
-          "wb-showcase-sub",
+          "wb-showcase-list",
+          "wb-showcase-photo",
+          "wb-showcase-row",
+          "wb-showcase-row-icon",
+          "wb-showcase-row-label",
+          "wb-showcase-row-more",
+          "wb-showcase-tagline",
           "wb-showcase-title",
-          "wb-showcase-watermark"
+          "wb-showcase-veil"
         ]
       }
     ],

@@ -49,7 +49,7 @@
     "key": "shops",
     "path": "/shops",
     "parent": null,
-    "title": "Магазини",
+    "title": "Крамниці",
     "icon": "cart",
     "sort": 50,
     "inMenu": true
@@ -355,7 +355,7 @@
     "key": "scenarios.orders",
     "path": "/scenarios/:id/orders",
     "parent": "shops",
-    "title": "Замовлення магазину",
+    "title": "Замовлення крамниці",
     "icon": null,
     "sort": 10,
     "inMenu": false

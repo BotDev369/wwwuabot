@@ -1,7 +1,7 @@
 [
   { "key": "tracker", "label": "Трекер" },
-  { "key": "shop", "label": "Магазин" },
-  { "key": "pages", "label": "Сторінки" },
+  { "key": "shop", "label": "Крамниця" },
+  { "key": "pages", "label": "Крамниці" },
   { "key": "page", "label": "Сторінка" },
   { "key": "assessments", "label": "Розвиток" }
 ]

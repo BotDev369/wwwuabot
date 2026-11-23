@@ -27,23 +27,29 @@ const ROWS: ScreenRow[] = [
   row({ key: "analysis", title: "Аналіз", icon: "grid", sortOrder: 40 }),
   row({ key: "trackers", title: "Трекери", icon: "bar-chart", sortOrder: 10 }),
   // Не в меню — у сайдбар не потрапляє.
-  row({ key: "shops", title: "Магазини", inMenu: false }),
+  row({ key: "shops", title: "Крамниці", inMenu: false }),
   // Пункт без знака не малюється: знак — частина пункту, а не прикраса.
   row({ key: "notes", title: "Нотатки", icon: null, sortOrder: 30 }),
 ];
 
 describe("navFromScreens", () => {
-  it("бере лише пункти меню, у порядку `sort_order`, без пунктів без знака", () => {
-    const [section] = navFromScreens(ROWS, "/trackers");
+  it("бере лише пункти меню, тематичними групами, без пунктів без знака", () => {
+    const sections = navFromScreens(ROWS, "/trackers");
 
-    expect(section.items.map((item) => item.key)).toEqual(["trackers", "account", "analysis"]);
-    expect(section.items[0].href).toBe("/trackers");
+    expect(sections.map((section) => section.key)).toEqual(["everyday", "work"]);
+    expect(sections[0].title).toBe("Щоденне");
+    // Група тримає свій порядок із `menu-groups.json`, а не `sort_order`.
+    expect(sections[0].items.map((item) => item.key)).toEqual(["analysis", "account"]);
+    // «Нотатки» без знака не малюються, тож у групі лишаються самі «Трекери».
+    expect(sections[1].items.map((item) => item.key)).toEqual(["trackers"]);
+    expect(sections[1].items[0].href).toBe("/trackers");
   });
 
   it("підсвічує корінь і його підсторінки, але не сусідній розділ", () => {
     const active = (pathname: string): string[] =>
-      navFromScreens(ROWS, pathname)[0]
-        .items.filter((item) => item.active)
+      navFromScreens(ROWS, pathname)
+        .flatMap((section) => section.items)
+        .filter((item) => item.active)
         .map((i) => i.key);
 
     expect(active("/trackers")).toEqual(["trackers"]);
@@ -72,7 +78,7 @@ describe("PlatformSidebar", () => {
     );
 
     expect(screen.getByText("Трекери")).toBeTruthy();
-    expect(screen.queryByText("Магазини")).toBeNull();
+    expect(screen.queryByText("Крамниці")).toBeNull();
 
     fireEvent.click(screen.getByText("Акаунт"));
 
