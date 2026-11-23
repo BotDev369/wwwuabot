@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
   contactFlow: vi.fn(),
   contactCallback: vi.fn(),
   deleteIncoming: vi.fn(),
+  words: vi.fn(),
 }));
 
 vi.mock("../../repositories/scenario.repository", () => ({
@@ -37,6 +38,7 @@ vi.mock("../../modules/access/contact/panel", () => ({
 vi.mock("../../shared/utils/message", () => ({
   deleteIncomingMessage: mocks.deleteIncoming,
 }));
+vi.mock("../../modules/search/words.handler", () => ({ handleWords: mocks.words }));
 
 const { botRouter } = await import("./bot-router");
 
@@ -59,6 +61,7 @@ beforeEach(() => {
   mocks.denied.mockResolvedValue(true);
   mocks.contactFlow.mockResolvedValue(false);
   mocks.contactCallback.mockResolvedValue(false);
+  mocks.words.mockResolvedValue(true);
 });
 
 describe("botRouter", () => {
@@ -114,6 +117,22 @@ describe("botRouter", () => {
     await botRouter(context({ message: { text: "/help", message_id: 3 } }));
     expect(mocks.deleteIncoming).toHaveBeenCalled();
     expect(mocks.find).not.toHaveBeenCalled();
+  });
+
+  it("/words показує довідник слів, а не сценарій", async () => {
+    await botRouter(context({ message: { text: "/words", message_id: 3 } }));
+
+    expect(mocks.words).toHaveBeenCalled();
+    expect(mocks.find).not.toHaveBeenCalled();
+    expect(mocks.deleteIncoming).not.toHaveBeenCalled();
+  });
+
+  it("/words без індексу зникає, як інші службові команди", async () => {
+    mocks.words.mockResolvedValue(false);
+    await botRouter(context({ message: { text: "/words@bot", message_id: 3 } }));
+
+    expect(mocks.words).toHaveBeenCalled();
+    expect(mocks.deleteIncoming).toHaveBeenCalled();
   });
 
   it("без тексту й callback нічого не робить", async () => {

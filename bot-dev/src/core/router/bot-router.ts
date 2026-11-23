@@ -24,6 +24,7 @@ import { handleContactCallback } from "../../modules/access/contact/panel";
 import { handleReportCommand } from "../../modules/reports/history";
 import { splitInviteCode } from "../../modules/access/payload";
 import { handleSearch } from "../../modules/search/search.handler";
+import { handleWords } from "../../modules/search/words.handler";
 import { handleStart } from "../../modules/start/start.handler";
 import { recordIncomingMessage } from "../../modules/history/record";
 
@@ -61,7 +62,16 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     }
 
     const [command, payload = ""] = text.split(" ");
-    if (command.split("@")[0] !== "/start") {
+    const name = command.split("@")[0];
+
+    // Довідник слів — окремий екран, а не сценарій і не пошуковий запит.
+    if (name === "/words") {
+      if (await handleWords(ctx)) return;
+      await deleteIncomingMessage(ctx);
+      return;
+    }
+
+    if (name !== "/start") {
       await deleteIncomingMessage(ctx);
       return;
     }
