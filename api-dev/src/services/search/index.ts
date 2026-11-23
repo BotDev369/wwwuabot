@@ -1,5 +1,5 @@
 /**
- * Пошуковий індекс: сторінки й товари → один ключ `search:v1` у KV.
+ * Пошуковий індекс: сторінки й товари → один ключ `search:v2` у KV.
  * Видимість відбирає запит (публічні сторінки, активні товари відкритих магазинів);
  * перебудова — лише по факту зміни, без розкладу. Деталі — `docs/SEARCH.md`.
  *
@@ -13,7 +13,7 @@ import { searchTermsFrom, type SearchEntry, type SearchIndex } from "@wwwuabot/s
 import type { Env } from "../../shared/types";
 
 /** Один ключ на всю версію: стара форма не живе поруч із новою. */
-export const SEARCH_INDEX_KEY = "search:v1";
+export const SEARCH_INDEX_KEY = "search:v2";
 
 /** Заглушки лежать у тому самому бакеті, під префіксом `shop/`. */
 const DEFAULT_PAGE_PHOTO = "shop/defaults/page.webp";
@@ -32,6 +32,7 @@ interface PageRow {
   photo_url: string | null;
   template_key: string | null;
   search_terms: string | null;
+  page_data: string | null;
 }
 
 interface ProductRow {
@@ -60,6 +61,69 @@ function terms(raw: string | null, title: string, slug: string): string[] {
     // Битий JSON — це не привід втратити рядок: нижче його врятують слова з назви.
   }
   return searchTermsFrom(title, slug);
+}
+
+/** Обсяг опису в картці: довший абзац у чаті вже не читають. */
+const DESCRIPTION_LIMIT = 240;
+
+function clip(value: string | null | undefined): string {
+  const text = (value ?? "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (text.length <= DESCRIPTION_LIMIT) return text;
+  const cut = text.slice(0, DESCRIPTION_LIMIT);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > 80 ? cut.slice(0, space) : cut).trimEnd()}…`;
+}
+
+interface TextBlock {
+  type?: string;
+  props?: Record<string, unknown>;
+  children?: TextBlock[];
+}
+
+/**
+ * Опис сторінки з `page_data`: спершу короткий підзаголовок (`h3`), потім
+ * перший текст. Назва (`h1`) не годиться — вона вже стоїть у заголовку картки.
+ */
+export function pageDescription(raw: string | null): string {
+  if (!raw) return "";
+
+  let zones: Record<string, TextBlock[]>;
+  try {
+    const parsed = JSON.parse(raw) as { zones?: Record<string, TextBlock[]> };
+    if (!parsed.zones || typeof parsed.zones !== "object") return "";
+    zones = parsed.zones;
+  } catch {
+    return "";
+  }
+
+  const blocks = ["header", "main", "sidebar", "footer"].flatMap((zone) =>
+    Array.isArray(zones[zone]) ? zones[zone] : [],
+  );
+
+  const walk = (list: readonly TextBlock[], visit: (block: TextBlock) => string): string => {
+    for (const block of list) {
+      const found = visit(block);
+      if (found) return found;
+      const nested = walk(Array.isArray(block.children) ? block.children : [], visit);
+      if (nested) return nested;
+    }
+    return "";
+  };
+
+  const tagline = walk(blocks, (block) => {
+    if (block.type !== "text" || block.props?.level !== "h3") return "";
+    return typeof block.props.title === "string" ? block.props.title : "";
+  });
+
+  const firstText = walk(blocks, (block) => {
+    if (block.type !== "text") return "";
+    return typeof block.props?.content === "string" ? block.props.content : "";
+  });
+
+  return clip(tagline || firstText);
 }
 
 function imageIds(raw: string | null): number[] {
@@ -92,7 +156,7 @@ export async function buildSearchIndex(env: Env, base: string): Promise<SearchIn
   // Сторінки платформи мають is_public = NULL: вони публічні за походженням, а
   // is_public = 1 — позначка авторської сторінки. Просте `= 1` відкинуло б головну.
   const pagesResult = await env.DB.prepare(
-    `SELECT p.slug, p.title, p.photo_url, p.template_key, p.search_terms
+    `SELECT p.slug, p.title, p.photo_url, p.template_key, p.search_terms, p.page_data
        FROM platform_pages p
       WHERE p.is_active = 1
         AND (p.owner_id IS NULL OR COALESCE(p.is_public, 0) = 1)
@@ -111,6 +175,7 @@ export async function buildSearchIndex(env: Env, base: string): Promise<SearchIn
       slug: row.slug,
       title,
       subtitle: TEMPLATE_LABELS[row.template_key ?? ""] ?? "Сторінка",
+      description: pageDescription(row.page_data),
       photo,
       terms: terms(row.search_terms, title, row.slug),
       href: toWebPath(row.slug),
@@ -151,6 +216,7 @@ export async function buildSearchIndex(env: Env, base: string): Promise<SearchIn
       shopSlug: row.shop_slug,
       title,
       subtitle: row.shop_title ?? row.shop_slug,
+      description: clip(row.summary),
       price: row.price ?? "",
       photo: cover
         ? absolute(base, mediaUrl(cover))

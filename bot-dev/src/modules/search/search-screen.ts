@@ -1,6 +1,7 @@
 /**
- * Екран пошуку — одне rich-повідомлення: фото, заголовки, роздільники й кнопки.
- * `<tg-button-row>` без `align` розтягує «Відкрити» на всю ширину; фото — з R2.
+ * Екран збігів — акордеон на кожен результат: назва в заголовку, під нею фото,
+ * опис, ціна й «Відкрити» на всю ширину. Шапки «Знайдено…» немає: у чаті вона
+ * лише дублює назви. Перший акордеон відкритий, решта — згорнуті.
  *
  * @module bot-dev/src/modules/search/search-screen
  */
@@ -25,24 +26,21 @@ function absolute(platformUrl: string | undefined, href: string): string | null 
   return `${platformUrl.replace(/\/+$/, "")}${href}`;
 }
 
-function card(entry: SearchEntry, platformUrl: string | undefined, webApp: boolean): string {
-  const parts: string[] = [];
+/** Один збіг у своєму акордеоні: тіло ховається під назвою. */
+function accordion(
+  entry: SearchEntry,
+  platformUrl: string | undefined,
+  webApp: boolean,
+  open: boolean,
+): string {
+  const parts: string[] = [`<details${open ? " open" : ""}><summary>${esc(entry.title)}</summary>`];
   if (entry.photo) parts.push(`<img src="${esc(entry.photo)}"/>`);
-  parts.push(`<h3>${esc(entry.title)}</h3>`);
-
-  const subtitle = [entry.subtitle, entry.price].filter(Boolean).join(" · ");
-  if (subtitle) parts.push(`<p>${esc(subtitle)}</p>`);
+  if (entry.description) parts.push(`<p>${esc(entry.description)}</p>`);
+  if (entry.price) parts.push(`<p>${esc(entry.price)}</p>`);
 
   const url = absolute(platformUrl, entry.href);
-  if (url) {
-    parts.push(`<tg-button-row>${button("Відкрити", url, webApp)}</tg-button-row>`);
-    if (entry.kind === "product") {
-      parts.push(
-        `<tg-button-row>${button("У кошик", `${url}?add=1`, webApp)}` +
-          `${button("Замовити", `${url}?order=1`, webApp)}</tg-button-row>`,
-      );
-    }
-  }
+  if (url) parts.push(`<tg-button-row>${button("Відкрити", url, webApp)}</tg-button-row>`);
+  parts.push("</details>");
   return parts.join("");
 }
 
@@ -61,7 +59,7 @@ export function searchScreenHtml(
     );
   }
 
-  const head =
-    `<h2>Знайдено на платформі</h2>` + `<p>За запитом «${esc(query)}» — ${matches.length}.</p>`;
-  return head + matches.map((match) => card(match.entry, platformUrl, webApp)).join("<hr/>");
+  return matches
+    .map((match, index) => accordion(match.entry, platformUrl, webApp, index === 0))
+    .join("");
 }

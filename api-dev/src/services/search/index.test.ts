@@ -5,7 +5,7 @@ vi.mock("@wwwuabot/shared/database/ensure-tables", () => ({
   ensureTables: async () => {},
 }));
 
-const { buildSearchIndex, rebuildSearchIndex } = await import("./index");
+const { buildSearchIndex, pageDescription, rebuildSearchIndex } = await import("./index");
 
 interface Query {
   sql: string;
@@ -47,6 +47,24 @@ const page = (over: Record<string, unknown> = {}) => ({
   photo_url: "https://api.test/api/shop/media/shop/382/cover.jpg",
   template_key: "shop",
   search_terms: '["галяшоп","galyashop"]',
+  page_data: JSON.stringify({
+    version: 1,
+    zones: {
+      sidebar: [],
+      header: [],
+      main: [
+        {
+          type: "card",
+          props: {},
+          children: [
+            { type: "text", props: { title: "GalyaShop", level: "h1" } },
+            { type: "text", props: { title: "Трави й квіти", level: "h3" } },
+          ],
+        },
+      ],
+      footer: [],
+    },
+  }),
   ...over,
 });
 
@@ -72,6 +90,7 @@ describe("buildSearchIndex", () => {
       kind: "page",
       title: "GalyaShop",
       subtitle: "Магазин",
+      description: "Трави й квіти",
       href: "/galyashop",
       terms: ["галяшоп", "galyashop"],
       photo: "https://api.test/api/shop/media/shop/382/cover.jpg",
@@ -108,6 +127,7 @@ describe("buildSearchIndex", () => {
     expect(index.entries[0]).toMatchObject({
       kind: "product",
       subtitle: "GalyaShop",
+      description: "Трава",
       price: "120 ₴",
       href: "/galyashop/p/astrahal",
       photo: "https://api.test/api/shop/media/shop/382/x.jpg",
@@ -130,6 +150,39 @@ describe("buildSearchIndex", () => {
   });
 });
 
+describe("pageDescription", () => {
+  const config = (blocks: unknown) =>
+    JSON.stringify({ version: 1, zones: { main: [blocks], header: [], sidebar: [], footer: [] } });
+
+  it("бере підзаголовок h3, а не назву h1", () => {
+    const raw = config({
+      type: "card",
+      children: [
+        { type: "text", props: { title: "GalyaShop", level: "h1" } },
+        { type: "text", props: { title: "Трави й квіти", level: "h3" } },
+      ],
+    });
+    expect(pageDescription(raw)).toBe("Трави й квіти");
+  });
+
+  it("без h3 бере перший текст і прибирає теги", () => {
+    const raw = config({ type: "text", props: { content: "Ми збираємо <b>трави</b> вручну" } });
+    expect(pageDescription(raw)).toBe("Ми збираємо трави вручну");
+  });
+
+  it("битий або порожній page_data — порожній опис, без винятку", () => {
+    expect(pageDescription("{не json")).toBe("");
+    expect(pageDescription(null)).toBe("");
+  });
+
+  it("довгий опис обрізається по слову й закінчується трикрапкою", () => {
+    const raw = config({ type: "text", props: { content: "слово ".repeat(80) } });
+    const text = pageDescription(raw);
+    expect(text.length).toBeLessThanOrEqual(241);
+    expect(text.endsWith("…")).toBe(true);
+  });
+});
+
 describe("rebuildSearchIndex", () => {
   it("пише один ключ і рахує сторінки й товари", async () => {
     const { env, put } = makeEnv([page()], [product()], [{ id: 7, r2_key: "shop/382/x.jpg" }]);
@@ -138,7 +191,7 @@ describe("rebuildSearchIndex", () => {
     expect(result).toMatchObject({ pages: 1, products: 1 });
     expect(put).toHaveBeenCalledTimes(1);
     const [key, json] = put.mock.calls[0] as unknown as [string, string];
-    expect(key).toBe("search:v1");
+    expect(key).toBe("search:v2");
     expect(JSON.parse(json).entries).toHaveLength(2);
   });
 });

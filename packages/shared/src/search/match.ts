@@ -18,6 +18,8 @@ export interface SearchEntry {
   title: string;
   /** Підпис під назвою: «Магазин», «Стаття», назва магазину товару. */
   subtitle?: string;
+  /** Короткий опис для картки: `summary` товару або підзаголовок сторінки. */
+  description?: string;
   price?: string;
   /** Абсолютна адреса фото; порожня — рендер бере заглушку. */
   photo?: string;

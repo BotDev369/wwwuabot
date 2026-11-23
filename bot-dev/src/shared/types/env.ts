@@ -33,7 +33,7 @@ export interface Env {
   ENVIRONMENT: string;
   DB: D1Database;
   /**
-   * Пошуковий індекс (`search:v1`), який пише `api-dev`. Той самий namespace,
+   * Пошуковий індекс (`search:v2`), який пише `api-dev`. Той самий namespace,
    * що в API: другого KV під ту саму відповідь не заводимо.
    */
   CONTENT_KV?: KVNamespace;

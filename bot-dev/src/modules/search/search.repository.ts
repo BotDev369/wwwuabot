@@ -9,7 +9,7 @@ import type { SearchIndex } from "@wwwuabot/shared/search";
 import type { Env } from "../../shared/types/env";
 
 /** Той самий ключ, що в `api-dev`: версія одна на обидва боки. */
-export const SEARCH_INDEX_KEY = "search:v1";
+export const SEARCH_INDEX_KEY = "search:v2";
 
 export async function loadSearchIndex(env: Env): Promise<SearchIndex | null> {
   if (!env.CONTENT_KV) return null;
