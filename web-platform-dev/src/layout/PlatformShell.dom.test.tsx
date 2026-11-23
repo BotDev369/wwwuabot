@@ -90,14 +90,15 @@ describe("каркас", () => {
     expect(document.querySelector(".wb-platform")).not.toBeNull();
   });
 
-  it("вітрина `/` живе в тому самому каркасі й має крохи «Вхід»", () => {
+  it("вітрина `/` живе в тому самому каркасі, але без крошок і бренду в хедері", () => {
     renderEntry();
 
     expect(screen.getByRole("heading", { name: "ПАЛЯНИЦЯ" })).toBeTruthy();
     expect(screen.getByText("платформа для своїх")).toBeTruthy();
-    // Бренд є і в хедері, і на обкладинці — це той самий продукт, а не дубль.
-    expect(screen.getAllByText("ПАЛЯНИЦЯ").length).toBeGreaterThan(1);
-    expect(document.querySelector(".wb-appbar__trail")?.textContent).toBe("Вхід");
+    // Назва продукту — на обкладинці; у хедері вона не дублюється.
+    expect(screen.getAllByText("ПАЛЯНИЦЯ")).toHaveLength(1);
+    expect(document.querySelector(".wb-appbar__brand-name")).toBeNull();
+    expect(document.querySelector(".wb-appbar__trail")).toBeNull();
     expect(screen.getByRole("button", { name: "Меню" })).toBeTruthy();
   });
 

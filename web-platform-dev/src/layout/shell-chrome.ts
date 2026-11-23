@@ -20,17 +20,16 @@ export const EMPTY_SHELL_CHROME: ScreenChrome = {
 };
 
 /**
- * Хедер для адреси: назва поточного рівня + батьки.
- *
- * Назва з екрана (`chrome.title`, наприклад «Астрагал») замінює статичну назву
- * останнього рівня; усе інше — з реєстру. Екран без `useScreenChrome` теж
- * отримує крохи, бо `.wb-appbar` не має права лишитись без шляху.
+ * Хедер для адреси: назва поточного рівня + батьки з реєстру; назва з екрана
+ * (`chrome.title`) замінює статичну. Головна — виняток: над нею немає рівнів.
  */
 export function shellChromeFor(
   chrome: ScreenChrome | undefined,
   rows: readonly ScreenRow[],
   pathname: string,
 ): ScreenChrome {
+  if (pathname === "/") return { ...(chrome ?? EMPTY_SHELL_CHROME), title: null, ancestors: [] };
+
   const trail = screenTrail(rows, pathname, chrome?.title ?? null);
   return {
     ...(chrome ?? EMPTY_SHELL_CHROME),

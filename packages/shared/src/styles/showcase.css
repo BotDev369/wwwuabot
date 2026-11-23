@@ -1,6 +1,6 @@
 /*
- * Головна — обкладинка й меню: фото на всю ширину під хедером і назва на ньому;
- * нижче картки груп без підписів, рядок = кольорова плитка, підпис і шеврон.
+ * Головна — обкладинка й меню: графіка на всю ширину під хедером, назва по
+ * центру внизу; далі картки груп без підписів, рядок = кольорова плитка.
  *
  * Мобільне поле `main` тут скасоване: обкладинка мусить упиратися в краї.
  */
@@ -15,12 +15,13 @@
   color: var(--text-primary);
 }
 
-/* Обкладинка — не картка: жодних полів і заокруглень. */
+/* Обкладинка — не картка: жодних полів, заокруглень і пелени. */
 .wb-showcase-hero {
   position: relative;
   display: flex;
   align-items: flex-end;
-  height: clamp(300px, 54vh, 520px);
+  justify-content: center;
+  height: clamp(420px, 80dvh, 780px);
   overflow: hidden;
   background: var(--gradient-hero);
 }
@@ -33,40 +34,32 @@
   object-fit: cover;
 }
 
-/* Світла пелена під назвою: фото яскраве, тож текст темний, а не білий. */
-.wb-showcase-veil {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 249, 240, 0) 42%,
-    rgba(255, 247, 235, 0.6) 74%,
-    rgba(255, 247, 235, 0.97) 100%
-  );
-}
-
 .wb-showcase-brand {
   position: relative;
   z-index: 1;
-  padding: 0 var(--sp-5) var(--sp-4);
-  color: #3b2412;
+  width: 100%;
+  padding: 0 var(--sp-5) var(--sp-6);
+  text-align: center;
 }
 
+/* Тінь тримає читабельність на скляній графіці без затемнення всього низу. */
 .wb-showcase-title {
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--display-size-hero);
   font-weight: var(--weight-black);
-  letter-spacing: -0.045em;
+  letter-spacing: -0.02em;
   line-height: 1;
-  color: #3b2412;
+  color: #ffffff;
+  text-shadow: 0 3px 18px rgba(51, 24, 8, 0.5);
 }
 
 .wb-showcase-tagline {
   margin: var(--sp-2) 0 0;
   font-size: var(--text-base);
   font-weight: var(--weight-semibold);
-  color: #6a4a31;
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 2px 12px rgba(51, 24, 8, 0.5);
 }
 
 .wb-showcase-groups {

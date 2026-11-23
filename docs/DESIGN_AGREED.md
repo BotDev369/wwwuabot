@@ -64,12 +64,12 @@
 
 | Що | Значення з макета | У коді |
 |---|---|---|
-| обкладинка | фото `public/media/home-hero.jpg` (світла графіка), `object-fit: cover`, на всю ширину під хедером, без кутів, висота `clamp(300px, 54vh, 520px)` | `.wb-showcase-hero`, `.wb-showcase-photo` |
-| пелена | світлий градієнт від прозорого (42%) до `rgba(255,247,235,.97)` — лише під текстом | `.wb-showcase-veil` |
-| назва | «ПАЛЯНИЦЯ» 36 px / 900 / `-0.045em`, `#3b2412` | `.wb-showcase-title`, `--display-size-hero` |
-| обіцянка | «платформа для своїх» 15 px / 600, `#6a4a31` | `.wb-showcase-tagline` |
+| обкладинка | графіка `public/media/home-hero.jpg` (скляна паляниця на насиченому градієнті), `object-fit: cover`, на всю ширину під хедером, без кутів і пелени, висота `clamp(420px, 80dvh, 780px)` | `.wb-showcase-hero`, `.wb-showcase-photo` |
+| назва | «ПАЛЯНИЦЯ» по центру внизу, 36 px / 900 / `-0.02em`, біла з тінню | `.wb-showcase-title`, `--display-size-hero` |
+| обіцянка | «платформа для своїх» по центру під назвою, 15 px / 600, білий 94% | `.wb-showcase-tagline` |
+| хедер головної | без бренду й без крошок: назву продукту видно в шапці Telegram і на обкладинці | `hideBrand`, `shellChromeFor` |
 | групи меню | усі екрани платформи: Щоденне · Крамниці · Спільнота · Дозвілля · Кабінет | `web-platform-dev/src/layout/screen-nav.ts` + `packages/shared/src/screens/menu-groups.json` |
-| підпис групи | **на головній немає** — групу читає сама картка; у сайдбарі підпис лишається | `PlatformSidebar` |
+| підпис групи | **немає ніде** — групу читає сам блок пунктів | `PlatformSidebar` |
 | картка групи | `--surface`, кути 20 px, волосяна межа, `--shadow-card` | `.wb-showcase-list` |
 | рядок | плитка 40×40 залита тоном `--data-1…6`, знак світлий `--text-inverse`, назва 15 px / 600, шеврон праворуч | `.wb-showcase-row`, `.wb-showcase-row-icon/-label/-more` |
 | бренд у хедері | «ПАЛЯНИЦЯ» 12 px капсом у спільному хедері каркаса | `.wb-appbar__brand-name` (`PlatformShell`) |

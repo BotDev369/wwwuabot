@@ -1,5 +1,5 @@
 {
-  "version": "7494b4f",
+  "version": "20c5f1f",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -204,7 +204,7 @@
     {
       "file": "showcase.css",
       "tokens": 6,
-      "classes": 14
+      "classes": 13
     },
     {
       "file": "subbar.css",
@@ -6526,8 +6526,7 @@
           "wb-showcase-row-label",
           "wb-showcase-row-more",
           "wb-showcase-tagline",
-          "wb-showcase-title",
-          "wb-showcase-veil"
+          "wb-showcase-title"
         ]
       }
     ],

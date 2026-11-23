@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 /**
- * Хедер на кожному екрані — без винятків: тест іде по всьому реєстру й будує
- * хедер тією самою функцією, що й каркас. Крамниці як сторінки контенту перевіряються
- * окремо — їхні адреси в реєстрі не живуть.
+ * Хедер на кожному екрані: тест іде по всьому реєстру й будує хедер тією самою
+ * функцією, що й каркас. Головна — єдиний виняток: у неї немає над собою рівнів.
+ * Крамниці як сторінки контенту перевіряються окремо — їхніх адрес у реєстрі немає.
  *
  * @module web-platform-dev/src/layout/shell-chrome.dom.test
  */
@@ -73,17 +73,31 @@ describe("хедер на кожному екрані реєстру", () => {
     }
   });
 
-  it("усі 41 екран мають ПАЛЯНИЦЯ і непорожні крохи з першого кадру", () => {
+  it("усі екрани, крім головної, мають ПАЛЯНИЦЯ і непорожні крохи з першого кадру", () => {
     for (const screen of SCREENS) {
       const path = concretePath(screen.path as string);
+      const home = path === "/";
       const chrome = shellChromeFor(undefined, ROWS, path);
 
-      // Бренд є на кожному екрані — його малює сам хедер, а не сторінка.
+      // Головна — обкладинка: назва на ній, у хедері лишається «МЕНЮ».
       const { container, unmount } = render(
-        <AppBar chrome={chrome} onMenu={() => undefined} onNavigate={() => undefined} />,
+        <AppBar
+          chrome={chrome}
+          onMenu={() => undefined}
+          onNavigate={() => undefined}
+          hideBrand={home}
+        />,
       );
       const brand = container.querySelector(".wb-appbar__brand-name")?.textContent;
       const trailNode = container.querySelector(".wb-appbar__trail");
+
+      if (home) {
+        expect(brand, screen.key).toBeUndefined();
+        expect(trailNode, screen.key).toBeNull();
+        unmount();
+        continue;
+      }
+
       const trailText = trailNode?.textContent?.trim() ?? "";
       const crumbs = [...container.querySelectorAll(".wb-appbar__crumb")];
 
@@ -125,10 +139,15 @@ describe("хедер на кожному екрані реєстру", () => {
     }
   });
 
-  it("вітрина `/` — теж екран реєстру з крохами «Вхід»", () => {
-    const trail = renderBar("/");
+  it("вітрина `/` — без крошок і без бренду в хедері", () => {
+    const chrome = shellChromeFor(undefined, ROWS, "/");
+    const { container, unmount } = render(
+      <AppBar chrome={chrome} onMenu={() => undefined} onNavigate={() => undefined} hideBrand />,
+    );
 
-    expect(crumbLabels(trail)).toEqual(["Вхід"]);
+    expect(container.querySelector(".wb-appbar__trail")).toBeNull();
+    expect(container.querySelector(".wb-appbar__brand-name")).toBeNull();
+    unmount();
   });
 
   it("сторінки контенту мають крохи ще до завантаження сценарію", () => {

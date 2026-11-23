@@ -45,6 +45,8 @@ export interface AppBarActions {
   menuOpen?: boolean;
   /** Ім'я бота для діплінка «Поділитись»; `null` — діплінка не буде. */
   botUsername?: string | null;
+  /** Головна: назва продукту вже на обкладинці, у хедері лишається «МЕНЮ». */
+  hideBrand?: boolean;
 }
 
 export function AppBar({
@@ -53,6 +55,7 @@ export function AppBar({
   onNavigate,
   menuOpen = false,
   botUsername = null,
+  hideBrand = false,
 }: AppBarActions): ReactElement | null {
   const chrome = given ?? useContext(ScreenChromeContext)?.chrome;
   if (!chrome) return null;
@@ -63,6 +66,7 @@ export function AppBar({
       onNavigate={onNavigate}
       menuOpen={menuOpen}
       botUsername={botUsername}
+      hideBrand={hideBrand}
     />
   );
 }
@@ -77,6 +81,7 @@ export function AppBarView({
   onNavigate,
   menuOpen = false,
   botUsername = null,
+  hideBrand = false,
 }: { chrome: ScreenChrome } & AppBarActions): ReactElement {
   const { title, ancestors, share, favorite } = chrome;
   const header = useRef<HTMLElement>(null);
@@ -94,9 +99,11 @@ export function AppBarView({
           поверх екрана: місце йому — не в смузі й не в шапці. */}
       <LikeToast />
       <div className="wb-appbar__top">
-        <div className="wb-appbar__brand">
-          <span className="wb-appbar__brand-name">ПАЛЯНИЦЯ</span>
-        </div>
+        {hideBrand ? null : (
+          <div className="wb-appbar__brand">
+            <span className="wb-appbar__brand-name">ПАЛЯНИЦЯ</span>
+          </div>
+        )}
 
         <div className="wb-appbar__actions">
           {share && <BarButton icon="share" label="Поділитись" onClick={() => setSharing(true)} />}

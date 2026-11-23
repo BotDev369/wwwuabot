@@ -75,6 +75,8 @@ function PlatformFrame(): ReactElement {
   // Тому екран без `useScreenChrome` не лишається без шапки, а вітрина `/` —
   // такий самий екран, як решта.
   const shellChrome = shellChromeFor(chrome, rows, pathname);
+  // Головна — обкладинка: назва продукту на ній, у хедері лишається «МЕНЮ».
+  const isHome = pathname === "/";
 
   return (
     <div className="wb-platform">
@@ -96,6 +98,7 @@ function PlatformFrame(): ReactElement {
           onMenu={toggleNav}
           menuOpen={navOpen}
           botUsername={botUsername}
+          hideBrand={isHome}
           onNavigate={(href) => {
             navigate(href);
             closeNav();

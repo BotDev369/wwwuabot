@@ -52,7 +52,6 @@ export function EntryPage(): ReactElement {
     <main className="wb-showcase">
       <section className="wb-showcase-hero">
         <img className="wb-showcase-photo" src="/media/home-hero.jpg" alt="" />
-        <div className="wb-showcase-veil" aria-hidden="true" />
         <div className="wb-showcase-brand">
           <h1 className="wb-showcase-title">ПАЛЯНИЦЯ</h1>
           <p className="wb-showcase-tagline">платформа для своїх</p>
