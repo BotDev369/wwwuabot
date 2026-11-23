@@ -1,5 +1,5 @@
 {
-  "version": "152d035",
+  "version": "9e7a700",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -204,7 +204,7 @@
     {
       "file": "showcase.css",
       "tokens": 0,
-      "classes": 24
+      "classes": 21
     },
     {
       "file": "subbar.css",
@@ -6485,7 +6485,6 @@
           "wb-showcase-ghost",
           "wb-showcase-go",
           "wb-showcase-hero",
-          "wb-showcase-mark",
           "wb-showcase-num",
           "wb-showcase-or",
           "wb-showcase-panel",
@@ -6493,9 +6492,7 @@
           "wb-showcase-sent",
           "wb-showcase-sub",
           "wb-showcase-title",
-          "wb-showcase-top",
-          "wb-showcase-watermark",
-          "wb-showcase-word"
+          "wb-showcase-watermark"
         ]
       }
     ],

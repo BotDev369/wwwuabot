@@ -97,7 +97,10 @@ export const SCREEN_ROUTES: readonly ScreenRoute[] = SCREENS.flatMap((screen) =>
   return [{ key: screen.key, path: screen.path.replace(/^\//, ""), element: component() }];
 });
 
-/** Головна сторінка продукту — вітрина входу, а не рядок реєстру зі своєю адресою. */
+/**
+ * Головна сторінка продукту — вітрина входу. Це рядок реєстру (`entry`, `/`),
+ * але не вкладений маршрут: шлях кореня описує index-маршрут.
+ */
 export const ENTRY_ELEMENT: ReactElement = <EntryPage />;
 
 /** Ключі, для яких карта має компонент: їх звіряє тест із реєстром. */

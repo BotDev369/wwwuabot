@@ -1,8 +1,7 @@
 /*
- * Вітрина — головний екран (макет 08): залите фіалкою поле зверху, біла
- * панель входів знизу. Значення взяті з макета один в один: градієнт
- * `135deg`, дисплей 36 px, капс чистим білим, панель `rgba(255,253,251,.96)`,
- * верхні кути 28 px, кнопки-пігулки 16 px по висоті.
+ * Вітрина — головний екран (макет 08): залите фіалкою поле зверху, біла панель
+ * входів знизу. Висота — `100dvh - --appbar-h`: спільний хедер уже займає
+ * верхній край, інакше біла панель їхала б за нижній край.
  *
  * Плями — шари `radial-gradient`, а не `filter: blur()`: у TWA розмиття
  * коштує кадрів, а на око різниці на 260 px немає.
@@ -12,8 +11,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
-  padding: calc(var(--sp-5) + var(--safe-top)) var(--sp-5) 0;
+  min-height: calc(100dvh - var(--appbar-h));
+  padding: var(--sp-5) var(--sp-5) 0;
   background: var(--gradient-hero);
   color: var(--hero-ink);
   overflow: hidden;
@@ -54,27 +53,6 @@
   transform: translate(-50%, -50%);
   opacity: 0.13;
   pointer-events: none;
-}
-
-.wb-showcase-top {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-}
-
-.wb-showcase-mark {
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
-}
-
-.wb-showcase-word {
-  font-size: var(--cap-size);
-  font-weight: var(--weight-black);
-  letter-spacing: 0.2em;
-  color: #ffffff;
 }
 
 .wb-showcase-hero {

@@ -21,8 +21,8 @@ import { apiFetch } from "@/shared/api/client";
 import { JournalBridge } from "./JournalBridge";
 import { PlatformSidebar } from "./PlatformSidebar";
 import { ScreensProvider } from "./ScreensProvider";
+import { shellChromeFor } from "./shell-chrome";
 import { useScreens } from "./useScreens";
-import { screenTrail } from "./screen-trail";
 
 /**
  * Ім'я бота для діплінків; `null`, поки не відомо.
@@ -71,15 +71,10 @@ function PlatformFrame(): ReactElement {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [navOpen]);
 
-  const trail = screenTrail(rows, pathname, chrome?.title ?? null);
   // Назву й крохи дає реєстр; екран лише уточнює назву з даних (трекер, товар).
-  // Тому екран без `useScreenChrome` більше не лишається без шапки.
-  const current = chrome?.title ?? trail[trail.length - 1]?.label ?? null;
-  const shellChrome = {
-    ...(chrome ?? EMPTY_SHELL_CHROME),
-    title: current,
-    ancestors: trail.slice(0, -1),
-  };
+  // Тому екран без `useScreenChrome` не лишається без шапки, а вітрина `/` —
+  // такий самий екран, як решта.
+  const shellChrome = shellChromeFor(chrome, rows, pathname);
 
   return (
     <div className="wb-platform">
@@ -113,40 +108,16 @@ function PlatformFrame(): ReactElement {
 }
 
 /**
- * Оболонка, яка не є екраном: вітрина входу. Сайдбар і хедер тут були б другою
- * шапкою над власною шапкою екрана.
+ * Оболонка платформи — **без винятків для вітрини**: `/` теж екран реєстру
+ * (`entry`), тож він живе в тому самому каркасі з тим самим хедером. Другої
+ * шапки немає: свою брендову строку вітрина більше не малює.
  */
-function EntryFrame(): ReactElement {
-  return (
-    <>
-      <JournalBridge />
-      <Outlet />
-    </>
-  );
-}
-
 export function PlatformShell(): ReactElement {
-  const { pathname } = useLocation();
-
   return (
     <ScreensProvider>
       <ScreenChromeProvider>
-        {pathname === "/" ? <EntryFrame /> : <PlatformFrame />}
+        <PlatformFrame />
       </ScreenChromeProvider>
     </ScreensProvider>
   );
 }
-
-/**
- * Порожній стан хедера для адреси, яку екран ще не оголосив.
- *
- * Крохи й назву дає реєстр, тож екран без `useScreenChrome` більше не лишається
- * без шапки; дії (поділитись, серце, меню сторінки) лишаються `null`.
- */
-const EMPTY_SHELL_CHROME = {
-  title: null,
-  ancestors: [],
-  menu: null,
-  share: null,
-  favorite: null,
-} as const;

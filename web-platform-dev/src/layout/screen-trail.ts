@@ -4,7 +4,14 @@
  * @module web-platform-dev/src/layout/screen-trail
  */
 
-import { matchScreen, screenChain, screenHref, type ScreenRow } from "@wwwuabot/shared/screens";
+import {
+  matchScreen,
+  screenByKey,
+  screenChain,
+  screenHref,
+  screenLabel,
+  type ScreenRow,
+} from "@wwwuabot/shared/screens";
 
 /** Рівень шляху: підпис і адреса; `href: null` — рівень без посилання. */
 export interface Crumb {
@@ -13,23 +20,33 @@ export interface Crumb {
 }
 
 /**
- * Ланцюжок для адреси: розділ → підрозділ → поточна сторінка.
+ * Ланцюжок для адреси: розділ → підрозділ → поточна сторінка. `title` з даних
+ * замінює статичну назву останнього рівня; батьки — завжди з реєстру.
  *
- * `title` — назва з даних (трекер, товар, тест): вона замінює статичну назву
- * **останнього** рівня, бо саме її людина бачить на екрані. Батьківські рівні
- * завжди беруться з реєстру.
+ * Порожнього шляху не буває: `/` — рядок реєстру `entry`, а сторінка контенту
+ * без рядка отримує рівень «Сторінки» з журналу ще до завантаження сценарію.
  */
 export function screenTrail(
   rows: readonly ScreenRow[],
   pathname: string,
   title: string | null,
 ): Crumb[] {
-  const match = matchScreen(pathname);
-  if (!match) return title ? [{ label: title, href: null }] : [];
+  // `matchScreen` навмисно не бере корінь: `/` — не шаблон, а один екран.
+  const entry = pathname === "/" ? screenByKey("entry") : null;
+  const match = entry ? { screen: entry, params: {} } : matchScreen(pathname);
+  if (!match) {
+    // Сторінка контенту: рівень «Сторінки» — підпис із журналу (`pages`), а не
+    // нове слово в коді. Назва сторінки долучається, щойно прийде з даних.
+    const parent: Crumb = { label: screenLabel("pages"), href: null };
+    return title ? [parent, { label: title, href: null }] : [parent];
+  }
 
   const byKey = new Map(rows.map((row) => [row.key, row]));
   const chain = screenChain(match.screen.key);
-  if (chain.length === 0) return title ? [{ label: title, href: null }] : [];
+  if (chain.length === 0) {
+    const parent: Crumb = { label: screenLabel("pages"), href: null };
+    return title ? [parent, { label: title, href: null }] : [parent];
+  }
 
   return chain.map((screen, index) => {
     const current = index === chain.length - 1;

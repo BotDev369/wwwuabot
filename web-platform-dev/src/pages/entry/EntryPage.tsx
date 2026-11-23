@@ -1,8 +1,7 @@
 /**
- * Вітрина — головний екран (макет 08 · Вхід / вітрина): хто ми, для кого й три
- * двері всередину. Хедера й сайдбара тут немає: вітрина сама собі шапка.
- *
- * «Увійти» веде в «Мій день» — людина вже авторизована підписом Telegram.
+ * Вітрина — головний екран (макет 08): хто ми, для кого й три двері всередину.
+ * Стоїть у каркасі, тож `ПАЛЯНИЦЯ` й крохи «Вхід» дає спільний хедер, а не
+ * друга брендова строка. «Увійти» веде в «Мій день» — людина вже з підписом.
  *
  * @module web-platform-dev/src/pages/entry/EntryPage
  */
@@ -47,27 +46,6 @@ export function EntryPage(): ReactElement {
         <path d="M6 80h88" stroke="#ffffff" strokeWidth="1.3" />
         <path d="M14 72h72" stroke="#ffffff" strokeWidth="1" opacity="0.7" />
       </svg>
-
-      <div className="wb-showcase-top">
-        <svg className="wb-showcase-mark" viewBox="0 0 64 64" aria-hidden="true">
-          <circle cx="32" cy="32" r="30" fill="#ffffff" opacity="0.96" />
-          <g
-            clipPath="url(#wb-showcase-mask)"
-            stroke="var(--accent)"
-            strokeWidth="7"
-            strokeLinecap="round"
-          >
-            <path d="M4 26L60 48" />
-            <path d="M60 26L4 48" />
-          </g>
-          <defs>
-            <clipPath id="wb-showcase-mask">
-              <circle cx="32" cy="32" r="26" />
-            </clipPath>
-          </defs>
-        </svg>
-        <span className="wb-showcase-word">ПАЛЯНИЦЯ</span>
-      </div>
 
       <div className="wb-showcase-hero">
         <p className="wb-showcase-cap">Вхід за запрошенням</p>

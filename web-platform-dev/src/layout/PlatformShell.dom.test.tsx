@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({ request: vi.fn() }));
 vi.mock("@/shared/api/client", () => ({ apiFetch: mocks.request, apiUpload: vi.fn() }));
 
 const { PlatformShell } = await import("./PlatformShell");
+const { EntryPage } = await import("@/pages/entry/EntryPage");
 const { useScreenChrome } = await import("@wwwuabot/ui/nav");
 
 /** Екран, як справжній: він сам каже хедеру свою назву. */
@@ -32,6 +33,19 @@ function renderShell(): void {
       <Routes>
         <Route element={<PlatformShell />}>
           <Route path="*" element={<TrackerScreen />} />
+        </Route>
+      </Routes>
+    </MemoryRouter>,
+  );
+}
+
+/** Вітрина входу — та сама оболонка, а не окремий каркас без хедера. */
+function renderEntry(): void {
+  render(
+    <MemoryRouter initialEntries={["/"]}>
+      <Routes>
+        <Route element={<PlatformShell />}>
+          <Route index element={<EntryPage />} />
         </Route>
       </Routes>
     </MemoryRouter>,
@@ -68,10 +82,21 @@ describe("каркас", () => {
     expect(screen.getByLabelText("Навігація платформи")).toBeTruthy();
     // Хедер малюється каркасом і на всіх екранах показує той самий бренд.
     expect(screen.getByText("ПАЛЯНИЦЯ")).toBeTruthy();
+    // Крохи будуються з реєстру ще до відповіді `/api/screens`.
+    expect(document.querySelector(".wb-appbar__trail")?.textContent).toBe("Трекери");
     expect(screen.getByRole("button", { name: "Меню" })).toBeTruthy();
     // Тема — перший пункт меню, а не кнопка в хедері.
     expect(screen.getByRole("switch", { name: "Тема" })).toBeTruthy();
     expect(document.querySelector(".wb-platform")).not.toBeNull();
+  });
+
+  it("вітрина `/` живе в тому самому каркасі й має крохи «Вхід»", () => {
+    renderEntry();
+
+    expect(screen.getByRole("heading", { name: "Ділова платформа для Своїх" })).toBeTruthy();
+    expect(screen.getByText("ПАЛЯНИЦЯ")).toBeTruthy();
+    expect(document.querySelector(".wb-appbar__trail")?.textContent).toBe("Вхід");
+    expect(screen.getByRole("button", { name: "Меню" })).toBeTruthy();
   });
 
   it("підсвічує пункт, у якому людина стоїть", async () => {

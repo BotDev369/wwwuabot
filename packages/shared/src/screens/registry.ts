@@ -100,9 +100,13 @@ export interface ScreenMatch {
   params: Record<string, string>;
 }
 
-/** Шаблон → регулярка; параметри `:name` стають іменованими групами. */
-function patternOf(path: string): { regex: RegExp; names: string[] } {
+/**
+ * Шаблон → регулярка; параметри `:name` стають іменованими групами.
+ * `literal` — скільки сегментів адреси задані словом, а не `:параметром`.
+ */
+function patternOf(path: string): { regex: RegExp; names: string[]; literal: number } {
   const names: string[] = [];
+  let literal = 0;
   const source = path
     .split("/")
     .filter(Boolean)
@@ -111,10 +115,11 @@ function patternOf(path: string): { regex: RegExp; names: string[] } {
         names.push(segment.slice(1));
         return "([^/]+)";
       }
+      literal += 1;
       return segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     })
     .join("/");
-  return { regex: new RegExp(`^/${source}/?$`), names };
+  return { regex: new RegExp(`^/${source}/?$`), names, literal };
 }
 
 const MATCHERS = SCREENS.filter((screen) => screen.path && screen.path !== "/").map((screen) => ({
@@ -122,21 +127,28 @@ const MATCHERS = SCREENS.filter((screen) => screen.path && screen.path !== "/").
   ...patternOf(screen.path as string),
 }));
 
-/** Найдовший збіг: `/analysis/tests/:key` не з'їдає `/analysis/tests`. */
+/**
+ * Найточніший збіг: спершу більше слів в адресі, потім довший шаблон. Слово б'є
+ * параметр — інакше `/scenarios/1/products/new` показувався б як «Товар»
+ * (`/scenarios/:id/products/:productId`).
+ */
 export function matchScreen(pathname: string): ScreenMatch | null {
   const path = pathname.replace(/\/+$/, "") || "/";
   let best: ScreenMatch | null = null;
+  let bestLiteral = -1;
   let bestLength = -1;
   for (const matcher of MATCHERS) {
     const found = matcher.regex.exec(path);
     if (!found) continue;
     const length = (matcher.screen.path ?? "").length;
-    if (length <= bestLength) continue;
+    if (matcher.literal < bestLiteral) continue;
+    if (matcher.literal === bestLiteral && length <= bestLength) continue;
     const params: Record<string, string> = {};
     matcher.names.forEach((name, index) => {
       params[name] = decodeURIComponent(found[index + 1] ?? "");
     });
     best = { screen: matcher.screen, params };
+    bestLiteral = matcher.literal;
     bestLength = length;
   }
   return best;
