@@ -36,9 +36,7 @@ export function AnalysisSystemsPage(): ReactElement {
         </a>
 
         <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title" data-screen-title>
-            Про системи аналізу
-          </h1>
+          <h1 className="an-hero__title">Про системи аналізу</h1>
           <p className="an-hero__lead">
             Кожна система окремо: що це, звідки взялася, де побутує, що дає й чого не знає.
           </p>

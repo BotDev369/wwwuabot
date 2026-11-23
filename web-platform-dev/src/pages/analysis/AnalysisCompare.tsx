@@ -122,7 +122,7 @@ export function AnalysisCompare(): ReactElement {
 
         <header className="an-hero an-hero--slim">
           <p className="an-hero__kicker">Співставити</p>
-          <h1 className="an-hero__title" data-screen-title>
+          <h1 className="an-hero__title">
             {dates.length >= 2 ? "Що вас об'єднує" : "Кого співставляємо?"}
           </h1>
           <p className="an-hero__lead">

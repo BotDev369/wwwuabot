@@ -39,9 +39,7 @@ export function AnalysisVariantsPage(): ReactElement {
         </a>
 
         <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title" data-screen-title>
-            Варіанти головної
-          </h1>
+          <h1 className="an-hero__title">Варіанти головної</h1>
           <p className="an-hero__lead">
             Той самий вміст, три різні розкладки. Відкрий кожен окремо або скажи номер.
           </p>

@@ -146,7 +146,6 @@ export function PlatformShell(): ReactElement {
 const EMPTY_SHELL_CHROME = {
   title: null,
   ancestors: [],
-  titleMode: "header",
   menu: null,
   share: null,
   favorite: null,

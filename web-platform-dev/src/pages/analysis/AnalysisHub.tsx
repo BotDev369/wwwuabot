@@ -84,18 +84,16 @@ interface AnalysisHubProps {
 
 export function AnalysisHub({ variant = 2, withHero = true }: AnalysisHubProps = {}): ReactElement {
   // Шапка належить платформі, а не одній фічі: шість розділів нижче —
-  // рівноправні входи, і жоден не називає весь застосунок. `hero` каже
-  // хедеру не дублювати назву, поки її видно великою на сторінці.
-  useAnalysisChrome(ANALYSIS_TITLE, { hero: withHero, enabled: withHero });
+  // рівноправні входи, і жоден не називає весь застосунок. Хлібний шлях
+  // у хедері лишається видимим і тоді, коли назва стоїть великою в контенті.
+  useAnalysisChrome(ANALYSIS_TITLE, { enabled: withHero });
 
   return (
     <div className="wb-page wb-page-scroll">
       <div className="an-hub" data-variant={variant}>
         {withHero && (
           <header className="an-hero an-hero--plain">
-            <h1 className="an-hero__title" data-screen-title>
-              {ANALYSIS_TITLE}
-            </h1>
+            <h1 className="an-hero__title">{ANALYSIS_TITLE}</h1>
             <p className="an-hero__lead">Пізнай себе, оточуючих та події.</p>
           </header>
         )}

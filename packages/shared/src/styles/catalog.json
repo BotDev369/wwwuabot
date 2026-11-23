@@ -1,5 +1,5 @@
 {
-  "version": "57f93c4",
+  "version": "152d035",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -99,7 +99,7 @@
     {
       "file": "app-chrome.css",
       "tokens": 2,
-      "classes": 151
+      "classes": 150
     },
     {
       "file": "assessments.css",
@@ -4047,7 +4047,6 @@
           "wb-app-hamburger",
           "wb-app-logout",
           "wb-appbar",
-          "wb-appbar--hero",
           "wb-appbar__actions",
           "wb-appbar__brand",
           "wb-appbar__brand-name",

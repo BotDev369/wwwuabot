@@ -1,15 +1,11 @@
 /**
  * `AppBar` — глобальний хедер застосунку.
  *
- * **Один хедер, стек рівнів.** Перший рядок — бренд і «МЕНЮ»; далі кожен
- * батьківський рівень і поточна сторінка стоять **окремими рядками**
- * (`ancestors` + `title`). Тому на будь-якій глибині видно весь шлях.
- *
- * **Два способи показати стек.** Звичайний екран ставить його відразу.
- * Екран із великим `h1` (`titleMode: "hero"`) тримає хедер однорядковим, поки
- * велика назва видима; коли вона йде під хедер, стек стає **другим рядком
- * хедера** — так само, як на сторінці без `h1`. Окремого плаваючого шару
- * немає: назва поводиться однаково з «Магазинами» й рештою екранів.
+ * **Один хедер, стек рівнів.** Перший рядок — бренд і «МЕНЮ»; під ним
+ * **завжди** стоїть хлібний шлях одним рядком (`Розділ › Підрозділ ›
+ * Сторінка`). Великий `h1` у контенті цього не змінює: шлях видно відразу на
+ * кожному екрані, а не лише після прокрутки — інакше хедер різних екранів
+ * виглядав по-різному.
  *
  * **Рівні не переносяться.** Кожен рядок — один рівень; довгий обрізається
  * трикрапкою, щоб висота стека не стрибала.
@@ -25,7 +21,7 @@
  * @module packages/ui/src/nav/AppBar
  */
 
-import { useContext, useEffect, useRef, useState, type ReactElement } from "react";
+import { useContext, useRef, useState, type ReactElement } from "react";
 import { Icon, type IconName } from "@wwwuabot/shared";
 import type { FavoriteTarget } from "@wwwuabot/shared/favorites";
 import { ScreenChromeContext, type ScreenChrome, type ScreenCrumb } from "./screen-chrome";
@@ -82,60 +78,18 @@ export function AppBarView({
   menuOpen = false,
   botUsername = null,
 }: { chrome: ScreenChrome } & AppBarActions): ReactElement {
-  const { title, ancestors, titleMode, share, favorite } = chrome;
+  const { title, ancestors, share, favorite } = chrome;
   const header = useRef<HTMLElement>(null);
   const [sharing, setSharing] = useState(false);
-  // `hero` — велика назва в контенті; хедер тримає її компактну копію
-  // згорнутою, доки `h1` не піде під хедер.
-  const heroTitle = titleMode === "hero";
-  const [titleInHeader, setTitleInHeader] = useState(false);
   // Останній рівень — поточна сторінка; попередні — її батьки (з реєстру).
   const trail: readonly ScreenCrumb[] = title
     ? [...ancestors, { label: title, href: null }]
     : ancestors;
-  const ancestorsKey = JSON.stringify(ancestors);
 
   useAppBarHeight(header);
 
-  useEffect(() => {
-    if (!heroTitle || !title) {
-      setTitleInHeader(false);
-      return;
-    }
-
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const target = document.querySelector<HTMLElement>("[data-screen-title]");
-      // Без великого `h1` (наприклад, варіант без шапки) назва мусить лишитись
-      // у хедері — інакше екран узагалі без назви.
-      if (!target) {
-        setTitleInHeader(true);
-        return;
-      }
-      const headerBottom = header.current?.getBoundingClientRect().bottom ?? 0;
-      setTitleInHeader(target.getBoundingClientRect().bottom <= headerBottom);
-    };
-    const schedule = () => {
-      if (frame) return;
-      frame = requestAnimationFrame(update);
-    };
-
-    schedule();
-    // `scroll` не бульбашить, але ловиться на фазі перехоплення — тож працює
-    // і для вікна, і для власного скрол-контейнера сторінки.
-    document.addEventListener("scroll", schedule, { capture: true, passive: true });
-    window.addEventListener("resize", schedule);
-
-    return () => {
-      if (frame) cancelAnimationFrame(frame);
-      document.removeEventListener("scroll", schedule, { capture: true });
-      window.removeEventListener("resize", schedule);
-    };
-  }, [heroTitle, title, ancestorsKey]);
-
   return (
-    <header className={`wb-appbar${heroTitle ? " wb-appbar--hero" : ""}`} ref={header}>
+    <header className="wb-appbar" ref={header}>
       {/* Підтвердження лайка народжується тут, у серці, і малюється порталом
           поверх екрана: місце йому — не в смузі й не в шапці. */}
       <LikeToast />
@@ -161,7 +115,7 @@ export function AppBarView({
         </div>
       </div>
 
-      {trail.length > 0 && (!heroTitle || titleInHeader) && (
+      {trail.length > 0 && (
         <nav className="wb-appbar__trail" aria-label="Шлях сторінки">
           {trail.map((crumb, index) => {
             const current = index === trail.length - 1;

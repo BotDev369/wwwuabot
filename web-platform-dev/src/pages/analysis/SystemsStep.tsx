@@ -48,9 +48,7 @@ export function SystemsStep({ mode }: SystemsStepProps): ReactElement {
     <div className="wb-page wb-page-scroll">
       <form className="an-setup" onSubmit={submit}>
         <header className="an-setup__head">
-          <h1 className="an-setup__title" data-screen-title>
-            Хто читає дату?
-          </h1>
+          <h1 className="an-setup__title">Хто читає дату?</h1>
           <p className="an-setup__lead">
             {dates.length === 1
               ? "Чотири традиції незалежно одна від одної."

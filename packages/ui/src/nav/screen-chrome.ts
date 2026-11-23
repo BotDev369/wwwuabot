@@ -18,15 +18,6 @@ import { createContext } from "react";
 import type { FavoriteTarget } from "@wwwuabot/shared/favorites";
 
 /**
- * Де живе велика назва екрана.
- *
- * `header` — звичайний екран: назва стоїть другим рядком хедера.
- * `hero` — у контенті є великий `h1`; поки він видно, хедер показує лише
- * бренд, а компактна назва з'являється після того, як `h1` пішов під хедер.
- */
-export type ScreenChromeTitleMode = "header" | "hero";
-
-/**
  * Рівень хлібного шляху: підпис і адреса.
  *
  * `href: null` — рівень без посилання (поточна сторінка або параметр, якого в
@@ -48,8 +39,6 @@ export interface ScreenChrome {
    * ланцюжок будує каркас із реєстру, а не екран.
    */
   ancestors: readonly ScreenCrumb[];
-  /** Де показувати назву: у хедері відразу чи після великого `h1`. */
-  titleMode: ScreenChromeTitleMode;
   /** Відкрити власне меню сторінки (бургер); `null` — меню немає. */
   menu: (() => void) | null;
   /** Що «Поділитись» передає: адреса сторінки; `null` — кнопки немає. */
@@ -82,7 +71,6 @@ export interface ScreenChromeApi {
 export const EMPTY_CHROME: ScreenChrome = {
   title: null,
   ancestors: [],
-  titleMode: "header",
   menu: null,
   share: null,
   favorite: null,

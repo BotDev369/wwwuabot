@@ -108,7 +108,7 @@ function QualityRow({ reading }: { reading: QualityReading }): ReactElement {
 }
 
 export function AnalysisProfile({ mode }: AnalysisProfileProps): ReactElement {
-  useAnalysisChrome(TITLES[mode], { hero: false });
+  useAnalysisChrome(TITLES[mode]);
   const search = window.location.search;
   const dates = readDates(search);
   const subject = readSubject(search, dates.length);

@@ -35,18 +35,11 @@ describe("хедер застосунку", () => {
     expect(html).toContain("ПАЛЯНИЦЯ");
     expect(html).toContain('class="wb-appbar__trail"');
     expect(html).toContain("Нотатки");
+    // Жодного окремого hero-стану: шлях у хедері — на кожному екрані.
+    expect(html).not.toContain("wb-appbar--hero");
     // Підпису «платформа для своїх» більше немає.
     expect(html).not.toContain("ПЛАТФОРМА");
     expect(html).not.toContain("ДЛЯ СВОЇХ");
-  });
-
-  it("у hero-режимі ховає назву, поки великий h1 видно", () => {
-    const html = render({ ...EMPTY_CHROME, title: "Hero page", titleMode: "hero" });
-
-    expect(html).toContain("wb-appbar--hero");
-    // Поки `h1` видно, хедер однорядковий: жодного стека й жодної плашки.
-    expect(html).not.toContain("wb-appbar__trail");
-    expect(html).not.toContain("Hero page");
   });
 
   it("тримає весь шлях одним рядком, а розділ — перед сторінкою", () => {

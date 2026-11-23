@@ -29,7 +29,6 @@ export function useScreenChrome(chrome: ScreenChromePatch, enabled = true): void
   const key = [
     chrome.title ?? "",
     JSON.stringify(chrome.ancestors ?? []),
-    chrome.titleMode ?? "header",
     chrome.menu ? "1" : "",
     chrome.share?.slug ?? "",
     JSON.stringify(chrome.favorite ?? null),

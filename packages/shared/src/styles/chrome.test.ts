@@ -221,14 +221,16 @@ describe("рядок хлібного шляху", () => {
     expect(crumb?.body).toContain("text-overflow: ellipsis");
     expect(crumb?.body).toContain("font-size: var(--text-md)");
 
-    // Поточна сторінка — жирна; стек не має окремих розмірів для глибини.
-    expect(rule(".wb-appbar__crumb--current")?.body).toContain("var(--weight-bold)");
+    // Крохи — підпис шляху, а не заголовок: жодне накреслення не жирне.
+    expect(crumb?.body).toContain("font-weight: var(--weight-regular)");
+    const current = rule(".wb-appbar__crumb--current");
+    expect(current?.body).not.toContain("var(--weight-bold)");
     expect(CHROME.some((entry) => entry.selector.includes(":first-child:not(:last-child)"))).toBe(
       false,
     );
 
-    // На hero-екрані шлях не має власного шару: після скролу він стає другим
-    // рядком хедера, як на будь-якій сторінці без великого `h1`.
+    // Шлях стоїть у хедері завжди — жодного hero-стану, який його ховає.
+    expect(CHROME.some((entry) => entry.selector === ".wb-appbar--hero")).toBe(false);
     expect(CHROME.some((entry) => entry.selector === ".wb-appbar__trail--floating")).toBe(false);
     expect(CHROME.some((entry) => entry.selector === ".wb-appbar--compact")).toBe(false);
   });

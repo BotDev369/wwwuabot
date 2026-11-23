@@ -39,9 +39,7 @@ export function AnalysisTestsPage(): ReactElement {
         </a>
 
         <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title" data-screen-title>
-            Пройти тестування
-          </h1>
+          <h1 className="an-hero__title">Пройти тестування</h1>
           <p className="an-hero__lead">
             Ваші відповіді додають до профілю виміряні якості — окремо від дати.
           </p>

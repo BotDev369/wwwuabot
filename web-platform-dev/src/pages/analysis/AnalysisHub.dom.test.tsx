@@ -37,17 +37,11 @@ const SECTIONS: readonly [string, string][] = [
 ];
 
 describe("головна аналізу", () => {
-  it("показує велику назву фічі й віддає хедеру hero-режим", () => {
+  it("показує велику назву фічі й називає себе хедеру", () => {
     renderHub();
 
-    // Поки назва видима великою, хедер не дублює її другим рядком.
-    expect(chrome).toHaveBeenCalledWith(
-      {
-        title: "Аналіз людей і подій",
-        titleMode: "hero",
-      },
-      true,
-    );
+    // Хедер малює назву й крохи завжди — великий `h1` цього не вимикає.
+    expect(chrome).toHaveBeenCalledWith({ title: "Аналіз людей і подій" }, true);
     expect(screen.getByRole("heading", { name: "Аналіз людей і подій" })).toBeTruthy();
     expect(screen.getByText("Пізнай себе, оточуючих та події.")).toBeTruthy();
     expect(screen.queryByText("ПАЛЯНИЦЯ")).toBeNull();

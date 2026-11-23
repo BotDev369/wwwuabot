@@ -19,13 +19,12 @@ export const ANALYSIS_TITLE = "Аналіз людей і подій";
 /**
  * Оголошення хедера для сторінки аналізу.
  *
- * `hero` — великий `h1` у контенті: до прокрутки хедер показує лише бренд.
  * `enabled: false` — вкладений екран-вітрина, який не має перебивати хедер
  * батьківської сторінки.
  */
 export function useAnalysisChrome(
   title: string | null,
-  { hero = true, enabled = true }: { hero?: boolean; enabled?: boolean } = {},
+  { enabled = true }: { enabled?: boolean } = {},
 ): void {
-  useScreenChrome({ title, titleMode: hero ? "hero" : "header" }, enabled);
+  useScreenChrome({ title }, enabled);
 }
