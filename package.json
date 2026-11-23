@@ -43,6 +43,8 @@
     "check:docs": "node scripts/check-docs.mjs",
     "check:comments": "node scripts/check-comments.mjs",
     "check:texts": "node scripts/check-texts.mjs",
+    "check:screens": "node scripts/check-screens.mjs",
+    "doc:screens": "node scripts/build-screens.mjs",
     "check:db": "node scripts/check-db.mjs",
     "doc:api": "node scripts/doc-api.mjs",
     "doc:style": "node scripts/build-style-catalog.mjs && node scripts/ui-inventory.mjs",

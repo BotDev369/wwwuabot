@@ -214,43 +214,18 @@ export function platformActionLabel(action: string): string {
 }
 
 /**
- * Екрани платформи: ключ (те, що лежить у журналі) і людська назва.
- * Відкриття екрана репортує **сам застосунок** — один рядок на навігацію, а не
- * на кожен запит даних (`docs/EVENTS.md`).
+ * Словник журналу — **подання реєстру екранів**, а не другий список.
+ *
+ * Відкриття екрана репортує сам застосунок, і сервер приймає лише ключі, які
+ * оголошені в `registry.json`; мертвий ключ (який ніколи не приходить) більше
+ * не живе окремим рядком. Правило — `docs/EVENTS.md`.
  */
+export { PLATFORM_SCREENS, isPlatformScreenKey, screenLabel } from "./screens/registry";
+
+/** Пара «ключ журналу — назва». */
 export interface PlatformScreen {
   key: string;
   label: string;
-}
-
-export const PLATFORM_SCREENS: readonly PlatformScreen[] = [
-  { key: "account", label: "Акаунт" },
-  { key: "services", label: "Сервіси" },
-  { key: "trackers", label: "Трекери" },
-  { key: "tracker", label: "Трекер" },
-  { key: "favorites", label: "Обране" },
-  { key: "messages", label: "Повідомлення" },
-  { key: "notes", label: "Нотатки" },
-  { key: "contacts", label: "Контакти" },
-  { key: "orders", label: "Замовлення" },
-  { key: "shop", label: "Магазин" },
-  { key: "ads", label: "Оголошення" },
-  { key: "pages", label: "Сторінки" },
-  { key: "page", label: "Сторінка" },
-  { key: "users", label: "Користувачі" },
-  { key: "assessments", label: "Розвиток" },
-  { key: "analysis", label: "Аналіз" },
-  { key: "games", label: "Ігри" },
-];
-
-/** Ключ екрана з того, що прислав застосунок: чуже значення в журнал не йде. */
-export function isPlatformScreenKey(value: unknown): value is string {
-  return typeof value === "string" && PLATFORM_SCREENS.some((screen) => screen.key === value);
-}
-
-/** Людська назва екрана за ключем; невідомий ключ не губиться. */
-export function screenLabel(key: string): string {
-  return PLATFORM_SCREENS.find((screen) => screen.key === key)?.label ?? key;
 }
 
 /** Дія платформи не для журналу: службове, адмінське й публічне без людини. */

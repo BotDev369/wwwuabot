@@ -133,6 +133,13 @@ describe("набір знаків", () => {
       }
     }
 
+    // Знак пункту меню тепер живе в реєстрі екранів, а не в коді навігації.
+    const registry = readFileSync(
+      join(REPO_ROOT, "packages/shared/src/screens/registry.json"),
+      "utf8",
+    );
+    for (const match of registry.matchAll(/"icon":\s*"([a-z-]+)"/g)) used.add(match[1]);
+
     const unused = ICON_NAMES.filter((name) => !used.has(name));
     expect(unused, `ніде не вживається: ${unused.join(", ")}`).toEqual([]);
   });

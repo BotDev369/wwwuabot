@@ -202,26 +202,32 @@ describe("мобільні вставки враховують UI клієнта
   }
 });
 
-describe("два рядки хедера", () => {
-  it("бренд — скоринка паляниці, а назва сторінки не переноситься", () => {
+describe("рядок хлібного шляху", () => {
+  it("бренд — скоринка паляниці, а шлях — один рядок із трикрапкою", () => {
     // Підпису «платформа для своїх» більше немає: перший рядок — лише слово й
-    // «МЕНЮ». Назва сторінки стоїть другим рядком і не ламається.
+    // «МЕНЮ». Шлях стоїть другим рядком і **не росте** з глибиною.
     expect(CHROME.some((entry) => entry.selector === ".wb-appbar__brand-sub")).toBe(false);
 
     const name = rule(".wb-appbar__brand-name");
+    const trail = rule(".wb-appbar__trail");
     const crumb = rule(".wb-appbar__crumb");
     expect(name, "назва бренду мусить мати правило").toBeDefined();
-    expect(crumb, "рядок шляху мусить мати правило").toBeDefined();
+    expect(trail, "рядок шляху мусить мати правило").toBeDefined();
+    expect(crumb, "рівень шляху мусить мати правило").toBeDefined();
     expect(name?.body).toContain("color: var(--brand-bread)");
+    expect(trail?.body).toContain("display: flex");
+    expect(trail?.body).toContain("overflow: hidden");
     expect(crumb?.body).toContain("white-space: nowrap");
     expect(crumb?.body).toContain("text-overflow: ellipsis");
-
-    // Головний рівень розділу більший за бренд, а не навпаки.
     expect(crumb?.body).toContain("font-size: var(--text-md)");
-    const section = rule(".wb-appbar__trail > .wb-appbar__crumb:first-child:not(:last-child)");
-    expect(section?.body).toContain("font-size: var(--text-xl)");
 
-    // На hero-екрані стек не має власного шару: після скролу він стає другим
+    // Поточна сторінка — жирна; стек не має окремих розмірів для глибини.
+    expect(rule(".wb-appbar__crumb--current")?.body).toContain("var(--weight-bold)");
+    expect(CHROME.some((entry) => entry.selector.includes(":first-child:not(:last-child)"))).toBe(
+      false,
+    );
+
+    // На hero-екрані шлях не має власного шару: після скролу він стає другим
     // рядком хедера, як на будь-якій сторінці без великого `h1`.
     expect(CHROME.some((entry) => entry.selector === ".wb-appbar__trail--floating")).toBe(false);
     expect(CHROME.some((entry) => entry.selector === ".wb-appbar--compact")).toBe(false);

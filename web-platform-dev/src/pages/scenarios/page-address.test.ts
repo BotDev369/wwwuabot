@@ -1,61 +1,36 @@
 /**
  * Зайняті адреси — те, що ламається мовчки.
  *
- * Сторінка людини відкривається за своїм `slug` через catch-all (`*`) у
- * `router.tsx`, а екрани платформи — це **власні** маршрути. Отже, сторінка з
- * адресою `games` не «перекриє» розділ: вона просто **ніколи не відкриється**,
- * і ні компілятор, ні тести про це не скажуть. Тому список зайнятих сегментів
- * живе в спільному модулі (`@wwwuabot/shared/pages`), а цей тест стереже, щоб
- * він не розійшовся з `app/routes.ts` — єдиним власником маршрутів.
+ * Сторінка людини відкривається за своїм `slug` через catch-all (`*`), а екрани
+ * платформи — це **власні** маршрути. Отже, сторінка з адресою `analysis` не
+ * «перекриє» розділ: вона просто **ніколи не відкриється**, і ні компілятор, ні
+ * тести про це не скажуть. Тому список зайнятих сегментів **виводиться з
+ * реєстру**, а цей тест стереже саму властивість: кожен верхній сегмент адреси
+ * реєстру зайнятий.
  *
  * @module web-platform-dev/src/pages/scenarios/page-address.test
  */
 
 import { describe, expect, it } from "vitest";
 import { RESERVED_PAGE_SLUGS } from "@wwwuabot/shared/pages";
-import {
-  ACCOUNT_ROUTE,
-  ADS_ROUTE,
-  ASSESSMENTS_ROUTE,
-  CONTACTS_ROUTE,
-  FAVORITES_ROUTE,
-  GAMES_ROUTE,
-  MESSAGES_PATH,
-  NOTES_ROUTE,
-  ORDERS_ROUTE,
-  SCENARIOS_ROUTE,
-  SERVICES_ROUTE,
-  SHOPS_ROUTE,
-  USERS_ROUTE,
-} from "../../app/routes";
-
-/** Перший сегмент шляху: `/messages?peer=1` → `messages`. */
-function topSegment(path: string): string {
-  return path.replace(/^\//, "").split(/[/?#]/, 1)[0] ?? "";
-}
+import { SCREENS } from "@wwwuabot/shared/screens";
 
 describe("адреси, зайняті платформою", () => {
-  it("кожен верхній сегмент маршруту не може стати адресою сторінки", () => {
-    const segments = [
-      ACCOUNT_ROUTE,
-      ADS_ROUTE,
-      GAMES_ROUTE,
-      USERS_ROUTE,
-      SERVICES_ROUTE,
-      SHOPS_ROUTE,
-      ASSESSMENTS_ROUTE,
-      ORDERS_ROUTE,
-      NOTES_ROUTE,
-      CONTACTS_ROUTE,
-      FAVORITES_ROUTE,
-      SCENARIOS_ROUTE,
-      topSegment(MESSAGES_PATH),
+  it("кожен верхній сегмент адреси реєстру не може стати адресою сторінки", () => {
+    const roots = [
+      ...new Set(
+        SCREENS.flatMap((screen) => {
+          const top = (screen.path ?? "").split("/").filter(Boolean)[0];
+          return top && !top.startsWith(":") ? [top] : [];
+        }),
+      ),
     ];
 
-    for (const segment of segments) {
+    expect(roots.length).toBeGreaterThan(0);
+    for (const segment of roots) {
       // Причина, а не констатація: сегмент мусить бути в списку рівно тому, що
       // на ньому стоїть маршрут платформи.
-      expect(RESERVED_PAGE_SLUGS).toContain(segment);
+      expect(RESERVED_PAGE_SLUGS, `сегмент «${segment}»`).toContain(segment);
     }
   });
 

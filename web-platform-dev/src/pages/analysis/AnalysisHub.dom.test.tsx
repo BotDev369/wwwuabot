@@ -45,7 +45,6 @@ describe("головна аналізу", () => {
       {
         title: "Аналіз людей і подій",
         titleMode: "hero",
-        ancestors: [],
       },
       true,
     );

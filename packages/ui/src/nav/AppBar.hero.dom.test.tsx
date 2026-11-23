@@ -100,9 +100,18 @@ describe("стек хедера в hero-режимі", () => {
     await waitFor(() => expect(container.querySelector(".wb-appbar__trail")).toBeNull());
   });
 
-  it("тримає всі рівні шляху окремими рядками", async () => {
+  it("тримає весь шлях одним рядком", async () => {
     const { container } = render(
-      <AppBarView chrome={{ ...CHROME, ancestors: ["Section", "Step"], title: "Page" }} />,
+      <AppBarView
+        chrome={{
+          ...CHROME,
+          ancestors: [
+            { label: "Section", href: "/section" },
+            { label: "Step", href: "/section/step" },
+          ],
+          title: "Page",
+        }}
+      />,
     );
 
     await waitFor(() => expect(container.querySelector(".wb-appbar__trail")).not.toBeNull());

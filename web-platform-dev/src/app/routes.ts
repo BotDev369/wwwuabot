@@ -1,31 +1,20 @@
 /**
- * Адреси екранів платформи — усе, що **не** є рядком контенту.
+ * Адреси екранів платформи — **подання реєстру**, а не другий список.
  *
- * Більшість сторінок платформи — це рядки таблиці `scenarios`: адресу дає
- * `slug`, а шлях будує `toWebPath()` (`packages/shared/src/content`). Інші — а
- * саме акаунт, замовлення магазинів, оголошення, ігри, користувачі, список
- * нотаток, контакти й переписка — не рядки контенту: акаунт складається з даних
- * користувача, замовлення — з `shop_orders` під магазинами, оголошення — з
- * `ads`, ігри — з власних екранів, користувачі — з відкритих профілів, нотатки —
- * з таблиці `notes`, контакти — з `contacts`, переписка — з
- * `conversations`/`messages`. Тому в них власні шляхи, і живуть вони тут, а не
- * в базі (AGENTS.md §7).
- *
- * Один файл на всі — бо на кожну з цих адрес веде **двоє**: маршрут у
- * `app/router.tsx` і пункт навігації (футер, список сервісів). Два літерали
- * розійшлися б тихо, і один із них вів би на 404.
+ * Шаблони шляхів живуть у `packages/shared/src/screens/registry.json` (той самий
+ * рядок, що їде в `platform_screens`); цей файл лише дає їм імена, якими
+ * користуються сторінки й бот. Тому перейменувати сегмент можна **в одному
+ * місці**, і маршрут, пункт меню та діплінк не розійдуться.
  *
  * **Намір теж адреса.** Екран, який уміє створювати, відкриває свою форму за
  * `?new=1` (`withCreateIntent`): адреса — це **вхід**, а не стан, тож вона
  * читається один раз, при появі. Це той самий прийом, що з відкриттям розмови
  * (`?peer=`, `@wwwuabot/shared/messages`).
  *
- * **Сторінку створює платформа, а не людина:** окремого екрана сторінки немає
- * взагалі — контент відкривається за своїм `slug` одним `ScenarioPage`, і
- * править його тільки розробник: кодом і міграціями, а не форма в інтерфейсі.
- *
  * @module web-platform-dev/src/app/routes
  */
+
+import { screenPath } from "@wwwuabot/shared/screens";
 
 /**
  * Адреса розмови — зі спільного складу (`@wwwuabot/shared/messages`).
@@ -37,238 +26,146 @@ export { MESSAGES_PATH } from "@wwwuabot/shared/messages";
 
 /**
  * Три адреси, які читає ще й бот: рядок кнопок під першим екраном бота веде на
- * **ті самі екрани й у тому ж порядку**, що пункти футера (`screen.ts` у
- * `bot-dev`). Власник у них один — спільний модуль, а не цей файл: два літерали
- * однієї адреси розійшлися б тихо, і кнопка в чаті відкрила б 404.
+ * **ті самі екрани й у тому ж порядку**, що пункти меню (`screen.ts` у
+ * `bot-dev`). Власник у них один — спільний модуль.
  */
 import { ASSESSMENTS_PATH, TRACKERS_PATH } from "@wwwuabot/shared/app/routes";
 
 export { ACCOUNT_PATH, FAVORITES_PATH, SERVICES_PATH } from "@wwwuabot/shared/app/routes";
 export { ASSESSMENTS_PATH, TRACKERS_PATH };
 
-export const FAVORITES_ROUTE = "favorites";
+/** Шлях екрана з реєстру; відсутній ключ — помилка збірки, а не `null` у грі. */
+function pathOf(key: string): string {
+  const path = screenPath(key);
+  if (!path) throw new Error(`У реєстрі екранів немає адреси для «${key}»`);
+  return path;
+}
 
-/**
- * «Мій день» — щоденний екран, а не корінь.
- *
- * Корінь `/` — вітрина з входами (макет 08 · Вхід / вітрина): хто ми, для кого
- * й три двері всередину. День живе під власною адресою, бо це **екран**
- * усередині продукту, а не його обкладинка: інакше людина, яка відкрила
- * посилання вперше, одразу потрапляла б у порожній день без пояснень.
- */
-export const DAY_ROUTE = "day";
-export const DAY_PATH = `/${DAY_ROUTE}`;
+/** Сегмент адреси — те саме, що перший сегмент шляху. */
+function segmentOf(key: string): string {
+  return pathOf(key).replace(/^\//, "");
+}
 
-/**
- * Розділи аналізу мають власну головну. Адреси кроків
- * лежать під `/analysis`, а не в рядках `scenarios`: анкета, системи й профіль —
- * стан одного проходження, а не окремі сторінки контенту.
- */
-export const ANALYSIS_ROUTE = "analysis";
-export const ANALYSIS_PATH = `/${ANALYSIS_ROUTE}`;
-export const ANALYSIS_PERSON_PATH = `${ANALYSIS_PATH}/person`;
-export const ANALYSIS_EVENT_PATH = `${ANALYSIS_PATH}/event`;
-export const ANALYSIS_COMPARE_PATH = `${ANALYSIS_PATH}/compare`;
-export const ANALYSIS_MATCH_PATH = `${ANALYSIS_PATH}/match`;
-export const ANALYSIS_SYSTEMS_PATH = `${ANALYSIS_PATH}/systems`;
-export const ANALYSIS_TESTS_PATH = `${ANALYSIS_PATH}/tests`;
+export const FAVORITES_ROUTE = segmentOf("favorites");
+
+/** «Мій день» — щоденний екран, а не корінь. */
+export const DAY_ROUTE = segmentOf("day");
+export const DAY_PATH = pathOf("day");
+
+/** Розділи аналізу мають власну головну. */
+export const ANALYSIS_ROUTE = segmentOf("analysis");
+export const ANALYSIS_PATH = pathOf("analysis");
+export const ANALYSIS_PERSON_PATH = pathOf("analysis.person");
+export const ANALYSIS_EVENT_PATH = pathOf("analysis.event");
+export const ANALYSIS_COMPARE_PATH = pathOf("analysis.compare");
+export const ANALYSIS_MATCH_PATH = pathOf("analysis.match");
+export const ANALYSIS_SYSTEMS_PATH = pathOf("analysis.systems");
+export const ANALYSIS_TESTS_PATH = pathOf("analysis.tests");
 /** Довідник якостей: що це, як проявляється і які системи це визначають. */
-export const ANALYSIS_QUALITIES_PATH = `${ANALYSIS_PATH}/qualities`;
+export const ANALYSIS_QUALITIES_PATH = pathOf("analysis.qualities");
 /** Люди, події й групи — повний CRUD і довільний вибір для співставлення. */
-export const ANALYSIS_PEOPLE_PATH = `${ANALYSIS_PATH}/people`;
+export const ANALYSIS_PEOPLE_PATH = pathOf("analysis.people");
 
 /** Три розкладки головної на погодження: `/analysis/variant/1|2|3`. */
 export const ANALYSIS_VARIANT_PATH = (variant: 1 | 2 | 3): string =>
-  `${ANALYSIS_PATH}/variant/${variant}`;
+  pathOf(`analysis.hub.${variant}`);
 
 /** Сторінка, де всі три варіанти стоять поруч із підписами. */
-export const ANALYSIS_VARIANTS_PATH = `${ANALYSIS_PATH}/variants`;
+export const ANALYSIS_VARIANTS_PATH = pathOf("analysis.variants");
 
 /** Вид проходження: один суб'єкт або кілька для співставлення. */
 export type AnalysisMode = "person" | "event" | "compare";
 
 /** Крок проходження: анкета дат → системи → профіль. */
 export function analysisStepPath(mode: AnalysisMode, step: "systems" | "result"): string {
-  return `${ANALYSIS_PATH}/${mode}/${step}`;
+  return pathOf(`analysis.${mode}.${step}`);
 }
 
 /** Проходження тесту — своя адреса під фічею, не окремий розділ. */
 export function analysisTestPath(key: string): string {
-  return `${ANALYSIS_TESTS_PATH}/${encodeURIComponent(key)}`;
+  return pathOf("analysis.test").replace(":key", encodeURIComponent(key));
 }
 
 /**
  * Акаунт — дані людини: окремо платформа (`#ім'я`), окремо Telegram (`@хендл`).
  *
- * Адреса верхня, а не під хабу: хабу немає, і акаунт — це **сам екран** людини,
- * а не рядок у списку. Тому на нього ж ведуть і корінь продукту, і слот футера.
+ * Адреса верхня, а не під хабу: хабу немає, і акаунт — це **сам екран** людини.
  */
-export const ACCOUNT_ROUTE = "account";
+export const ACCOUNT_ROUTE = segmentOf("account");
 
-/**
- * Замовлення — робота, яку людина веде, а не сторінка. Магазинів буває кілька,
- * і замовлення лежать під кожним (`/scenarios/7/orders`). Друга реалізація
- * списку тут не потрібна: екран каже, де працює людина, і веде до замовлень
- * того магазину. Адреса має власний сегмент, а не живе під сценарієм.
- */
-export const ORDERS_ROUTE = "orders";
-export const ORDERS_PATH = `/${ORDERS_ROUTE}`;
+/** Замовлення — робота, яку людина веде, а не сторінка. */
+export const ORDERS_ROUTE = segmentOf("orders");
+export const ORDERS_PATH = pathOf("orders");
 
-/**
- * Тема — **перемикач**, а не сторінки: світла й темна міняються однією дією,
- * тож адреса тут нічого не додає — її нікуди не надіслати й не відкрити з
- * іншого місця. Кнопка теми стоїть у хедері (`AppBar`).
- */
+/** Оголошення — дошка, яку наповнюють люди. */
+export const ADS_ROUTE = segmentOf("ads");
+export const ADS_PATH = pathOf("ads");
 
-/**
- * Оголошення — дошка, яку наповнюють люди: товари, робота, послуги.
- *
- * Адреса власна, а не `slug`: дошка — **вибірка** з таблиці `ads`, а не рядок
- * контенту. Вигадувати під неї `slug` означало б завести друге правило «яка
- * адреса відповідає цьому екрану» (AGENTS.md §7).
- */
-export const ADS_ROUTE = "ads";
-export const ADS_PATH = `/${ADS_ROUTE}`;
+/** Ігри — власні екрани платформи. */
+export const GAMES_ROUTE = segmentOf("games");
+export const GAMES_PATH = pathOf("games");
 
-/**
- * Ігри — власні екрани платформи, без рядка в базі.
- *
- * Список і партія — різні адреси: `/games` відповідає на «у що пограти», а
- * `/games/:key` — на «як воно йде», тож «назад» із партії вертає до списку, а
- * посилання на гру можна надіслати.
- */
-export const GAMES_ROUTE = "games";
-export const GAMES_PATH = `/${GAMES_ROUTE}`;
-
-/**
- * Користувачі — люди, які самі відкрили свій профіль.
- *
- * Адреса власна: це вибірка з `users`, а не сторінка контенту, і окремої
- * адреси під саму людину тут **немає** — стрічка показує картку, а не веде на
- * другу поверхню (AGENTS.md §7).
- */
-export const USERS_ROUTE = "users";
-export const USERS_PATH = `/${USERS_ROUTE}`;
+/** Користувачі — люди, які самі відкрили свій профіль. */
+export const USERS_ROUTE = segmentOf("users");
+export const USERS_PATH = pathOf("users");
 
 /**
  * Сценарій за номером — адреса його вкладок: товарів і замовлень магазину.
  *
- * Сам сценарій відкривається за своїм `slug` (`/slug`) і рендериться одним
- * `ScenarioPage` — іншого екрана сторінки немає ні в платформі, ні в адмінці.
- * Номер рядка `scenarios` потрібен лише там, де під сторінкою стоять **дані,
- * яких у `page_data` немає**: `shop_products` і `shop_orders` належать тому
- * самому рядку (`shop_id`), тож їхні адреси стоять під ним —
- * `/scenarios/7/products`. Окремий розділ `/shop` зробив би другу навігацію по
- * тому самому контенту (`AGENTS.md` §7).
- *
  * `scenarios` — верхній сегмент платформи, тож сторінка з таким `slug` не
- * відкриється: його стереже `RESERVED_PAGE_SLUGS`.
+ * відкриється: його стереже `RESERVED_PAGE_SLUGS` (виводиться з реєстру).
  */
-export const SCENARIOS_ROUTE = "scenarios";
+export const SCENARIOS_ROUTE = pathOf("scenarios.products").split("/")[1] ?? "scenarios";
 export const SCENARIOS_PATH = `/${SCENARIOS_ROUTE}`;
 
-/**
- * Магазини — **список** відкритих магазинів, а не сторінка контенту: сам
- * магазин відкривається своїм `slug` (`/kava`) і рендериться тим самим
- * `ScenarioPage`. Список адресу має тому, що це вибірка з `scenarios`
- * (`template_key = 'shop'`); `shops` не може стати адресою сторінки — його
- * стереже `RESERVED_PAGE_SLUGS` (`docs/SHOPS.md` §9).
- */
-export const SHOPS_ROUTE = "shops";
-export const SHOPS_PATH = `/${SHOPS_ROUTE}`;
+/** Магазини — **список** відкритих магазинів, а не сторінка контенту. */
+export const SHOPS_ROUTE = segmentOf("shops");
+export const SHOPS_PATH = pathOf("shops");
 
-/** Один сценарій за номером рядка: під ним стоять вкладки магазину. */
+/** Один сценарій за номером: під ним стоять вкладки магазину. */
 export const scenarioPath = (id: number): string => `${SCENARIOS_PATH}/${id}`;
 
 export { RESEARCH_PATH, RESEARCH_ROUTE } from "@/pages/research/route";
 
-/**
- * Товари магазину — **під сценарієм**, а не окремим розділом.
- *
- * Магазин — це рядок `scenarios` зі своєю адресою, а товари належать йому
- * (`shop_id`), тож і адреса їхня стоїть під ним: `/scenarios/7/products`.
- *
- * `products` під `:id` не збивається з `orders`: це різні сегменти на одному
- * місці, і сценарій не може мати адреси `scenarios`.
- */
+/** Товари магазину — **під сценарієм**, а не окремим розділом. */
 export const SHOP_PRODUCTS_ROUTE = "products";
 export const shopProductsPath = (scenarioId: number): string =>
-  `${scenarioPath(scenarioId)}/${SHOP_PRODUCTS_ROUTE}`;
+  pathOf("scenarios.products").replace(":id", String(scenarioId));
 
 /** Новий товар — **окрема адреса**: у форми є «назад», історія й посилання. */
 export const shopProductNewPath = (scenarioId: number): string =>
-  `${shopProductsPath(scenarioId)}/new`;
+  pathOf("scenarios.product.new").replace(":id", String(scenarioId));
 
 /** Правка товару: за адресою стоїть один рядок `shop_products`. */
 export const shopProductEditPath = (scenarioId: number, productId: number): string =>
-  `${shopProductsPath(scenarioId)}/${productId}`;
+  pathOf("scenarios.product")
+    .replace(":id", String(scenarioId))
+    .replace(":productId", String(productId));
 
-/**
- * Замовлення магазину — там само, де товари, і з тієї ж причини.
- *
- * `shop_orders` належить тому самому рядку `scenarios`, тож адреса стоїть під
- * ним: `/scenarios/7/orders`.
- *
- * Сегмент свій, а не вкладка в товарах: замовлення — це **робота з людиною**, а
- * товари — каталог, і змішуються вони лише в одному випадку: коли магазин
- * зовсім порожній.
- */
+/** Замовлення магазину — там само, де товари, і з тієї ж причини. */
 export const SHOP_ORDERS_ROUTE = "orders";
 export const shopOrdersPath = (scenarioId: number): string =>
-  `${scenarioPath(scenarioId)}/${SHOP_ORDERS_ROUTE}`;
+  pathOf("scenarios.orders").replace(":id", String(scenarioId));
 
-/**
- * Одне замовлення — **своя адреса**, і це вибір, а не дрібниця.
- *
- * Правка — не перегляд: у неї є «назад» до черги, історія й посилання, яке можна
- * надіслати (`AGENTS.md` §7). Модалка не має жодного з трьох, а власне замовлення
- * з позиціями, контактом і коментарем — це місце, куди людина повертається, тож
- * адреса в нього мусить бути. Сегмент — номер у тому самому `orders`.
- */
+/** Одне замовлення — **своя адреса**, а не модалка. */
 export const shopOrderPath = (scenarioId: number, orderId: number): string =>
-  `${shopOrdersPath(scenarioId)}/${orderId}`;
+  pathOf("scenarios.order").replace(":id", String(scenarioId)).replace(":orderId", String(orderId));
 
-/**
- * Трекери — власні щоденні записи людини, не рядок `scenarios`.
- *
- * Список і один трекер — різні адреси: «назад» із трекера вертає до списку, а
- * посиланням можна дати конкретну мірку. `id` — номер рядка `trackers`.
- */
-export const TRACKERS_ROUTE = "trackers";
+/** Трекери — власні щоденні записи людини. */
+export const TRACKERS_ROUTE = segmentOf("trackers");
 
-/** Нотатки — власні дані людини, не рядок `scenarios`. */
-export const NOTES_ROUTE = "notes";
-export const NOTES_PATH = `/${NOTES_ROUTE}`;
+/** Нотатки — власні дані людини, не рядок контенту. */
+export const NOTES_ROUTE = segmentOf("notes");
+export const NOTES_PATH = pathOf("notes");
 
 /** Контакти — довідник людини, теж не рядок контенту. */
-export const CONTACTS_ROUTE = "contacts";
-export const CONTACTS_PATH = `/${CONTACTS_ROUTE}`;
+export const CONTACTS_ROUTE = segmentOf("contacts");
+export const CONTACTS_PATH = pathOf("contacts");
 
-/**
- * Сервіси — список екранів платформи, які вже працюють. Адреса власна, а не
- * `slug`: список входів — не сторінка контенту (AGENTS.md §7).
- *
- * Сам шлях — реекспорт зі спільного модуля вище: він один на платформу й бота
- * (третій пункт футера = третя кнопка під першим екраном). Тут лишається тільки
- * сегмент маршруту.
- */
-export const SERVICES_ROUTE = "services";
+/** Сервіси — список екранів платформи, які вже працюють. */
+export const SERVICES_ROUTE = segmentOf("services");
 
-/**
- * «Розвиток» — самооцінка й аналіз власних дат, не рядок `scenarios`.
- *
- * **Адреса розділу й адреса проходження — різні речі:** `/assessments`
- * показує список тестів, а `/assessments/:key` — саме проходження. Тому
- * «назад» у Telegram повертає на список, а не виходить із розділу, і
- * посиланням можна дати конкретний тест.
- *
- * Сам шлях — реекспорт зі спільного модуля вище: він один на платформу й бота
- * (четвертий пункт футера = четверта кнопка під першим екраном). Тут лишається
- * тільки сегмент маршруту.
- *
- * Довший шлях мусить стояти **перед** коротшим у роутері, як `:id` у
- * `/pages`: інакше `:key` зʼїсть сам розділ.
- */
+/** «Розвиток» — самооцінка й аналіз власних дат, не рядок контенту. */
 export const ASSESSMENTS_ROUTE = "assessments";
 
 /** Адреса проходження одного тесту. */
@@ -284,30 +181,16 @@ export function assessmentRunPath(key: string): string {
 export const CREATE_INTENT_PARAM = "new";
 export const CREATE_INTENT_VALUE = "1";
 /**
- * Група, у якій створити рядок: `/trackers?new=1&group=12` — «новий трекер
- * у цій групі». Адреса, а не стан: «назад» закриває форму так само.
+ * Група, у якій створити рядок: `/trackers?new=1&group=12`.
  */
 export const CREATE_GROUP_PARAM = "group";
 
-/**
- * Чи просять відкрити створення. Правда — одна: **адреса**.
- *
- * Саме тому форма відкривається за адресою, а не за локальним прапорцем: у
- * Telegram Mini App «закрити форму» — це найчастіше «назад» (жест або кнопка
- * системи), а це **зміна адреси**. З локальним станом вона не закривала б форму,
- * а виходила б зі *сторінки*.
- */
+/** Чи просять відкрити створення. Правда — одна: **адреса**. */
 export function readCreateIntent(params: URLSearchParams): boolean {
   return params.get(CREATE_INTENT_PARAM) === CREATE_INTENT_VALUE;
 }
 
-/**
- * Та сама адреса, але з наміром створити.
- *
- * Розбір через `URLSearchParams`, а не склейка рядка: адреса може вже нести
- * свої параметри (`/messages?peer=5`), і `?` замість `&` зробив би другий
- * параметр частиною першого — тоді замість створення відкривався б список.
- */
+/** Та сама адреса, але з наміром створити. */
 export function withCreateIntent(path: string, groupId?: number | null): string {
   const [base, query = ""] = path.split("?");
   const params = new URLSearchParams(query);
@@ -324,13 +207,7 @@ export function readCreateGroupId(params: URLSearchParams): number | null {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-/**
- * Та сама адреса **без** наміру — чим лишається екран, коли форму закрито
- * (`/notes?new=1` → `/notes`, `/messages?peer=5&new=1` → `/messages?peer=5`).
- *
- * Прибирається рівно **один** параметр: в адреси можуть бути свої (`peer=5`), і
- * вони мусять лишитись на місці — інакше закрита форма викидала б із розмови.
- */
+/** Та сама адреса **без** наміру — чим лишається екран, коли форму закрито. */
 export function withoutCreateIntent(path: string): string {
   const [base, query = ""] = path.split("?");
   const params = new URLSearchParams(query);
@@ -339,14 +216,7 @@ export function withoutCreateIntent(path: string): string {
   return rest ? `${base}?${rest}` : base;
 }
 
-/**
- * Позначка запису, який **відкрив форму**.
- *
- * Нею екран каже одне: під цим записом стоїть сам розділ. Тому закриття форми —
- * **крок назад** (людина лишається в розділі), а не заміна адреси навпростець.
- * Без позначки «назад» повертало б туди, звідки прийшли, а при відкритті за
- * посиланням — узагалі виводило б із продукту.
- */
+/** Позначка запису, який **відкрив форму**. */
 export const CREATE_FORM_STATE = { createForm: true } as const;
 
 /** Чи це запис форми — тобто чи є під ним розділ, у який вертає закриття. */

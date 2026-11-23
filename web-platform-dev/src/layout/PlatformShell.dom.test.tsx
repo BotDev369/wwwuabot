@@ -38,11 +38,26 @@ function renderShell(): void {
   );
 }
 
+/** Реєстр у тесті: каркас бере з нього назву, крохи й пункти меню. */
+const SCREENS = [
+  {
+    key: "trackers",
+    parentKey: null,
+    title: "Трекери",
+    icon: "bar-chart",
+    sortOrder: 10,
+    inMenu: true,
+    texts: {},
+  },
+];
+
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.request.mockImplementation(async (url: string) =>
-    url === "/api/messages/badge" ? 0 : { ok: true },
-  );
+  mocks.request.mockImplementation(async (url: string) => {
+    if (url === "/api/screens") return { ok: true, screens: SCREENS };
+    if (url === "/api/messages/badge") return 0;
+    return { ok: true };
+  });
 });
 
 describe("каркас", () => {

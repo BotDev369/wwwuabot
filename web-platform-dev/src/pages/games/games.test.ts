@@ -79,10 +79,12 @@ describe("звʼязок зі «Сервісами»", () => {
   });
 
   it("⛔ кожна гра має маршрут — інакше ключ потрапляє в catch-all", () => {
-    const router = source("src", "app", "router.tsx");
-    expect(router).toContain("GAMES_ROUTE");
-    expect(router).toContain("<GamePage />");
-    expect(router).toContain("<GamesPage />");
+    // Адреси будуються з реєстру екранів; тут варто бачити сам ключ і обидва
+    // компоненти — список і партію.
+    const screens = source("src", "app", "screen-routes.tsx");
+    expect(screens).toContain("games.play");
+    expect(screens).toContain("<GamePage />");
+    expect(screens).toContain("<GamesPage />");
   });
 
   it("список ігор малює список, а не дошку", () => {

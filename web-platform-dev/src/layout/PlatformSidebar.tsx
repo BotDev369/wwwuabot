@@ -7,21 +7,30 @@
  */
 
 import type { ReactElement } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { SideBar, SideBarMenu } from "@wwwuabot/ui/nav";
 import { Icon, SwitchRow, themeById, useStyleTheme } from "@wwwuabot/shared";
-import { platformNav } from "./platform-nav";
+import type { ScreenRow } from "@wwwuabot/shared/screens";
+import { navFromScreens } from "./screen-nav";
 
 interface PlatformSidebarProps {
+  /** Екрани з реєстру: підпис, іконка й адреса пункту живуть у базі. */
+  screens: readonly ScreenRow[];
+  /** Поточна адреса — для підсвіченого пункту. */
+  pathname: string;
   /** Виїзне меню відкрите (телефон). */
   open?: boolean;
   /** Закрити поверхню: хрестик у самому меню або дотик повз нього. */
   onClose?: () => void;
 }
 
-export function PlatformSidebar({ open = false, onClose }: PlatformSidebarProps): ReactElement {
+export function PlatformSidebar({
+  screens,
+  pathname,
+  open = false,
+  onClose,
+}: PlatformSidebarProps): ReactElement {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
   const { scheme, setScheme } = useStyleTheme();
   const dark = scheme === "dark";
 
@@ -44,7 +53,7 @@ export function PlatformSidebar({ open = false, onClose }: PlatformSidebarProps)
         />
       </div>
       <SideBarMenu
-        sections={platformNav(pathname)}
+        sections={navFromScreens(screens, pathname)}
         label="Навігація платформи"
         // Перехід у межах SPA: повне перезавантаження в TWA втрачає стан.
         // Дотик по пункту на телефоні закриває меню — інакше воно лишалось би

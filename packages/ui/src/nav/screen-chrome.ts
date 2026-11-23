@@ -26,15 +26,28 @@ import type { FavoriteTarget } from "@wwwuabot/shared/favorites";
  */
 export type ScreenChromeTitleMode = "header" | "hero";
 
+/**
+ * Рівень хлібного шляху: підпис і адреса.
+ *
+ * `href: null` — рівень без посилання (поточна сторінка або параметр, якого в
+ * адресі немає). Хедер не знає про роутер, тож перехід робить той, хто передав
+ * `onNavigate`.
+ */
+export interface ScreenCrumb {
+  label: string;
+  href: string | null;
+}
+
 /** Що екран розповідає про себе хедеру. */
 export interface ScreenChrome {
   /** Назва екрана. */
   title: string | null;
   /**
    * Батьківські рівні від розділу до безпосереднього батька. Поточний рівень —
-   * `title`, тож разом вони утворюють стек «розділ → підсторінка → …».
+   * `title`, тож разом вони утворюють шлях «розділ › підсторінка › …». Сам
+   * ланцюжок будує каркас із реєстру, а не екран.
    */
-  ancestors: readonly string[];
+  ancestors: readonly ScreenCrumb[];
   /** Де показувати назву: у хедері відразу чи після великого `h1`. */
   titleMode: ScreenChromeTitleMode;
   /** Відкрити власне меню сторінки (бургер); `null` — меню немає. */

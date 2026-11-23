@@ -1,25 +1,28 @@
 /**
  * Каркас платформи: хедер, сайдбар і сторінка.
  *
- * **Навігація — правий сайдбар, а не футер.** П'ять слотів унизу змушували
- * кожну нову річ або тіснитись у «Сервіси», або не потрапляти нікуди. Тепер
- * меню — один список без «Ще», який виїжджає справа поверх сторінки; тему й
- * усі пункти видно лише тоді, коли людина сама відкрила меню.
+ * **Навігація — правий сайдбар.** Меню — один список без «Ще», який виїжджає
+ * справа поверх сторінки; тему й усі пункти видно лише тоді, коли людина сама
+ * відкрила меню. Склад пунктів, їхні підписи й місце в меню приходять із
+ * реєстру екранів (`ScreensProvider` → `/api/screens`), а не з коду.
  *
- * **Меню — стан каркаса, а не екрана.** Хедер, сайдбар і скрим живуть тут, бо
- * лише каркас знає, що меню відкрите; сторінка про це не здогадується й не
- * тримає в собі кнопку. Хедер показує той самий бренд і «МЕНЮ» на кожному
- * екрані, а назву сторінки бере з її оголошення (`useScreenChrome`).
+ * **Хлібний шлях рахує каркас.** Екран каже лише назву з даних («Кроки»,
+ * «Астрагал»); розділ і підрозділи будуються з `parent_key` за адресою. Тому
+ * новий крок не забуває про старі, а перейменування розділу змінює крохи в
+ * усіх його сторінках.
  *
  * @module web-platform-dev/src/layout/PlatformShell
  */
 
-import { useCallback, useEffect, useState, type ReactElement } from "react";
-import { Outlet, useLocation } from "react-router-dom";
-import { AppBar, ScreenChromeProvider } from "@wwwuabot/ui/nav";
+import { useCallback, useContext, useEffect, useState, type ReactElement } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { AppBar, ScreenChromeContext, ScreenChromeProvider } from "@wwwuabot/ui/nav";
 import { apiFetch } from "@/shared/api/client";
 import { JournalBridge } from "./JournalBridge";
 import { PlatformSidebar } from "./PlatformSidebar";
+import { ScreensProvider } from "./ScreensProvider";
+import { useScreens } from "./useScreens";
+import { screenTrail } from "./screen-trail";
 
 /**
  * Ім'я бота для діплінків; `null`, поки не відомо.
@@ -45,15 +48,20 @@ function useBotUsername(): string | null {
   return username;
 }
 
-export function PlatformShell(): ReactElement {
+/**
+ * Внутрішній каркас: стоїть **усередині** провайдерів, бо крохи потребують і
+ * назву з екрана, і реєстр із бази.
+ */
+function PlatformFrame(): ReactElement {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const chrome = useContext(ScreenChromeContext)?.chrome;
+  const { rows } = useScreens();
   const [navOpen, setNavOpen] = useState(false);
   const closeNav = useCallback(() => setNavOpen(false), []);
   const toggleNav = useCallback(() => setNavOpen((current) => !current), []);
   const botUsername = useBotUsername();
 
-  // Escape закриває меню, як модалку: на телефоні це єдиний спосіб вийти з
-  // нього, не цілячись у хрестик.
   useEffect(() => {
     if (!navOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -63,37 +71,83 @@ export function PlatformShell(): ReactElement {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [navOpen]);
 
-  // Вітрина — обкладинка, а не кабінет: сайдбар і хедер тут були б другою
-  // шапкою над власною шапкою екрана.
-  if (pathname === "/") {
-    return (
-      <ScreenChromeProvider>
-        <JournalBridge />
-        <Outlet />
-      </ScreenChromeProvider>
-    );
-  }
+  const trail = screenTrail(rows, pathname, chrome?.title ?? null);
+  // Назву й крохи дає реєстр; екран лише уточнює назву з даних (трекер, товар).
+  // Тому екран без `useScreenChrome` більше не лишається без шапки.
+  const current = chrome?.title ?? trail[trail.length - 1]?.label ?? null;
+  const shellChrome = {
+    ...(chrome ?? EMPTY_SHELL_CHROME),
+    title: current,
+    ancestors: trail.slice(0, -1),
+  };
 
   return (
-    <ScreenChromeProvider>
+    <div className="wb-platform">
       {/* Журнал бачить «відкрив сторінку», «відкрив модалку» й дії в них — а не
           запити, які екран зробив сам. */}
       <JournalBridge />
-      <div className="wb-platform">
-        <PlatformSidebar open={navOpen} onClose={closeNav} />
-        {navOpen && (
-          <button
-            type="button"
-            className="wb-platform-scrim"
-            aria-label="Закрити меню"
-            onClick={closeNav}
-          />
-        )}
-        <div className="wb-platform-main">
-          <AppBar onMenu={toggleNav} menuOpen={navOpen} botUsername={botUsername} />
-          <Outlet />
-        </div>
+      <PlatformSidebar open={navOpen} onClose={closeNav} screens={rows} pathname={pathname} />
+      {navOpen && (
+        <button
+          type="button"
+          className="wb-platform-scrim"
+          aria-label="Закрити меню"
+          onClick={closeNav}
+        />
+      )}
+      <div className="wb-platform-main">
+        <AppBar
+          chrome={shellChrome}
+          onMenu={toggleNav}
+          menuOpen={navOpen}
+          botUsername={botUsername}
+          onNavigate={(href) => {
+            navigate(href);
+            closeNav();
+          }}
+        />
+        <Outlet />
       </div>
-    </ScreenChromeProvider>
+    </div>
   );
 }
+
+/**
+ * Оболонка, яка не є екраном: вітрина входу. Сайдбар і хедер тут були б другою
+ * шапкою над власною шапкою екрана.
+ */
+function EntryFrame(): ReactElement {
+  return (
+    <>
+      <JournalBridge />
+      <Outlet />
+    </>
+  );
+}
+
+export function PlatformShell(): ReactElement {
+  const { pathname } = useLocation();
+
+  return (
+    <ScreensProvider>
+      <ScreenChromeProvider>
+        {pathname === "/" ? <EntryFrame /> : <PlatformFrame />}
+      </ScreenChromeProvider>
+    </ScreensProvider>
+  );
+}
+
+/**
+ * Порожній стан хедера для адреси, яку екран ще не оголосив.
+ *
+ * Крохи й назву дає реєстр, тож екран без `useScreenChrome` більше не лишається
+ * без шапки; дії (поділитись, серце, меню сторінки) лишаються `null`.
+ */
+const EMPTY_SHELL_CHROME = {
+  title: null,
+  ancestors: [],
+  titleMode: "header",
+  menu: null,
+  share: null,
+  favorite: null,
+} as const;

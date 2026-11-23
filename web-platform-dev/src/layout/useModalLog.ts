@@ -11,8 +11,8 @@ import { useContext, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { ScreenChromeContext } from "@wwwuabot/ui/nav";
 import { screenLabel } from "@wwwuabot/shared/events";
+import { screenKeyOfPath } from "@wwwuabot/shared/screens";
 import { apiFetch } from "@/shared/api/client";
-import { screenKeyOfPath } from "@/app/screens";
 import { claimHeldClick } from "./platform-journal";
 
 /** Назва поверхні: `aria-label` шапки або її заголовок. */

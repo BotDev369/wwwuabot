@@ -43,18 +43,31 @@ const FORM_SCREENS = [
 
 describe("вхід у продукт", () => {
   const router = readFileSync(join(REPO_ROOT, "web-platform-dev/src/app/router.tsx"), "utf8");
+  const screens = readFileSync(
+    join(REPO_ROOT, "web-platform-dev/src/app/screen-routes.tsx"),
+    "utf8",
+  );
+  const registry = readFileSync(
+    join(REPO_ROOT, "packages/shared/src/screens/registry.json"),
+    "utf8",
+  );
 
   it("корінь — вітрина з входами, а не день і не акаунт", () => {
-    expect(router).toContain("{ index: true, element: <EntryPage /> }");
+    // Маршрути будуються з реєстру: елемент входу стоїть окремо від карти ключів.
+    expect(router).toContain("ENTRY_ELEMENT");
+    expect(screens).toContain("<EntryPage />");
     // «Мій день» — екран усередині продукту, зі своєю адресою.
-    expect(router).toContain("{ path: DAY_ROUTE, element: <MyDayPage /> }");
+    expect(registry).toContain('"path": "/day"');
+    expect(screens).toContain("<MyDayPage />");
     // Редирект з кореня з'їдав історію: «Назад» із першого екрана не мав куди йти.
     expect(router).not.toContain("<Navigate to={ACCOUNT_PATH}");
   });
 
   it("акаунт і замовлення — власні маршрути, а не рядок контенту", () => {
-    expect(router).toContain("{ path: ACCOUNT_ROUTE, element: <ProfileAccountPage /> }");
-    expect(router).toContain("{ path: ORDERS_ROUTE, element: <ProfileOrdersPage /> }");
+    expect(registry).toContain('"path": "/account"');
+    expect(registry).toContain('"path": "/orders"');
+    expect(screens).toContain("<ProfileAccountPage />");
+    expect(screens).toContain("<ProfileOrdersPage />");
   });
 
   it("⛔ хабу профілю немає — ні сторінки, ні адреси", () => {

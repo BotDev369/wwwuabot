@@ -1,5 +1,5 @@
 {
-  "version": "cfc8abb",
+  "version": "57f93c4",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -99,7 +99,7 @@
     {
       "file": "app-chrome.css",
       "tokens": 2,
-      "classes": 148
+      "classes": 151
     },
     {
       "file": "assessments.css",
@@ -4055,7 +4055,10 @@
           "wb-appbar__btn--on",
           "wb-appbar__crumb",
           "wb-appbar__crumb--current",
+          "wb-appbar__crumb--link",
           "wb-appbar__menu",
+          "wb-appbar__sep",
+          "wb-appbar__step",
           "wb-appbar__top",
           "wb-appbar__trail"
         ]

@@ -230,6 +230,51 @@ export const TABLES = {
   },
 
   /**
+   * **Екран платформи — один рядок на екран, і це джерело правди про нього.**
+   *
+   * Назва, батько (звідси хлібний шлях), місце в меню, іконка й порядок живуть
+   * тут, а не в п'яти списках коду: доти один екран описували маршрути, журнал,
+   * меню й рядок назви в компоненті. Розбіжність між ними була не помилкою, а
+   * нормою.
+   *
+   * **Чому не `platform_pages`.** Там `slug` — `NOT NULL UNIQUE` і є адресою
+   * контенту; у динамічного екрана (`/trackers/:id`, `/analysis/tests/:key`)
+   * `slug` немає й бути не може. Крім того екранні рядки в тій таблиці
+   * потрапляли в пошук як сторінки.
+   *
+   * **Ключ — ідентичність.** `key` не змінюється разом із назвою чи адресою:
+   * його знають журнал, крохи й код, який рендерить екран. Шаблон адреси
+   * лишається в коді (`app/screen-routes.tsx`), бо роутер — це код; реєстр і
+   * карта компонентів звіряються гейтом `check:screens`.
+   *
+   * **Слова — у `page_data`**, тим самим механізмом блоків `text`, що й у
+   * сторінок: `readScreenTexts` не знає, з якого рядка прийшли слова.
+   */
+  platform_screens: {
+    name: "platform_screens",
+    owner: "api-dev",
+    purpose:
+      "Екран платформи: ключ, назва, батько для хлібного шляху, місце в меню, слова (`page_data`) і пошукові терміни. Seed — `packages/shared/src/screens/registry.json`.",
+    create: `CREATE TABLE IF NOT EXISTS "platform_screens" (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key TEXT NOT NULL UNIQUE,
+        parent_key TEXT,
+        title TEXT NOT NULL,
+        icon TEXT,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        in_menu INTEGER NOT NULL DEFAULT 0,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        page_data TEXT DEFAULT NULL,
+        search_terms TEXT NOT NULL DEFAULT '[]',
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_platform_screens_parent ON platform_screens(parent_key)",
+    ],
+  },
+
+  /**
    * Екран бота — **окремо від сторінки**, бо це різні речі: у вебсторінки є
    * `page_data` і шаблон, у екрана бота — команда, підписи, фото, кнопки й
    * rich-розмітка. Доти вони лежали в одному рядку `scenarios`, і кожна таблиця

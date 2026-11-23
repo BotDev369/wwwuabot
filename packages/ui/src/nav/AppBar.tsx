@@ -28,7 +28,7 @@
 import { useContext, useEffect, useRef, useState, type ReactElement } from "react";
 import { Icon, type IconName } from "@wwwuabot/shared";
 import type { FavoriteTarget } from "@wwwuabot/shared/favorites";
-import { ScreenChromeContext, type ScreenChrome } from "./screen-chrome";
+import { ScreenChromeContext, type ScreenChrome, type ScreenCrumb } from "./screen-chrome";
 import { useAppBarHeight } from "./useAppBarHeight";
 import { ShareModal } from "./ShareModal";
 import { useFavorite } from "../favorites/useFavorite";
@@ -36,6 +36,13 @@ import { LikeToast } from "../favorites/LikeToast";
 
 /** Дії, які знає тільки оболонка: вона одна володіє роутером. */
 export interface AppBarActions {
+  /**
+   * Готовий стан хедера, якщо його порахував каркас: крохи будуються з реєстру
+   * екранів, і лише оболонка знає, який розділ стоїть над сторінкою.
+   */
+  chrome?: ScreenChrome;
+  /** Перехід за рівнем шляху: хедер не знає про роутер. */
+  onNavigate?: (href: string) => void;
   /** Відкрити або закрити меню продукту (правий сайдбар). */
   onMenu?: () => void;
   /** Меню відкрите — для `aria-expanded`. */
@@ -45,14 +52,22 @@ export interface AppBarActions {
 }
 
 export function AppBar({
+  chrome: given,
   onMenu,
+  onNavigate,
   menuOpen = false,
   botUsername = null,
 }: AppBarActions): ReactElement | null {
-  const chrome = useContext(ScreenChromeContext)?.chrome;
+  const chrome = given ?? useContext(ScreenChromeContext)?.chrome;
   if (!chrome) return null;
   return (
-    <AppBarView chrome={chrome} onMenu={onMenu} menuOpen={menuOpen} botUsername={botUsername} />
+    <AppBarView
+      chrome={chrome}
+      onMenu={onMenu}
+      onNavigate={onNavigate}
+      menuOpen={menuOpen}
+      botUsername={botUsername}
+    />
   );
 }
 
@@ -63,6 +78,7 @@ export function AppBar({
 export function AppBarView({
   chrome,
   onMenu,
+  onNavigate,
   menuOpen = false,
   botUsername = null,
 }: { chrome: ScreenChrome } & AppBarActions): ReactElement {
@@ -73,8 +89,10 @@ export function AppBarView({
   // згорнутою, доки `h1` не піде під хедер.
   const heroTitle = titleMode === "hero";
   const [titleInHeader, setTitleInHeader] = useState(false);
-  // Останній рівень — поточна сторінка; попередні — її батьки.
-  const trail = title ? [...ancestors, title] : [];
+  // Останній рівень — поточна сторінка; попередні — її батьки (з реєстру).
+  const trail: readonly ScreenCrumb[] = title
+    ? [...ancestors, { label: title, href: null }]
+    : ancestors;
   const ancestorsKey = JSON.stringify(ancestors);
 
   useAppBarHeight(header);
@@ -145,17 +163,44 @@ export function AppBarView({
 
       {trail.length > 0 && (!heroTitle || titleInHeader) && (
         <nav className="wb-appbar__trail" aria-label="Шлях сторінки">
-          {trail.map((item, index) =>
-            index === trail.length - 1 ? (
-              <h1 className="wb-appbar__crumb wb-appbar__crumb--current" key="current" title={item}>
-                {item}
-              </h1>
-            ) : (
-              <span className="wb-appbar__crumb" key={`${index}-${item}`} title={item}>
-                {item}
+          {trail.map((crumb, index) => {
+            const current = index === trail.length - 1;
+            const label = crumb.label;
+            return (
+              <span className="wb-appbar__step" key={`${index}-${label}`}>
+                {index > 0 && (
+                  <span className="wb-appbar__sep" aria-hidden="true">
+                    ›
+                  </span>
+                )}
+                {current || !crumb.href || !onNavigate ? (
+                  current ? (
+                    <h1 className="wb-appbar__crumb wb-appbar__crumb--current" title={label}>
+                      {label}
+                    </h1>
+                  ) : (
+                    <span className="wb-appbar__crumb" title={label}>
+                      {label}
+                    </span>
+                  )
+                ) : (
+                  <a
+                    className="wb-appbar__crumb wb-appbar__crumb--link"
+                    href={crumb.href}
+                    title={label}
+                    onClick={(event) => {
+                      // SPA-перехід: повне перезавантаження в TWA втрачає стан.
+                      if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+                      event.preventDefault();
+                      onNavigate(crumb.href as string);
+                    }}
+                  >
+                    {label}
+                  </a>
+                )}
               </span>
-            ),
-          )}
+            );
+          })}
         </nav>
       )}
       {share && sharing && (

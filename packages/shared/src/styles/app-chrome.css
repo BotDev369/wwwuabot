@@ -174,15 +174,30 @@
 }
 
 /*
- * Шлях сторінки: один рядок — один рівень. На телефоні немає місця для
- * горизонтального «хлібного» ланцюжка, тому глибина читається зверху вниз.
- * Перший рівень (розділ) більший за бренд, інакше не видно, що ми вже
- * всередині нього; кожен наступний — на щабель менший.
+ * Шлях сторінки — **один рядок**: `Розділ › Підрозділ › Сторінка`. Висота
+ * хедера стала на будь-якій глибині, а середина обрізається трикрапкою —
+ * перенос рівнів на другий рядок з'їдав місце в контенті.
  */
 .wb-appbar__trail {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1);
   min-width: 0;
+  overflow: hidden;
+}
+
+/* Один рівень тримається купи зі своїм роздільником і не переноситься. */
+.wb-appbar__step {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.wb-appbar__sep {
+  flex: 0 0 auto;
+  color: var(--text-secondary);
 }
 
 .wb-appbar__crumb {
@@ -193,28 +208,20 @@
   font-weight: var(--weight-semibold);
   line-height: 1.2;
   letter-spacing: var(--tracking-title);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Поточна сторінка — останній рядок стека; це вона, а не проміжний рівень. */
+/* Батьківський рівень — посилання: виглядом не відрізняється, але веде назад. */
+.wb-appbar__crumb--link {
+  text-decoration: none;
+}
+
+/* Поточна сторінка — останній рівень; це вона, а не проміжний. */
 .wb-appbar__crumb--current {
   color: var(--text-primary);
-}
-
-/* Розділ — акцентний рівень стека: 26px, більший за 20px бренду. */
-.wb-appbar__trail > .wb-appbar__crumb:first-child:not(:last-child) {
-  font-size: var(--text-xl);
   font-weight: var(--weight-bold);
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-}
-
-/* Проміжні рівні — 20px; останній рядок лишається 17px. */
-.wb-appbar__trail > .wb-appbar__crumb:not(:first-child):not(:last-child) {
-  font-size: var(--text-lg);
-  line-height: 1.15;
 }
 
 /* На hero-екрані стек не має власного шару: коли велика назва йде під хедер,

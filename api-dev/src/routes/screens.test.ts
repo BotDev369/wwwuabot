@@ -7,7 +7,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Env } from "../shared/types";
 
-const handlers = { handleScreenTexts: vi.fn() };
+const handlers = { handleScreens: vi.fn(), handleScreenTexts: vi.fn() };
 vi.mock("../controllers/screens.controller", () => handlers);
 
 const { matchScreensRoute } = await import("./screens");
@@ -31,8 +31,25 @@ describe("GET /api/screens/:key", () => {
     expect(handlers.handleScreenTexts).not.toHaveBeenCalled();
   });
 
+  it("точний `/api/screens` — дерево, а не ключ `screens`", async () => {
+    handlers.handleScreens.mockReturnValue(new Response("tree"));
+
+    const response = await matchScreensRoute(ENV, "/api/screens");
+
+    expect(await (response as Response).text()).toBe("tree");
+    expect(handlers.handleScreenTexts).not.toHaveBeenCalled();
+  });
+
   it("чужий шлях лишається не нашим — роутер іде далі", () => {
     expect(matchScreensRoute(ENV, "/api/scenario/services")).toBeNull();
-    expect(matchScreensRoute(ENV, "/api/screens")).toBeNull();
+  });
+
+  it("ключ доходить цілком — слеш відсіює контролер, а не префікс", () => {
+    handlers.handleScreenTexts.mockReturnValue(new Response("bad", { status: 400 }));
+
+    const response = matchScreensRoute(ENV, "/api/screens/services/extra") as Response;
+
+    expect(response.status).toBe(400);
+    expect(handlers.handleScreenTexts).toHaveBeenCalledWith(ENV, "services/extra");
   });
 });

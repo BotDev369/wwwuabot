@@ -15,7 +15,7 @@ const ACTIONS = {};
 
 function render(
   chrome: ScreenChrome,
-  extra: { onMenu?: () => void; menuOpen?: boolean } = {},
+  extra: { onMenu?: () => void; onNavigate?: (href: string) => void; menuOpen?: boolean } = {},
 ): string {
   return renderToStaticMarkup(<AppBarView chrome={chrome} {...ACTIONS} {...extra} />);
 }
@@ -49,15 +49,32 @@ describe("хедер застосунку", () => {
     expect(html).not.toContain("Hero page");
   });
 
-  it("зберігає всі рівні шляху окремими рядками", () => {
+  it("тримає весь шлях одним рядком, а розділ — перед сторінкою", () => {
     const html = render({
       ...EMPTY_CHROME,
       title: "Співставити",
-      ancestors: ["Аналіз людей і подій"],
+      ancestors: [{ label: "Аналіз людей і подій", href: "/analysis" }],
     });
 
     expect(html.indexOf("Аналіз людей і подій")).toBeLessThan(html.indexOf("Співставити"));
     expect(html).toContain("wb-appbar__crumb--current");
+    expect(html).toContain("wb-appbar__sep");
+    // Без `onNavigate` (тест без каркаса) розділ — підпис, а не мертве посилання.
+    expect(html).not.toContain("wb-appbar__crumb--link");
+  });
+
+  it("з `onNavigate` батьківський рівень стає посиланням", () => {
+    const html = render(
+      {
+        ...EMPTY_CHROME,
+        title: "Співставити",
+        ancestors: [{ label: "Аналіз", href: "/analysis" }],
+      },
+      { onNavigate: () => undefined },
+    );
+
+    expect(html).toContain(`href="/analysis"`);
+    expect(html).toContain("wb-appbar__crumb--link");
   });
 
   it("⛔ «Назад» і теми в хедері більше немає", () => {

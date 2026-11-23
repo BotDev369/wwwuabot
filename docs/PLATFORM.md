@@ -104,9 +104,16 @@ src/
 
 Каркас — **спільні кирпичики** (`app-chrome.css`), оболонка лише складає їх і додає своє: у адмінці —
 `layout/AppShell.tsx` + `layout/Sidebar/*` (`adminNav.store` — склад і порядок меню), у платформи —
-`layout/PlatformShell.tsx` + `layout/PlatformSidebar.tsx` (сайдбар на спільних `SideBar` + `SideBarMenu`,
-склад пунктів — `layout/platform-nav.ts`: головні й «Ще»; на телефоні меню виїжджає поверхнею зі
-скримом, кнопку дає `AppBar.onMenu`); auth у кожної свій — `app/AuthGate.tsx`.
+`layout/PlatformShell.tsx` + `layout/PlatformSidebar.tsx` (сайдбар на спільних `SideBar` + `SideBarMenu`;
+склад пунктів приходить із реєстру екранів — `platform_screens` через `ScreensProvider`, а не з
+коду; на телефоні меню виїжджає поверхнею зі скримом, кнопку дає `AppBar.onMenu`); auth у кожної
+свій — `app/AuthGate.tsx`.
+
+**Хлібний шлях — один рядок із реєстру.** Під «ПАЛЯНИЦЯ» стоїть
+`Розділ › Підрозділ › Сторінка`: батьків дає `parent_key`, назву — рядок екрана, а клік по
+батьківському рівню веде на нього. Екран передає лише назву з даних (трекер, товар, тест), тож
+новий крок не забуває про старі. Реєстр — `packages/shared/src/screens/registry.json`, правило —
+[`SCREEN_TEXTS.md`](./SCREEN_TEXTS.md).
 
 `web-platform-dev` — auth через TWA SDK (підписаний `initData`), API через service binding;
 **власного `src/stores/` немає**: стан живе в хуках сторінок і фіч, а спільний Zustand-стор — у

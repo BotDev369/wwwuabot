@@ -1,36 +1,20 @@
 /**
- * Хлібні крихти розділу «Аналіз людей і подій»: екран дає лише свою назву,
- * а батьківські рівні додає ця функція за адресою (`/analysis/compare/systems`
- * — три рівні). Тож новий крок не забуває про старі.
+ * Оголошення хедера для екранів аналізу.
+ *
+ * Батьківські рівні більше не живуть тут: хлібний шлях будує каркас із
+ * `parent_key` реєстру (`layout/screen-trail.ts`), тож крок не може забути про
+ * старі, а назва розділу не дублюється в коді.
  *
  * @module web-platform-dev/src/pages/analysis/analysis-chrome
  */
 
 import { useScreenChrome } from "@wwwuabot/ui/nav";
-import { ANALYSIS_PATH } from "@/app/routes";
-import { ANALYSIS_LABEL } from "@/layout/platform-nav";
-
-/** Назва розділу — та сама, що в меню: спільний перший рівень усіх його сторінок. */
-export const ANALYSIS_TITLE = ANALYSIS_LABEL;
 
 /**
- * Батьківські рівні для адреси. Поточну назву додає сам хедер із `title`, тому
- * тут її немає.
+ * Назва розділу — та сама, що в реєстрі; поки що в коді, бо переїзд слів —
+ * 7.2. Хедер усе одно бере її з реєстру, коли екран не передав своєї.
  */
-export function analysisAncestors(pathname: string): readonly string[] {
-  const path = pathname.replace(/\/+$/, "") || "/";
-  if (path === ANALYSIS_PATH || !path.startsWith(`${ANALYSIS_PATH}/`)) return [];
-  if (path.startsWith(`${ANALYSIS_PATH}/tests/`)) {
-    return [ANALYSIS_TITLE, "Пройти тестування"];
-  }
-  if (path.startsWith(`${ANALYSIS_PATH}/person/`) || path.startsWith(`${ANALYSIS_PATH}/event/`)) {
-    return [ANALYSIS_TITLE, "Аналізувати за датою"];
-  }
-  if (path.startsWith(`${ANALYSIS_PATH}/compare/`)) {
-    return [ANALYSIS_TITLE, "Співставити"];
-  }
-  return [ANALYSIS_TITLE];
-}
+export const ANALYSIS_TITLE = "Аналіз людей і подій";
 
 /**
  * Оголошення хедера для сторінки аналізу.
@@ -43,12 +27,5 @@ export function useAnalysisChrome(
   title: string | null,
   { hero = true, enabled = true }: { hero?: boolean; enabled?: boolean } = {},
 ): void {
-  useScreenChrome(
-    {
-      title,
-      titleMode: hero ? "hero" : "header",
-      ancestors: analysisAncestors(window.location.pathname),
-    },
-    enabled,
-  );
+  useScreenChrome({ title, titleMode: hero ? "hero" : "header" }, enabled);
 }

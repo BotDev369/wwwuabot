@@ -11,9 +11,9 @@ import { useContext, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ScreenChromeContext } from "@wwwuabot/ui/nav";
 import { screenLabel } from "@wwwuabot/shared/events";
+import { screenKeyOfPath } from "@wwwuabot/shared/screens";
 import { apiFetch } from "@/shared/api/client";
 import { choiceOf, gestureOf, type Gesture } from "@/app/action-label";
-import { screenKeyOfPath } from "@/app/screens";
 import { holdClick } from "./platform-journal";
 
 type GestureKind = "click" | "input";

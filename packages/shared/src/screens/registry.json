@@ -1,0 +1,372 @@
+[
+  {
+    "key": "entry",
+    "path": "/",
+    "parent": null,
+    "title": "Вхід",
+    "icon": null,
+    "sort": 0,
+    "inMenu": false,
+    "journal": "account"
+  },
+  {
+    "key": "day",
+    "path": "/day",
+    "parent": null,
+    "title": "Мій день",
+    "icon": "home",
+    "sort": 10,
+    "inMenu": true
+  },
+  {
+    "key": "analysis",
+    "path": "/analysis",
+    "parent": null,
+    "title": "Аналіз людей і подій",
+    "icon": "my-dates",
+    "sort": 20,
+    "inMenu": true
+  },
+  {
+    "key": "users",
+    "path": "/users",
+    "parent": null,
+    "title": "Гурт",
+    "icon": "users",
+    "sort": 30,
+    "inMenu": true
+  },
+  {
+    "key": "account",
+    "path": "/account",
+    "parent": null,
+    "title": "Акаунт",
+    "icon": "user-solid",
+    "sort": 40,
+    "inMenu": true
+  },
+  {
+    "key": "shops",
+    "path": "/shops",
+    "parent": null,
+    "title": "Магазини",
+    "icon": "cart",
+    "sort": 50,
+    "inMenu": true
+  },
+  {
+    "key": "favorites",
+    "path": "/favorites",
+    "parent": null,
+    "title": "Обране",
+    "icon": "thumbs-up",
+    "sort": 60,
+    "inMenu": true
+  },
+  {
+    "key": "trackers",
+    "path": "/trackers",
+    "parent": null,
+    "title": "Трекери",
+    "icon": "bar-chart",
+    "sort": 70,
+    "inMenu": true
+  },
+  {
+    "key": "notes",
+    "path": "/notes",
+    "parent": null,
+    "title": "Нотатки",
+    "icon": "list",
+    "sort": 80,
+    "inMenu": true
+  },
+  {
+    "key": "contacts",
+    "path": "/contacts",
+    "parent": null,
+    "title": "Контакти",
+    "icon": "contact",
+    "sort": 90,
+    "inMenu": true
+  },
+  {
+    "key": "messages",
+    "path": "/messages",
+    "parent": null,
+    "title": "Повідомлення",
+    "icon": "message-square",
+    "sort": 100,
+    "inMenu": true
+  },
+  {
+    "key": "orders",
+    "path": "/orders",
+    "parent": null,
+    "title": "Замовлення",
+    "icon": "clipboard",
+    "sort": 110,
+    "inMenu": true
+  },
+  {
+    "key": "services",
+    "path": "/services",
+    "parent": null,
+    "title": "Сервіси",
+    "icon": "layers",
+    "sort": 120,
+    "inMenu": true
+  },
+  {
+    "key": "ads",
+    "path": "/ads",
+    "parent": null,
+    "title": "Оголошення",
+    "icon": null,
+    "sort": 130,
+    "inMenu": false
+  },
+  {
+    "key": "games",
+    "path": "/games",
+    "parent": null,
+    "title": "Ігри",
+    "icon": null,
+    "sort": 140,
+    "inMenu": false
+  },
+  {
+    "key": "games.play",
+    "path": "/games/:key",
+    "parent": "games",
+    "title": "Партія",
+    "icon": null,
+    "sort": 0,
+    "inMenu": false
+  },
+  {
+    "key": "research",
+    "path": "/research",
+    "parent": null,
+    "title": "Дослідження",
+    "icon": null,
+    "sort": 150,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.variants",
+    "path": "/analysis/variants",
+    "parent": "analysis",
+    "title": "Варіанти головної",
+    "icon": null,
+    "sort": 10,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.hub.1",
+    "path": "/analysis/variant/1",
+    "parent": "analysis",
+    "title": "Головна · варіант 1",
+    "icon": null,
+    "sort": 11,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.hub.2",
+    "path": "/analysis/variant/2",
+    "parent": "analysis",
+    "title": "Головна · варіант 2",
+    "icon": null,
+    "sort": 12,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.hub.3",
+    "path": "/analysis/variant/3",
+    "parent": "analysis",
+    "title": "Головна · варіант 3",
+    "icon": null,
+    "sort": 13,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.systems",
+    "path": "/analysis/systems",
+    "parent": "analysis",
+    "title": "Про системи аналізу",
+    "icon": null,
+    "sort": 20,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.tests",
+    "path": "/analysis/tests",
+    "parent": "analysis",
+    "title": "Пройти тестування",
+    "icon": null,
+    "sort": 30,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.test",
+    "path": "/analysis/tests/:key",
+    "parent": "analysis.tests",
+    "title": "Тест",
+    "icon": null,
+    "sort": 0,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.qualities",
+    "path": "/analysis/qualities",
+    "parent": "analysis",
+    "title": "Типові якості людей і подій",
+    "icon": null,
+    "sort": 40,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.people",
+    "path": "/analysis/people",
+    "parent": "analysis",
+    "title": "Люди і події",
+    "icon": null,
+    "sort": 50,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.match",
+    "path": "/analysis/match",
+    "parent": "analysis",
+    "title": "Підбір ролі",
+    "icon": null,
+    "sort": 60,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.person",
+    "path": "/analysis/person",
+    "parent": "analysis",
+    "title": "Аналізувати за датою",
+    "icon": null,
+    "sort": 70,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.person.systems",
+    "path": "/analysis/person/systems",
+    "parent": "analysis.person",
+    "title": "Хто читає дату?",
+    "icon": null,
+    "sort": 0,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.person.result",
+    "path": "/analysis/person/result",
+    "parent": "analysis.person",
+    "title": "Результат",
+    "icon": null,
+    "sort": 1,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.event",
+    "path": "/analysis/event",
+    "parent": "analysis",
+    "title": "Аналізувати подію",
+    "icon": null,
+    "sort": 80,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.event.systems",
+    "path": "/analysis/event/systems",
+    "parent": "analysis.event",
+    "title": "Хто читає дату?",
+    "icon": null,
+    "sort": 0,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.event.result",
+    "path": "/analysis/event/result",
+    "parent": "analysis.event",
+    "title": "Результат",
+    "icon": null,
+    "sort": 1,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.compare",
+    "path": "/analysis/compare",
+    "parent": "analysis",
+    "title": "Співставити",
+    "icon": null,
+    "sort": 90,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.compare.systems",
+    "path": "/analysis/compare/systems",
+    "parent": "analysis.compare",
+    "title": "Хто читає дату?",
+    "icon": null,
+    "sort": 0,
+    "inMenu": false
+  },
+  {
+    "key": "analysis.compare.result",
+    "path": "/analysis/compare/result",
+    "parent": "analysis.compare",
+    "title": "Результат співставлення",
+    "icon": null,
+    "sort": 1,
+    "inMenu": false
+  },
+  {
+    "key": "scenarios.products",
+    "path": "/scenarios/:id/products",
+    "parent": "shops",
+    "title": "Товари",
+    "icon": null,
+    "sort": 0,
+    "inMenu": false
+  },
+  {
+    "key": "scenarios.product.new",
+    "path": "/scenarios/:id/products/new",
+    "parent": "scenarios.products",
+    "title": "Новий товар",
+    "icon": null,
+    "sort": 0,
+    "inMenu": false
+  },
+  {
+    "key": "scenarios.product",
+    "path": "/scenarios/:id/products/:productId",
+    "parent": "scenarios.products",
+    "title": "Товар",
+    "icon": null,
+    "sort": 1,
+    "inMenu": false
+  },
+  {
+    "key": "scenarios.orders",
+    "path": "/scenarios/:id/orders",
+    "parent": "shops",
+    "title": "Замовлення магазину",
+    "icon": null,
+    "sort": 10,
+    "inMenu": false
+  },
+  {
+    "key": "scenarios.order",
+    "path": "/scenarios/:id/orders/:orderId",
+    "parent": "scenarios.orders",
+    "title": "Замовлення",
+    "icon": null,
+    "sort": 0,
+    "inMenu": false
+  }
+]

@@ -32,6 +32,9 @@ const STEPS = [
   { name: "check:db", cmd: "npm run check:db" },
   { name: "check:comments", cmd: "npm run check:comments" },
   { name: "check:texts", cmd: "npm run check:texts" },
+  // Реєстр екранів: один список адрес, назв і батьків. Гейт ловить і розбіжність
+  // registry.json із згенерованою міграцією — інакше база й код розійшлися б тихо.
+  { name: "check:screens", cmd: "npm run check:screens" },
   // Покриття — перед збірками: забутий тест нового файлу червоніє першим.
   { name: "test:coverage", cmd: "npm run test:coverage" },
   { name: "check:coverage", cmd: "npm run check:coverage" },

@@ -10,8 +10,8 @@
 import { useContext, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { ScreenChromeContext } from "@wwwuabot/ui/nav";
+import { screenKeyOfPath } from "@wwwuabot/shared/screens";
 import { apiFetch } from "@/shared/api/client";
-import { screenKeyOfPath } from "@/app/screens";
 import { cancelHeldClick } from "./platform-journal";
 
 /** Пауза на заголовок: екран оголошує його ефектом уже після першого рендера. */

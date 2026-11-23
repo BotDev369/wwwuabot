@@ -20,6 +20,11 @@ function fakeD1(row: Row | null, log: string[] = []): D1Database {
       return statement;
     },
     first: async () => row,
+    // `ensureTables` питає `PRAGMA table_info` і створює таблицю: порожня
+    // відповідь каже «ще немає», тож контролер іде тим самим шляхом, що й на
+    // свіжій базі.
+    all: async () => ({ results: [] }),
+    run: async () => ({ success: true }),
   };
   return {
     prepare: (sql: string) => {

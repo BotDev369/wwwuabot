@@ -1,189 +1,30 @@
 /**
- * Router — кожен URL рендериться сторінкою контенту.
+ * Router — маршрути будуються з реєстру екранів.
  *
- * Тут рівно один маршрут, і це не спрощення заради спрощення: `/sites`,
- * `/sites/new`, `/catalog` і `/view/:slug` були другою навігацією по тому
- * самому контенту — окремою ієрархією «сайтів», що лежала в своїх таблицях
- * (`sites`, `site_pages`, `templates`). Таблиці видалено 13.09.2026, бо
- * сторінка одна: `/:path` — адреса рядка контенту, а хвіст адреси — його
- * параметри (`/dateanalysis/1980-03-03/today` → сторінка `dateanalysis`).
+ * `SCREEN_ROUTES` — це `key → компонент` (код), злитий із адресою з
+ * `registry.json` (дані). Тому новий екран не потребує правки цього файлу:
+ * рядок у реєстрі + компонент у карті, і маршрут з'явився.
  *
- * Сторінка завернута в `PlatformShell`: каркас (глобальний нижній футер) не
- * належить жодній сторінці, тож він стоїть на рівні маршруту, а не всередині
- * `ScenarioPage`.
+ * **Виняток — рівно два маршрути.** `/` — вітрина входу, у неї немає `slug` і
+ * вона не є екраном усередині продукту; `*` — catch-all сторінки контенту за її
+ * `slug`. Обидва стоять тут, бо реєстр описує **екрани платформи**, а не
+ * сторінки людей і не обкладинку.
  *
- * `/account`, `/orders`, `/ads`, `/games`, `/users`, `/notes`, `/contacts`,
- * `/messages` і `/scenarios` стоять **перед** catch-all навмисно: це єдині екрани,
- * які не є рядком контенту (`slug`). Їхні адреси дає `app/routes.ts` — один
- * власник на маршрут і пункт навігації. Саме тому ці сегменти не можуть стати
- * адресою сторінки людини: їх стереже `pages/scenarios/page-address.test.ts`.
- *
- * Партія (`/games/:key`) стоїть перед `/games` **порядком рядків**: довший шлях
- * мусить збігтися першим, інакше `/games` з'їв би його хвіст.
+ * @module web-platform-dev/src/app/router
  */
 
 import { createBrowserRouter } from "react-router-dom";
 import { PlatformShell } from "@/layout/PlatformShell";
-import {
-  ADS_ROUTE,
-  ANALYSIS_MATCH_PATH,
-  ANALYSIS_PEOPLE_PATH,
-  ANALYSIS_QUALITIES_PATH,
-  ANALYSIS_ROUTE,
-  ANALYSIS_VARIANTS_PATH,
-  CONTACTS_ROUTE,
-  DAY_ROUTE,
-  FAVORITES_ROUTE,
-  ACCOUNT_ROUTE,
-  GAMES_ROUTE,
-  MESSAGES_PATH,
-  NOTES_ROUTE,
-  ORDERS_ROUTE,
-  RESEARCH_ROUTE,
-  SHOP_ORDERS_ROUTE,
-  SHOP_PRODUCTS_ROUTE,
-  SCENARIOS_ROUTE,
-  SERVICES_ROUTE,
-  SHOPS_ROUTE,
-  TRACKERS_ROUTE,
-  USERS_ROUTE,
-} from "@/app/routes";
-import { AdsPage } from "@/pages/AdsPage";
-import { ContactsPage } from "@/pages/ContactsPage";
-import { FavoritesPage } from "@/pages/favorites/FavoritesPage";
-import { TrackersPage } from "@/pages/trackers/TrackersPage";
-import { AnalysisHub } from "@/pages/analysis/AnalysisHub";
-import { AnalysisVariantsPage } from "@/pages/analysis/AnalysisVariantsPage";
-import { AnalysisMatch } from "@/pages/analysis/AnalysisMatch";
-import { AnalysisCompare } from "@/pages/analysis/AnalysisCompare";
-import { AnalysisProfile } from "@/pages/analysis/AnalysisProfile";
-import { AnalysisSystemsPage } from "@/pages/analysis/AnalysisSystemsPage";
-import { AnalysisQualitiesPage } from "@/pages/analysis/AnalysisQualitiesPage";
-import { AnalysisPeoplePage } from "@/pages/analysis/AnalysisPeoplePage";
-import { AnalysisTestScreen } from "@/pages/analysis/AnalysisTestScreen";
-import { AnalysisTestsPage } from "@/pages/analysis/AnalysisTestsPage";
-import { SubjectStep } from "@/pages/analysis/SubjectStep";
-import { SystemsStep } from "@/pages/analysis/SystemsStep";
-import { MessagesPage } from "@/pages/MessagesPage";
-import { NotesPage } from "@/pages/NotesPage";
-import { ProfileAccountPage } from "@/pages/ProfileAccountPage";
-import { EntryPage } from "@/pages/entry/EntryPage";
-import { MyDayPage } from "@/pages/day/MyDayPage";
-import { ProfileOrdersPage } from "@/pages/ProfileOrdersPage";
-import { ServicesPage } from "@/pages/ServicesPage";
-import { ResearchPage } from "@/pages/research/ResearchPage";
 import { ScenarioPage } from "@/pages/ScenarioPage";
-import { UsersPage } from "@/pages/UsersPage";
-import { GamePage } from "@/pages/games/GamePage";
-import { GamesPage } from "@/pages/games/GamesPage";
-import { ShopOrderPage } from "@/pages/shop/ShopOrderPage";
-import { ShopOrdersPage } from "@/pages/shop/ShopOrdersPage";
-import { ShopProductForm } from "@/pages/shop/ShopProductForm";
-import { ShopProductsPage } from "@/pages/shop/ShopProductsPage";
-import { ShopsPage } from "@/pages/shop/ShopsPage";
+import { ENTRY_ELEMENT, SCREEN_ROUTES } from "./screen-routes";
 
 export const router = createBrowserRouter([
   {
     element: <PlatformShell />,
     children: [
-      // Корінь — вітрина з входами (макет 08): хто ми, для кого й три двері
-      // всередину. Це обкладинка продукту, а не дашборд.
-      { index: true, element: <EntryPage /> },
-      // «Мій день» — перший екран **усередині**: сюди веде «Увійти» на вітрині
-      // й однойменний пункт меню.
-      { path: DAY_ROUTE, element: <MyDayPage /> },
-      // Сервіси — хаб платформи: список екранів, які вже працюють.
-      { path: SERVICES_ROUTE, element: <ServicesPage /> },
-      { path: FAVORITES_ROUTE, element: <FavoritesPage /> },
-      // Трекери — власні щоденні записи людини. Один екран: запис, аналітика й
-      // історія живуть модалками, тож окремої адреси в трекера немає.
-      { path: TRACKERS_ROUTE, element: <TrackersPage /> },
-      // Акаунт — не контент, а дані користувача: платформа й Telegram окремими
-      // розділами, а не одним суцільним списком.
-      { path: ACCOUNT_ROUTE, element: <ProfileAccountPage /> },
-      // Магазини — список відкритих магазинів: вхід у вітрини за їхніми
-      // адресами (`/<slug>`). Стоїть перед catch-all, інакше `shops` зʼїв би
-      // його як сторінку за адресою.
-      { path: SHOPS_ROUTE, element: <ShopsPage /> },
-      // Замовлення — у яких магазинах людина працює й куди йти за роботою. Під
-      // сторінкою магазину вже стоїть його черга замовлень, тож цей екран лише
-      // називає магазини (`ProfileOrdersPage`).
-      { path: ORDERS_ROUTE, element: <ProfileOrdersPage /> },
-      // Тема — **перемикач, а не розділ**: кнопка в хедері міняє світлу й
-      // темну. Адреси тут не потрібно: вибір вигляду не мають ні посилати, ні
-      // відкривати в іншому місці.
-      // Розділи аналізу мають власну головну: людина, подія,
-      // співставлення. Кроки йдуть довшими шляхами **перед** коротшими, інакше
-      // `/analysis/person` з'їв би `/analysis/person/systems`.
-      { path: `${ANALYSIS_ROUTE}/person/systems`, element: <SystemsStep mode="person" /> },
-      { path: `${ANALYSIS_ROUTE}/person/result`, element: <AnalysisProfile mode="person" /> },
-      { path: `${ANALYSIS_ROUTE}/person`, element: <SubjectStep mode="person" /> },
-      { path: `${ANALYSIS_ROUTE}/event/systems`, element: <SystemsStep mode="event" /> },
-      { path: `${ANALYSIS_ROUTE}/event/result`, element: <AnalysisProfile mode="event" /> },
-      { path: `${ANALYSIS_ROUTE}/event`, element: <SubjectStep mode="event" /> },
-      { path: `${ANALYSIS_ROUTE}/compare/systems`, element: <SystemsStep mode="compare" /> },
-      { path: `${ANALYSIS_ROUTE}/compare/result`, element: <AnalysisCompare /> },
-      { path: `${ANALYSIS_ROUTE}/compare`, element: <SubjectStep mode="compare" /> },
-      { path: ANALYSIS_MATCH_PATH, element: <AnalysisMatch /> },
-      { path: ANALYSIS_PEOPLE_PATH, element: <AnalysisPeoplePage /> },
-      { path: ANALYSIS_QUALITIES_PATH, element: <AnalysisQualitiesPage /> },
-      { path: ANALYSIS_VARIANTS_PATH, element: <AnalysisVariantsPage /> },
-      { path: `${ANALYSIS_ROUTE}/variant/1`, element: <AnalysisHub variant={1} /> },
-      { path: `${ANALYSIS_ROUTE}/variant/2`, element: <AnalysisHub variant={2} /> },
-      { path: `${ANALYSIS_ROUTE}/variant/3`, element: <AnalysisHub variant={3} /> },
-      { path: `${ANALYSIS_ROUTE}/systems`, element: <AnalysisSystemsPage /> },
-      { path: `${ANALYSIS_ROUTE}/tests/:key`, element: <AnalysisTestScreen /> },
-      { path: `${ANALYSIS_ROUTE}/tests`, element: <AnalysisTestsPage /> },
-      { path: ANALYSIS_ROUTE, element: <AnalysisHub /> },
-      // Розділу-обгортки немає: «Оголошення», «Ігри» й «Користувачі» —
-      // власні екрани з власними адресами, а не вкладки однієї сторінки.
-      // Партія йде **перед** списком: інакше `/games` з'їв би хвіст `:key`.
-      { path: `${GAMES_ROUTE}/:key`, element: <GamePage /> },
-      { path: GAMES_ROUTE, element: <GamesPage /> },
-      { path: USERS_ROUTE, element: <UsersPage /> },
-      { path: ADS_ROUTE, element: <AdsPage /> },
-      // Сторінка контенту — одна на всю платформу (catch-all нижче). Окремих
-      // екранів списку й перегляду сторінки немає: контент відкривається за
-      // своїм `slug`, а під сценарієм стоять лише вкладки магазину.
-      // Товари — **під своїм сценарієм**: `shop_products` належить рядку
-      // `scenarios`, тож і адреса стоїть під ним (`/scenarios/7/products`).
-      // `new` мусить стояти перед `:productId` — інакше номер з'їв би його, і
-      // замість форми нового товару відкрилось би «такого товару немає».
-      {
-        path: `${SCENARIOS_ROUTE}/:id/${SHOP_PRODUCTS_ROUTE}/new`,
-        element: <ShopProductForm />,
-      },
-      {
-        path: `${SCENARIOS_ROUTE}/:id/${SHOP_PRODUCTS_ROUTE}/:productId`,
-        element: <ShopProductForm />,
-      },
-      {
-        path: `${SCENARIOS_ROUTE}/:id/${SHOP_PRODUCTS_ROUTE}`,
-        element: <ShopProductsPage />,
-      },
-      // Замовлення магазину — там само, де товари: `shop_orders` належить тому
-      // самому рядку `scenarios`. Сегмент свій, бо це робота з людиною, а не
-      // каталог (`pages/shop/ShopOrdersPage`).
-      // Одне замовлення — довший шлях стоїть перед списком, інакше `:id`
-      // з'їв би номер замовлення як сторінку, і замість правки відкрилась би
-      // черга (та сама причина, що в `products/new`).
-      {
-        path: `${SCENARIOS_ROUTE}/:id/${SHOP_ORDERS_ROUTE}/:orderId`,
-        element: <ShopOrderPage />,
-      },
-      { path: `${SCENARIOS_ROUTE}/:id/${SHOP_ORDERS_ROUTE}`, element: <ShopOrdersPage /> },
-      // Нотатки — власні дані людини (таблиця `notes`), не рядок `scenarios`
-      { path: NOTES_ROUTE, element: <NotesPage /> },
-      // Контакти — довідник людини (таблиця `contacts`), теж не рядок контенту
-      { path: CONTACTS_ROUTE, element: <ContactsPage /> },
-      // Повідомлення — переписка людей (таблиці `conversations`/`messages`).
-      // Адреса зі спільного складу футера: пункт і маршрут — один факт.
-      { path: MESSAGES_PATH, element: <MessagesPage /> },
-      // Дослідження — власний розділ контенту: лендінг блоків, а сам блок
-      // відкривається за своєю адресою нижче (`viruvannia-a1`). Маршрут стоїть
-      // перед catch-all, інакше `*` зʼїв би його як сторінку.
-      { path: RESEARCH_ROUTE, element: <ResearchPage /> },
-      // Catch-all: сторінка за її адресою
+      { index: true, element: ENTRY_ELEMENT },
+      ...SCREEN_ROUTES.map((route) => ({ path: route.path, element: route.element })),
+      // Catch-all: сторінка за її адресою (`/galyashop`, `/viruvannia/...`).
       { path: "*", element: <ScenarioPage /> },
     ],
   },
