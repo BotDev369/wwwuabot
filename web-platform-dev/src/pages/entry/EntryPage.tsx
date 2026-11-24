@@ -3,13 +3,16 @@
  * без підписів груп (як у Tribute). Поки `/api/screens` не відповів, меню йде
  * з реєстру. Розкладка — `docs/DESIGN_AGREED.md`, розділ 4а.
  *
+ * Список розділів тут — той самий `PlatformNavList`, що й у меню: одне джерело,
+ * два місця відображення.
+ *
  * @module web-platform-dev/src/pages/entry/EntryPage
  */
 
 import type { ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
-import { Icon } from "@wwwuabot/shared";
 import { SCREENS, type ScreenRow } from "@wwwuabot/shared/screens";
+import { PlatformNavList } from "@/layout/PlatformNavList";
 import { platformNav } from "@/layout/screen-nav";
 import { useScreens } from "@/layout/useScreens";
 
@@ -23,25 +26,6 @@ const REGISTRY_ROWS: readonly ScreenRow[] = SCREENS.map((screen) => ({
   inMenu: screen.inMenu,
   texts: {},
 }));
-
-/** Тон плитки рядка: голос із палітри даних, а не колір у коді. */
-const TONES: Record<string, number> = {
-  day: 3,
-  analysis: 4,
-  trackers: 2,
-  notes: 6,
-  shops: 1,
-  orders: 5,
-  favorites: 5,
-  users: 2,
-  messages: 4,
-  contacts: 6,
-  ads: 3,
-  games: 5,
-  research: 4,
-  services: 6,
-  account: 3,
-};
 
 export function EntryPage(): ReactElement {
   const navigate = useNavigate();
@@ -58,35 +42,7 @@ export function EntryPage(): ReactElement {
         </div>
       </section>
 
-      <div className="wb-showcase-groups">
-        {groups.map((group) => (
-          <section className="wb-showcase-group" key={group.key}>
-            <ul className="wb-showcase-list">
-              {group.items.map((item) => (
-                <li key={item.key}>
-                  <button
-                    type="button"
-                    className="wb-showcase-row"
-                    onClick={() => void navigate(item.href)}
-                  >
-                    <span
-                      className="wb-showcase-row-icon"
-                      data-tone={TONES[item.key] ?? 1}
-                      aria-hidden="true"
-                    >
-                      <Icon name={item.icon} size={20} />
-                    </span>
-                    <span className="wb-showcase-row-label">{item.label}</span>
-                    <span className="wb-showcase-row-more" aria-hidden="true">
-                      <Icon name="chevron-right" size={18} />
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </div>
+      <PlatformNavList groups={groups} onNavigate={(href) => void navigate(href)} />
     </main>
   );
 }

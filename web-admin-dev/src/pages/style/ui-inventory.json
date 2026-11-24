@@ -1,5 +1,5 @@
 {
-  "version": "003efaa",
+  "version": "0fa579c",
   "page": {
     "title": "Єдиний UI",
     "intro": "Справжній зразок, клас і присуд ужитку. Розділи згорнуті — відкривай потрібний.",
@@ -53,10 +53,10 @@
     }
   },
   "summary": {
-    "total": 212,
+    "total": 210,
     "both": 50,
     "one": 75,
-    "shared": 46,
+    "shared": 44,
     "builder": 38,
     "unused": 3
   },
@@ -1750,7 +1750,7 @@
           "note": "",
           "icon": "page",
           "usage": {
-            "platform": 2,
+            "platform": 3,
             "admin": 0,
             "ui": 3,
             "shared": 3
@@ -1977,25 +1977,9 @@
             "platform": 1,
             "admin": 0,
             "ui": 2,
-            "shared": 2
+            "shared": 1
           },
           "verdict": "one"
-        },
-        {
-          "id": "icon-share",
-          "name": "share",
-          "className": "Icon name=\"share\"",
-          "sample": "icon",
-          "sampleText": "",
-          "note": "",
-          "icon": "share",
-          "usage": {
-            "platform": 0,
-            "admin": 0,
-            "ui": 1,
-            "shared": 2
-          },
-          "verdict": "shared"
         },
         {
           "id": "icon-check",
@@ -2185,7 +2169,7 @@
             "platform": 2,
             "admin": 0,
             "ui": 0,
-            "shared": 1
+            "shared": 2
           },
           "verdict": "one"
         },
@@ -2680,26 +2664,10 @@
           "usage": {
             "platform": 4,
             "admin": 0,
-            "ui": 2,
-            "shared": 2
-          },
-          "verdict": "one"
-        },
-        {
-          "id": "icon-heart-solid",
-          "name": "heart-solid",
-          "className": "Icon name=\"heart-solid\"",
-          "sample": "icon",
-          "sampleText": "",
-          "note": "",
-          "icon": "heart-solid",
-          "usage": {
-            "platform": 0,
-            "admin": 0,
             "ui": 1,
             "shared": 2
           },
-          "verdict": "shared"
+          "verdict": "one"
         },
         {
           "id": "icon-thumbs-up",

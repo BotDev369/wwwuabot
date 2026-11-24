@@ -79,8 +79,8 @@ describe("головна", () => {
   it("кожен рядок веде на свій екран", async () => {
     render(<EntryPage />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Крамниці" }));
-    await userEvent.click(screen.getByRole("button", { name: "Нотатки" }));
+    await userEvent.click(screen.getByRole("link", { name: "Крамниці" }));
+    await userEvent.click(screen.getByRole("link", { name: "Нотатки" }));
 
     expect(hooks.navigate.mock.calls.map((call) => call[0])).toEqual(["/shops", "/notes"]);
   });

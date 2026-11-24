@@ -82,11 +82,11 @@ describe("каркас", () => {
 
     expect(screen.getByText("екран трекерів")).toBeTruthy();
     expect(screen.getByLabelText("Навігація платформи")).toBeTruthy();
-    // Хедер малюється каркасом і на всіх екранах показує той самий бренд.
-    expect(screen.getByText("ПАЛЯНИЦЯ")).toBeTruthy();
-    // Крохи будуються з реєстру ще до відповіді `/api/screens`.
+    // Хедер малюється каркасом: крохи з реєстру ще до відповіді `/api/screens`.
     expect(document.querySelector(".wb-appbar__trail")?.textContent).toBe("Трекери");
     expect(screen.getByRole("button", { name: "Меню" })).toBeTruthy();
+    // Верхівка екрана — та сама графіка, що на головній, лише кодом.
+    expect(document.querySelector(".wb-screen-cover")).not.toBeNull();
     // Тема — перший пункт меню, а не кнопка в хедері.
     expect(screen.getByRole("switch", { name: "Тема" })).toBeTruthy();
     expect(document.querySelector(".wb-platform")).not.toBeNull();
@@ -108,7 +108,7 @@ describe("каркас", () => {
     expect(document.documentElement.getAttribute("data-chrome")).toBe("hero");
   });
 
-  it("на головній просить вийти з повного екрана й показує рідну «←»", () => {
+  it("на головній виходить із повного екрана і ховає «←» — клієнт малює «✕»", () => {
     const show = vi.fn();
     const hide = vi.fn();
     const onClick = vi.fn();
@@ -134,30 +134,35 @@ describe("каркас", () => {
 
     expect(exitFullscreen).toHaveBeenCalled();
     expect(requestFullscreen).not.toHaveBeenCalled();
-    expect(show).toHaveBeenCalled();
-    expect(onClick).toHaveBeenCalled();
-    view.unmount();
+    // Історії в кореня немає: «назад» там нема куди — лишається закрити.
     expect(hide).toHaveBeenCalled();
+    expect(show).not.toHaveBeenCalled();
+    expect(onClick).not.toHaveBeenCalled();
+    view.unmount();
     delete window.Telegram;
   });
 
-  it("на внутрішньому екрані повертає повний екран і не чіпає рідну «←»", () => {
+  it("на внутрішньому екрані не входить у повний екран, а «назад» веде в історію", () => {
     const show = vi.fn();
+    const onClick = vi.fn();
     const exitFullscreen = vi.fn();
     const requestFullscreen = vi.fn();
     window.Telegram = {
       WebApp: {
         exitFullscreen,
         requestFullscreen,
-        BackButton: { show, hide: vi.fn(), onClick: vi.fn(), offClick: vi.fn() },
+        BackButton: { show, hide: vi.fn(), onClick, offClick: vi.fn() },
       },
     };
 
     renderShell();
 
-    expect(requestFullscreen).toHaveBeenCalled();
-    expect(exitFullscreen).not.toHaveBeenCalled();
-    expect(show).not.toHaveBeenCalled();
+    // Рідна шапка клієнта лишається — як на головній: повного екрана немає.
+    expect(requestFullscreen).not.toHaveBeenCalled();
+    expect(exitFullscreen).toHaveBeenCalled();
+    // Системна «назад» мусить вести в історію, а не закривати застосунок.
+    expect(show).toHaveBeenCalled();
+    expect(onClick).toHaveBeenCalled();
     delete window.Telegram;
   });
 

@@ -98,8 +98,8 @@
 }
 
 /* ═══ Глобальний хедер (.wb-appbar) ═══════════════════════════════════════
-   Закріплений рядок на кожному екрані застосунку: ліворуч меню сторінки й
-   назва, праворуч три знаки (поділитись, обране, тема).
+   Закріплений рядок на кожному екрані застосунку: ліворуч крохи, праворуч
+   гамбургер. Більше в ньому нічого немає — дії сторінки сховані.
 
    **Скло, а не лінія.** Прозорий фон + `backdrop-filter` дають розмитість
    вмісту, який скролиться під рядком; лінія чи тінь тут означали б, що рядок
@@ -118,53 +118,21 @@
   top: 0;
   z-index: var(--z-sticky);
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--sp-1);
+  align-items: center;
+  gap: var(--sp-3);
   /* Підлога, не стеля: справжню висоту хедер публікує сам (`useAppBarHeight`) —
      вона залежить від шрифту людини й довжини назви, тож числом із токена
-     її не задати. Та сама мірка, що в адмінці. */
+     її не задати. */
   min-height: var(--appbar-h);
-  /* Нижній кант — скляний, а не кольорова смуга: бренд мусить читатись як
-     поверхня, крізь яку видно вміст, а не як окрема панель. */
-  border-bottom: 1px solid var(--glass-stroke-soft);
-  /* Відступ від хедера клієнта («Закрити» в Telegram): safe-area на цьому
-     місці зазвичай 0, і рядок прилипав до смуги вгорі впритул. Той самий
-     крок додає `--appbar-h`, тож міра лишається однією. */
+  /* Нижнього канта немає: смуга **продовжує** шапку клієнта, і лінія зробила б
+     шов там, де його не мусить бути. */
+  border-bottom: 0;
   padding: calc(var(--safe-top) + var(--sp-2)) var(--sp-5) var(--sp-2);
-  /* Фолбек для рушіїв без `color-mix()`/`backdrop-filter`: той самий колір,
-     лише непрозорий — читається так само, просто без розмитості. */
+  /* Той самий плоский колір, що й шапка Telegram (`--chrome-header-bg`):
+     верхівка екрана починається з нього ж, тож переходу не видно. */
   background: var(--chrome-header-bg);
-  background: var(--glass-fill-strong);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-}
-
-/* Перший рядок хедера: слово й «МЕНЮ». Другий — назва сторінки: так на
-   прокрутці вгорі лишаються рівно два рядки, а не один, що змінюється. */
-.wb-appbar__top {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-height: 42px;
-}
-
-.wb-appbar__brand {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  min-width: 0;
-}
-
-/* Колір — скоринка паляниці, а не фіалковий акцент: слово належить бренду,
-   решта інтерфейсу — інтерфейсу. */
-.wb-appbar__brand-name {
-  font-size: var(--text-lg);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.08em;
-  line-height: 1;
-  color: var(--brand-bread);
-  white-space: nowrap;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 /*
@@ -176,6 +144,7 @@
  */
 .wb-appbar__trail {
   display: flex;
+  flex: 1 1 auto;
   align-items: baseline;
   gap: var(--sp-1);
   min-width: 0;
@@ -228,87 +197,89 @@
   margin-left: auto;
 }
 
-/* Знак без підпису: 44×44 — тап-таргет пальця (правило §3 AGENTS.md), заливки
-   й рамки немає — знак сказав усе, поверхня з'являється лише під пальцем. */
-.wb-appbar__btn {
+/* ═══ Гамбургер (`.wb-menubtn`) ════════════════════════════════════════════
+   Три смуги — мова, яку людина вже знає; власного характеру додають різна
+   довжина й акцентна середня. Кнопка — 44×44, скляна плишка, як решта знаків
+   хедера: це вхід у навігацію, а не ще один текст у рядку. */
+.wb-menubtn {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   width: 44px;
   height: 44px;
-  border: 0;
-  border-radius: var(--radius-full);
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    background var(--duration-fast) var(--ease),
-    color var(--duration-fast) var(--ease);
-}
-
-/* Наведення — **лише мишею**. На тачі `:hover` лишається на останньому
-   торкнутому елементі, і серце отримувало сіре коло навколо себе саме після
-   дотику — тобто «стан» читався як чужа кнопка, а залите серце ще й
-   втрачало акцент. `:not(--on)` — другий запобіжник: вибране не темніє. */
-@media (hover: hover) {
-  .wb-appbar__btn:hover:not(:disabled):not(.wb-appbar__btn--on) {
-    background: var(--surface-hover);
-    color: var(--text-primary);
-  }
-}
-
-.wb-appbar__btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-/* «Вибрано» — акцентним знаком, без тла (правило 25): залите серце було б
-   другою кнопкою, а не станом цієї. */
-.wb-appbar__btn--on {
-  color: var(--accent);
-}
-
-/* МЕНЮ — скляна текстова кнопка: це вхід у навігацію, а не ще один знак у
-   рядку дій. Окрема поверхня відділяє її від «поділитись» і серця. */
-.wb-appbar__menu {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 42px;
-  margin-left: var(--sp-1);
-  padding: 0 var(--sp-4);
-  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--glass-stroke));
+  padding: 0;
+  border: 1px solid var(--glass-stroke-soft);
   border-radius: var(--radius-full);
   background: linear-gradient(
     150deg,
-    color-mix(in srgb, var(--accent) 9%, var(--glass-fill-strong)),
+    color-mix(in srgb, var(--accent) 10%, var(--glass-fill-strong)),
     var(--glass-fill-strong)
   );
-  box-shadow:
-    inset 0 1px 0 var(--glass-stroke),
-    0 8px 22px -18px rgba(40, 30, 90, 0.5);
+  box-shadow: inset 0 1px 0 var(--glass-stroke);
   color: var(--text-primary);
-  font: inherit;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.14em;
   cursor: pointer;
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  backdrop-filter: blur(14px) saturate(150%);
   transition:
     background var(--duration-fast) var(--ease),
-    border-color var(--duration-fast) var(--ease),
     transform var(--duration-fast) var(--ease);
 }
 
-.wb-appbar__menu:active {
-  transform: scale(0.97);
+.wb-menubtn:active {
+  transform: scale(0.96);
+}
+
+.wb-menubtn__bars {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+  width: 20px;
+}
+
+.wb-menubtn__bar {
+  height: 2.5px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  transition:
+    transform var(--duration-fast) var(--ease),
+    opacity var(--duration-fast) var(--ease),
+    width var(--duration-fast) var(--ease);
+}
+
+/* Верхня — на всю ширину, середня — коротша й акцентна, нижня — найкоротша:
+   знак читається як «меню», але не як три однакові риски. */
+.wb-menubtn__bar:nth-child(1) {
+  width: 100%;
+}
+
+.wb-menubtn__bar:nth-child(2) {
+  width: 14px;
+  background: var(--accent);
+}
+
+.wb-menubtn__bar:nth-child(3) {
+  width: 9px;
+}
+
+/* Відкрите меню — хрестик на тому самому місці: середня смуга зникає, крайні
+   складаються навхрест. */
+.wb-menubtn[data-open] .wb-menubtn__bar:nth-child(1) {
+  width: 100%;
+  transform: translateY(6.5px) rotate(45deg);
+}
+
+.wb-menubtn[data-open] .wb-menubtn__bar:nth-child(2) {
+  opacity: 0;
+}
+
+.wb-menubtn[data-open] .wb-menubtn__bar:nth-child(3) {
+  width: 100%;
+  transform: translateY(-6.5px) rotate(-45deg);
 }
 
 @media (hover: hover) {
-  .wb-appbar__menu:hover {
-    background: color-mix(in srgb, var(--accent) 14%, var(--glass-fill-strong));
-    border-color: color-mix(in srgb, var(--accent) 36%, var(--glass-stroke));
+  .wb-menubtn:hover {
+    background: color-mix(in srgb, var(--accent) 16%, var(--glass-fill-strong));
   }
 }
 

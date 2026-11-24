@@ -1,5 +1,5 @@
 {
-  "version": "003efaa",
+  "version": "0fa579c",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -99,7 +99,7 @@
     {
       "file": "app-chrome.css",
       "tokens": 2,
-      "classes": 150
+      "classes": 147
     },
     {
       "file": "assessments.css",
@@ -173,8 +173,8 @@
     },
     {
       "file": "platform.css",
-      "tokens": 7,
-      "classes": 43
+      "tokens": 16,
+      "classes": 48
     },
     {
       "file": "research.css",
@@ -500,8 +500,8 @@
     {
       "name": "--chrome-hero-header-bg",
       "section": "Нативний хром Telegram",
-      "light": "#9f6239",
-      "dark": "#9f6239",
+      "light": "#a06239",
+      "dark": "#a06239",
       "palette": "",
       "paletteDark": ""
     },
@@ -2108,6 +2108,69 @@
       "selector": ".wb-contextbar",
       "value": "color-mix(in srgb, var(--chrome-bottom-bg) 96%, var(--text-primary))",
       "section": ""
+    },
+    {
+      "name": "--cover-h",
+      "file": "platform.css",
+      "selector": ".wb-screen[data-depth=\"1\"]",
+      "value": "clamp(280px, 60dvh, 620px)",
+      "section": "Екран: графічна верхівка як продовження шапки"
+    },
+    {
+      "name": "--cover-h",
+      "file": "platform.css",
+      "selector": ".wb-screen[data-depth=\"2\"]",
+      "value": "clamp(220px, 45dvh, 480px)",
+      "section": "Екран: графічна верхівка як продовження шапки"
+    },
+    {
+      "name": "--cover-h",
+      "file": "platform.css",
+      "selector": ".wb-screen[data-depth=\"3\"]",
+      "value": "clamp(170px, 30dvh, 340px)",
+      "section": "Екран: графічна верхівка як продовження шапки"
+    },
+    {
+      "name": "--cover-tone",
+      "file": "platform.css",
+      "selector": ".wb-screen[data-tone=\"1\"]",
+      "value": "var(--data-1)",
+      "section": "Екран: графічна верхівка як продовження шапки"
+    },
+    {
+      "name": "--cover-tone",
+      "file": "platform.css",
+      "selector": ".wb-screen[data-tone=\"2\"]",
+      "value": "var(--data-2)",
+      "section": "Екран: графічна верхівка як продовження шапки"
+    },
+    {
+      "name": "--cover-tone",
+      "file": "platform.css",
+      "selector": ".wb-screen[data-tone=\"3\"]",
+      "value": "var(--data-3)",
+      "section": "Екран: графічна верхівка як продовження шапки"
+    },
+    {
+      "name": "--cover-tone",
+      "file": "platform.css",
+      "selector": ".wb-screen[data-tone=\"4\"]",
+      "value": "var(--data-4)",
+      "section": "Екран: графічна верхівка як продовження шапки"
+    },
+    {
+      "name": "--cover-tone",
+      "file": "platform.css",
+      "selector": ".wb-screen[data-tone=\"5\"]",
+      "value": "var(--data-5)",
+      "section": "Екран: графічна верхівка як продовження шапки"
+    },
+    {
+      "name": "--cover-tone",
+      "file": "platform.css",
+      "selector": ".wb-screen[data-tone=\"6\"]",
+      "value": "var(--data-6)",
+      "section": "Екран: графічна верхівка як продовження шапки"
     },
     {
       "name": "--depth",
@@ -4093,23 +4156,25 @@
       {
         "section": "Глобальний хедер (.wb-appbar)",
         "names": [
-          "wb-app-body",
-          "wb-app-hamburger",
-          "wb-app-logout",
           "wb-appbar",
           "wb-appbar__actions",
-          "wb-appbar__brand",
-          "wb-appbar__brand-name",
-          "wb-appbar__btn",
-          "wb-appbar__btn--on",
           "wb-appbar__crumb",
           "wb-appbar__crumb--current",
           "wb-appbar__crumb--link",
-          "wb-appbar__menu",
           "wb-appbar__sep",
           "wb-appbar__step",
-          "wb-appbar__top",
           "wb-appbar__trail"
+        ]
+      },
+      {
+        "section": "Гамбургер (`.wb-menubtn`)",
+        "names": [
+          "wb-app-body",
+          "wb-app-hamburger",
+          "wb-app-logout",
+          "wb-menubtn",
+          "wb-menubtn__bar",
+          "wb-menubtn__bars"
         ]
       },
       {
@@ -5925,18 +5990,33 @@
       {
         "section": "Каркас платформи: сайдбар замість футера",
         "names": [
+          "wb-platform",
+          "wb-platform-main"
+        ]
+      },
+      {
+        "section": "Екран: графічна верхівка як продовження шапки",
+        "names": [
+          "wb-screen",
+          "wb-screen-cover"
+        ]
+      },
+      {
+        "section": "Меню: той самий список, що на головній",
+        "names": [
           "wb-nav-close-row",
           "wb-nav-item",
           "wb-nav-item--active",
           "wb-nav-menu",
           "wb-nav-section",
-          "wb-platform",
-          "wb-platform-main",
+          "wb-platform-nav",
           "wb-platform-scrim",
           "wb-platform-sidebar",
           "wb-platform-sidebar--open",
           "wb-platform-theme",
           "wb-platform-theme__icon",
+          "wb-showcase-list",
+          "wb-showcase-row",
           "wb-switch-label",
           "wb-switch-row"
         ]

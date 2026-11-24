@@ -55,7 +55,6 @@ export const ICON_NAMES = [
   "clipboard",
   "save",
   "copy",
-  "share",
   "check",
   "close",
   "refresh",
@@ -101,8 +100,6 @@ export const ICON_NAMES = [
   "badge",
   "star",
   "heart",
-  // Залите серце — стан перемикача («в обраному»), а не другий пункт футера.
-  "heart-solid",
   "thumbs-up",
   "bar-chart",
   "progress",

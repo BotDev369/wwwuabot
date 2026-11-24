@@ -92,14 +92,14 @@ describe("initTelegramChrome", () => {
     mockTokens({
       "--chrome-header-bg": HEADER,
       "--chrome-bottom-bg": BOTTOM,
-      "--chrome-hero-header-bg": "#9f6239",
+      "--chrome-hero-header-bg": "#a06239",
     });
     document.documentElement.setAttribute("data-chrome", "hero");
     const { calls } = install();
 
     initTelegramChrome();
 
-    expect(calls).toContain("header:#9f6239");
+    expect(calls).toContain("header:#a06239");
     // Фон — тема: його видно на прокрутці за межі обкладинки.
     expect(calls).toContain(`background:${HEADER}`);
     expect(calls).toContain(`bottom:${BOTTOM}`);

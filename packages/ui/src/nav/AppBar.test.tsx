@@ -1,9 +1,9 @@
 /**
  * Тести глобального хедера.
  *
- * Хедер має два рядки: той самий бренд і «МЕНЮ», під ним — назву поточного
- * екрана. Перевіряємо саме це, а також що дії сторінки (поділитись, обране)
- * не зникають і не дублюють тему.
+ * Хедер має один рядок і рівно два складники: крохи зліва й гамбургер справа.
+ * Дій сторінки (поділитись, обране) в ньому немає — вони сховані, поки їм не
+ * знайдеться місце поза хедером.
  */
 
 import { describe, expect, it } from "vitest";
@@ -29,10 +29,12 @@ const WITH_ALL: ScreenChrome = {
 };
 
 describe("хедер застосунку", () => {
-  it("показує слово бренду й назву сторінки другим рядком", () => {
+  it("показує назву сторінки крохами й не дублює бренд", () => {
     const html = render({ ...EMPTY_CHROME, title: "Нотатки" });
 
-    expect(html).toContain("ПАЛЯНИЦЯ");
+    // Ім'я продукту стоїть у рідній шапці Telegram — у хедері його більше немає.
+    expect(html).not.toContain("ПАЛЯНИЦЯ");
+    expect(html).not.toContain("wb-appbar__brand");
     expect(html).toContain('class="wb-appbar__trail"');
     expect(html).toContain("Нотатки");
     // Жодного окремого hero-стану: шлях у хедері — на кожному екрані.
@@ -77,10 +79,11 @@ describe("хедер застосунку", () => {
     expect(html).not.toContain('aria-label="Тема"');
   });
 
-  it("«МЕНЮ» — текстова кнопка праворуч, а не гамбургер", () => {
+  it("меню відкриває гамбургер, а не текстова кнопка «МЕНЮ»", () => {
     const html = render(EMPTY_CHROME, { onMenu: () => undefined });
 
-    expect(html).toContain(">МЕНЮ</button>");
+    expect(html).not.toContain("МЕНЮ");
+    expect(html).toContain('class="wb-menubtn"');
     expect(html).toContain('aria-label="Меню"');
     expect(html).not.toContain('aria-label="Меню платформи"');
     expect(html).toContain('aria-expanded="false"');
@@ -92,21 +95,14 @@ describe("хедер застосунку", () => {
     expect(html).toContain('aria-expanded="true"');
   });
 
-  it("екран із посиланням і серцем показує обидві дії поруч із «МЕНЮ»", () => {
+  it("екран із посиланням і серцем малює в хедері лише крохи й гамбургер", () => {
     const html = render(WITH_ALL, { onMenu: () => undefined });
 
-    expect(html).toContain('aria-label="Поділитись"');
-    expect(html).toContain('aria-label="Додати в обране"');
     expect(html).toContain('aria-label="Меню"');
+    expect(html).not.toContain('aria-label="Поділитись"');
+    expect(html).not.toContain('aria-label="Додати в обране"');
     // Меню сторінки більше не малюється в хедері: там лише глобальне меню.
     expect(html).not.toContain('aria-label="Меню сторінки"');
-  });
-
-  it("знак серця лишається читабельним без підпису", () => {
-    const html = render(WITH_ALL);
-
-    expect(html).toContain('aria-pressed="false"');
-    expect(html).toContain('title="Додати в обране"');
   });
 });
 
@@ -124,7 +120,6 @@ describe("хедер як частина каркаса", () => {
       </ScreenChromeContext.Provider>,
     );
 
-    expect(html).toContain("ПАЛЯНИЦЯ");
     expect(html).toContain("Нотатки");
     expect(html).toContain('aria-expanded="true"');
   });

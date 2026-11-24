@@ -67,12 +67,16 @@
 | обкладинка | графіка `public/media/home-hero.jpg` (скляна паляниця на насиченому градієнті), `object-fit: cover`, від самого верху під рідною шапкою Telegram, без кутів і пелени, висота `clamp(420px, 80dvh, 780px)` | `.wb-showcase-hero`, `.wb-showcase-photo` |
 | назва | «ПАЛЯНИЦЯ» по центру внизу, 36 px / 900 / `-0.02em`, біла з тінню | `.wb-showcase-title`, `--display-size-hero` |
 | обіцянка | «платформа для своїх» по центру під назвою, 15 px / 600, білий 94% | `.wb-showcase-tagline` |
-| хедер головної | нашого хедера немає: рідний хедер Telegram (ім'я бота, «←») пофарбований кольором графіки (`--chrome-hero-header-bg`) | `PlatformShell`, `telegram-chrome` |
+| хедер головної | нашого хедера немає: рідний хедер Telegram (ім'я бота, «✕») пофарбований кольором графіки (`--chrome-hero-header-bg`); «✕» — бо `BackButton` прихована | `PlatformShell`, `telegram-chrome` |
 | групи меню | усі екрани платформи: Щоденне · Крамниці · Спільнота · Дозвілля · Кабінет | `web-platform-dev/src/layout/screen-nav.ts` + `packages/shared/src/screens/menu-groups.json` |
 | підпис групи | **немає ніде** — групу читає сам блок пунктів | `PlatformSidebar` |
 | картка групи | `--surface`, кути 20 px, волосяна межа, `--shadow-card` | `.wb-showcase-list` |
 | рядок | плитка 40×40 залита тоном `--data-1…6`, знак світлий `--text-inverse`, назва 15 px / 600, шеврон праворуч | `.wb-showcase-row`, `.wb-showcase-row-icon/-label/-more` |
-| бренд у хедері | «ПАЛЯНИЦЯ» 12 px капсом у спільному хедері каркаса | `.wb-appbar__brand-name` (`PlatformShell`) |
+| хедер екрана | один рядок: крохи зліва, гамбургер справа; фон — `--chrome-header-bg` без ліній, як продовження шапки клієнта | `.wb-appbar`, `.wb-menubtn` (`AppBar`) |
+| гамбургер | три смуги 20/14/9 px, середня — акцентна; відкрите меню — хрестик; кнопка 44×44 | `.wb-menubtn__bar`, `.wb-menubtn[data-open]` |
+| верхівка екрана | графіка кодом від самого верху під хедером: смуга кольору шапки → тон розділу (`--cover-tone`) | `.wb-screen-cover` |
+| висота верхівки | глибина екрана: корінь 60, підрозділ 45, сторінка 30 (`clamp` із `dvh`) | `.wb-screen[data-depth]` |
+| меню | той самий список, що на головній — без обкладинки, з перемикачем теми першою плашкою | `PlatformNavList`, `.wb-platform-nav` |
 
 **Одна свідома розбіжність з макетом:**
 

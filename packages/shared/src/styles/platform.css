@@ -410,6 +410,133 @@
   min-width: 0;
 }
 
+/* ═══ Екран: графічна верхівка як продовження шапки ═════════════════════════
+   Той самий підхід, що на головній, лише без власного фото: верхня смуга
+   верхівки — рівно колір шапки клієнта, далі він плавно переходить у тон
+   розділу. `isolation` створює контекст накладання, тож шар із `z-index: -1`
+   лежить **під вмістом**, але над тлом каркаса — і жодна сторінка не мусить
+   знати про нього. */
+.wb-screen {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  isolation: isolate;
+}
+
+/* Висоту дає **глибина екрана**, а не смак: корінь розділу — 60, підрозділ —
+   45, сторінка всередині — 30. Це та сама міра, за якою людина розуміє, де
+   вона: більше повітря — ширший контекст. */
+.wb-screen[data-depth="1"] {
+  --cover-h: clamp(280px, 60dvh, 620px);
+}
+
+.wb-screen[data-depth="2"] {
+  --cover-h: clamp(220px, 45dvh, 480px);
+}
+
+.wb-screen[data-depth="3"] {
+  --cover-h: clamp(170px, 30dvh, 340px);
+}
+
+/* Тон розділу — той самий голос, що в плитці пункту на головній. */
+.wb-screen[data-tone="1"] {
+  --cover-tone: var(--data-1);
+}
+
+.wb-screen[data-tone="2"] {
+  --cover-tone: var(--data-2);
+}
+
+.wb-screen[data-tone="3"] {
+  --cover-tone: var(--data-3);
+}
+
+.wb-screen[data-tone="4"] {
+  --cover-tone: var(--data-4);
+}
+
+.wb-screen[data-tone="5"] {
+  --cover-tone: var(--data-5);
+}
+
+.wb-screen[data-tone="6"] {
+  --cover-tone: var(--data-6);
+}
+
+.wb-screen-cover {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: var(--cover-h, 45dvh);
+  pointer-events: none;
+  background:
+    radial-gradient(
+      120% 92% at 6% -8%,
+      color-mix(in srgb, var(--cover-tone, var(--accent)) 28%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      96% 76% at 102% -4%,
+      color-mix(in srgb, var(--cover-tone, var(--accent)) 18%, transparent),
+      transparent 58%
+    ),
+    linear-gradient(
+      180deg,
+      var(--chrome-header-bg) 0%,
+      color-mix(in srgb, var(--chrome-header-bg) 56%, var(--cover-tone, var(--accent))) 34%,
+      var(--bg-page) 92%
+    );
+}
+
+/* Скляна куля — та сама мова, що й паляниця на обкладинці: одне велике
+   відблискове коло, без зображення й без розмиття (коштувало б кадрів у TWA). */
+.wb-screen-cover::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--sp-6) * -1);
+  right: -56px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 34% 28%,
+    color-mix(in srgb, #ffffff 30%, transparent),
+    color-mix(in srgb, #ffffff 5%, transparent) 56%,
+    transparent 70%
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ffffff 16%, transparent);
+}
+
+/* ═══ Меню: той самий список, що на головній ════════════════════════════════
+   Без шапки й без фону обкладинки — самі блоки-розділи. Мірки рядка не
+   повторюються: їх тримає `.wb-showcase-row` (showcase.css). */
+.wb-platform-nav {
+  flex: 1;
+  min-height: 0;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sidebar-pad) var(--sidebar-pad);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.wb-platform-nav .wb-showcase-list {
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+}
+
+.wb-platform-nav .wb-showcase-row {
+  min-height: 56px;
+}
+
+.wb-platform-nav .wb-showcase-row[aria-current="page"] {
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+}
+
 /* Правий сайдбар-поверхня: і на телефоні, і на десктопі він виїжджає з
    правого краю поверх сторінки. У потоці його більше немає — відкриває його
    «МЕНЮ» в хедері, закриває хрестик, скрим або Escape. */

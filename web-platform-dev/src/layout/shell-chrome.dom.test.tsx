@@ -73,26 +73,22 @@ describe("хедер на кожному екрані реєстру", () => {
     }
   });
 
-  it("усі екрани, крім головної, мають ПАЛЯНИЦЯ і непорожні крохи з першого кадру", () => {
+  it("у кожного екрана, крім головної, є непорожні крохи з першого кадру", () => {
     for (const screen of SCREENS) {
       const path = concretePath(screen.path as string);
       const home = path === "/";
       const chrome = shellChromeFor(undefined, ROWS, path);
 
-      // Головна — обкладинка: назва на ній, у хедері лишається «МЕНЮ».
+      // Бренду в хедері немає ніде: ім'я продукту стоїть у рідній шапці Telegram.
       const { container, unmount } = render(
-        <AppBar
-          chrome={chrome}
-          onMenu={() => undefined}
-          onNavigate={() => undefined}
-          hideBrand={home}
-        />,
+        <AppBar chrome={chrome} onMenu={() => undefined} onNavigate={() => undefined} />,
       );
-      const brand = container.querySelector(".wb-appbar__brand-name")?.textContent;
+      const brand = container.querySelector(".wb-appbar__brand-name");
       const trailNode = container.querySelector(".wb-appbar__trail");
 
+      expect(brand, screen.key).toBeNull();
+
       if (home) {
-        expect(brand, screen.key).toBeUndefined();
         expect(trailNode, screen.key).toBeNull();
         unmount();
         continue;
@@ -101,7 +97,6 @@ describe("хедер на кожному екрані реєстру", () => {
       const trailText = trailNode?.textContent?.trim() ?? "";
       const crumbs = [...container.querySelectorAll(".wb-appbar__crumb")];
 
-      expect(brand, screen.key).toBe("ПАЛЯНИЦЯ");
       expect(trailNode, screen.key).not.toBeNull();
       expect(trailText, screen.key).not.toBe("");
       expect(crumbs.length, screen.key).toBeGreaterThan(0);
@@ -142,7 +137,7 @@ describe("хедер на кожному екрані реєстру", () => {
   it("вітрина `/` — без крошок і без бренду в хедері", () => {
     const chrome = shellChromeFor(undefined, ROWS, "/");
     const { container, unmount } = render(
-      <AppBar chrome={chrome} onMenu={() => undefined} onNavigate={() => undefined} hideBrand />,
+      <AppBar chrome={chrome} onMenu={() => undefined} onNavigate={() => undefined} />,
     );
 
     expect(container.querySelector(".wb-appbar__trail")).toBeNull();

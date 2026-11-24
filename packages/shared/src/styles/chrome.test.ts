@@ -203,18 +203,16 @@ describe("мобільні вставки враховують UI клієнта
 });
 
 describe("рядок хлібного шляху", () => {
-  it("бренд — скоринка паляниці, а шлях — один рядок із трикрапкою", () => {
-    // Підпису «платформа для своїх» більше немає: перший рядок — лише слово й
-    // «МЕНЮ». Шлях стоїть другим рядком і **не росте** з глибиною.
+  it("бренду в хедері немає, а шлях — один рядок із трикрапкою", () => {
+    // Ім'я продукту стоїть у рідній шапці Telegram: друге «ПАЛЯНИЦЯ» в хедері
+    // було б тією самою назвою двічі. Шлях не росте з глибиною.
     expect(CHROME.some((entry) => entry.selector === ".wb-appbar__brand-sub")).toBe(false);
+    expect(CHROME.some((entry) => entry.selector === ".wb-appbar__brand-name")).toBe(false);
 
-    const name = rule(".wb-appbar__brand-name");
     const trail = rule(".wb-appbar__trail");
     const crumb = rule(".wb-appbar__crumb");
-    expect(name, "назва бренду мусить мати правило").toBeDefined();
     expect(trail, "рядок шляху мусить мати правило").toBeDefined();
     expect(crumb, "рівень шляху мусить мати правило").toBeDefined();
-    expect(name?.body).toContain("color: var(--brand-bread)");
     expect(trail?.body).toContain("display: flex");
     expect(trail?.body).toContain("overflow: hidden");
     expect(crumb?.body).toContain("white-space: nowrap");

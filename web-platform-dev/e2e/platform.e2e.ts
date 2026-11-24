@@ -23,12 +23,6 @@ import {
 
 const ARTIFACTS = "e2e-artifacts";
 
-/**
- * Серце в хедері — у двох станах, і обидва мають ім'я: `aria-label` кнопки і є
- * її станом («Додати в обране» / «Прибрати з обраного»).
- */
-const HEART = /Додати в обране|Прибрати з обраного/;
-
 /** Екрани, які мають відкриватись у телефоні. Кожен — власна адреса. */
 const SCREENS = [
   { label: "Акаунт", path: /\/account$/ },
@@ -105,7 +99,7 @@ test("гейт допуску відкриває акаунт, а не поро�
   await expect(page.locator("header.wb-appbar")).toBeVisible();
   await expect(page.locator("nav.wb-tabbar")).toBeVisible();
   await expect(page).toHaveURL(/\/account$/);
-  await expect(page.locator("h1.wb-appbar__title")).not.toBeEmpty();
+  await expect(page.locator("h1.wb-appbar__crumb--current")).not.toBeEmpty();
 
   await page.screenshot({ path: `${ARTIFACTS}/01-account.png`, fullPage: true });
   expect(errors).toEqual([]);
@@ -120,7 +114,7 @@ test("смуга навігації переводить між екранами
     await item.click();
     await expect(page).toHaveURL(screen.path);
     await expect(item).toHaveAttribute("aria-current", "page");
-    await expect(page.locator("h1.wb-appbar__title")).not.toBeEmpty();
+    await expect(page.locator("h1.wb-appbar__crumb--current")).not.toBeEmpty();
     await page.screenshot({
       path: `${ARTIFACTS}/02-${screen.label}.png`,
       fullPage: true,
@@ -149,111 +143,6 @@ test("верстка влазить у 360px, смуга не тікає за е
   if (!metrics.tabbar) throw new Error("Нижньої смуги немає в розмітці");
   expect(metrics.tabbar.height).toBeGreaterThanOrEqual(44);
   expect(metrics.tabbar.bottom).toBeLessThanOrEqual(781);
-});
-
-/**
- * Сторінка, на якій видно серце.
- *
- * Адресу беремо зі списку самої платформи, а не з константи: рядок контенту
- * живе в живій базі, і перейменована сторінка не мусить ламати перевірку. Серце
- * має не кожен шаблон (внутрішній екран може володіти хедером), тому йдемо
- * списком — і кажемо про це, якщо серця немає ні в кого.
- */
-async function openPageWithHeart(page: Page): Promise<string> {
-  const initData = await appInitData(page);
-  const list = await page.evaluate(async (header) => {
-    const response = await fetch("/api/user/pages", {
-      headers: { "x-telegram-init-data": header },
-    });
-    return (await response.json()) as { pages?: { slug?: string }[] };
-  }, initData);
-
-  for (const item of list.pages ?? []) {
-    if (!item.slug) continue;
-    await page.goto(`/${item.slug}`);
-    const heart = page.getByRole("button", { name: HEART }).first();
-    const visible = await heart
-      .waitFor({ state: "visible", timeout: 8000 })
-      .then(() => true)
-      .catch(() => false);
-    if (visible) return item.slug;
-  }
-  throw new Error("жодна публічна сторінка не має серця в хедері");
-}
-
-test("лайк зберігається й видно в «Обраному»", async ({ page }) => {
-  const errors = watchErrors(page);
-
-  await page.goto("/favorites");
-  const slug = await openPageWithHeart(page);
-  const title = (await page.locator("h1.wb-appbar__title").textContent()) ?? "";
-
-  // Стан на початок: серце вимкнене — тест сам прибирає за собою.
-  const heart = page.getByRole("button", { name: HEART });
-  if ((await heart.getAttribute("aria-pressed")) === "true") {
-    await heart.click();
-    await expect(heart).toHaveAttribute("aria-pressed", "false");
-  }
-
-  await heart.click();
-  await expect(heart).toHaveAttribute("aria-pressed", "true");
-
-  // Успіх видно: серце перефарбувалось, і плитка сказала про це словами —
-  // **під хедером**, там, де щойно натиснули, а не над футером.
-  const toast = page.getByRole("status");
-  await expect(toast).toContainText("Додано в обране");
-  // Залитий гліф, а не пофарбований контур: шлях саме `heart-solid`.
-  expect(await heart.innerHTML()).toContain("M12 21.35");
-  const toastBox = await toast.boundingBox();
-  const appbarBox = await page.locator("header.wb-appbar").boundingBox();
-  if (!toastBox || !appbarBox) throw new Error("немає рамок плитки або хедера");
-  expect(toastBox.y).toBeGreaterThanOrEqual(appbarBox.y + appbarBox.height - 1);
-  expect(toastBox.y).toBeLessThan(200);
-
-  // Лайк переживає перезавантаження: серце показує відповідь сервера, а не клік.
-  await page.reload();
-  await expect(page.getByRole("button", { name: HEART })).toHaveAttribute("aria-pressed", "true");
-
-  // Лайк щойно поставлено — позначка у футері каже «є нове» (одне), а не «все».
-  await expect(page.locator('.wb-tabbar-item[aria-label="Обране"] .wb-tabbar-badge')).toHaveText(
-    "1",
-  );
-
-  await page.goto("/favorites");
-  const row = page.locator(".wb-favorites-row", { hasText: title });
-  await expect(row).toBeVisible();
-
-  // Підпис над списком — це **все** обране; позначка у футері — **нове**, і
-  // відкритий список її обнуляє (див. `docs/FAVORITES.md`).
-  const rows = page.locator(".wb-favorites-row");
-  const total = await rows.count();
-  await expect(page.locator(".wb-favorites-count")).toHaveText(`${total} у обраному`);
-  await expect(page.locator('.wb-tabbar-item[aria-label="Обране"] .wb-tabbar-badge')).toHaveCount(
-    0,
-  );
-
-  // Знак прибирання — смітник: серце тут читалось би як лайк, і ним знімали б
-  // лайк випадково.
-  expect(await row.locator(".wb-favorites-remove").innerHTML()).toContain("M3 6h18");
-  expect(await row.innerHTML()).not.toContain("20.84 4.61");
-
-  // Порядок — два вибори однієї людини: вибраний видно, і список йому підкоряється.
-  await page.getByRole("button", { name: "За назвою" }).click();
-  const byName = await rows.locator(".wb-favorites-title").allTextContents();
-  expect(byName).toEqual([...byName].sort((a, b) => a.localeCompare(b, "uk")));
-
-  await page.screenshot({ path: `${ARTIFACTS}/04-favorites.png`, fullPage: true });
-
-  // Знімаємо з тієї ж сторінки, тим же серцем: прибирання йде окремим запитом.
-  await page.goto(`/${slug}`);
-  const again = page.getByRole("button", { name: HEART });
-  await expect(again).toHaveAttribute("aria-pressed", "true");
-  await again.click();
-  await expect(again).toHaveAttribute("aria-pressed", "false");
-
-  await page.goto("/favorites");
-  await expect(page.locator(".wb-favorites-row", { hasText: title })).toBeHidden();
-  expect(errors).toEqual([]);
 });
 
 test("інші екрани відкриваються без помилок у консолі", async ({ page }) => {

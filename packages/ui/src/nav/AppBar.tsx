@@ -1,34 +1,15 @@
 /**
- * `AppBar` — глобальний хедер застосунку.
- *
- * **Один хедер, стек рівнів.** Перший рядок — бренд і «МЕНЮ»; під ним
- * **завжди** стоїть хлібний шлях одним рядком (`Розділ › Підрозділ ›
- * Сторінка`). Великий `h1` у контенті цього не змінює: шлях видно відразу на
- * кожному екрані, а не лише після прокрутки — інакше хедер різних екранів
- * виглядав по-різному.
- *
- * **Рівні не переносяться.** Кожен рядок — один рівень; довгий обрізається
- * трикрапкою, щоб висота стека не стрибала.
- *
- * **МЕНЮ — текстова кнопка, а не гамбургер.** Вона відкриває правий сайдбар;
- * меню й перемикач теми живуть у ньому, а не в хедері. Хедер не знає про
- * роутер: дію передає оболонка (`onMenu`, `menuOpen`).
- *
- * **Хедер сам каже, скільки він займає** (`useAppBarHeight` → `--appbar-h`):
- * від цього числа відлічують закріплені речі сторінки, а висота залежить від
- * шрифту людини та наявності другого рядка — числом із CSS її не задати.
+ * `AppBar` — хедер платформи: крохи зліва, гамбургер справа. І більше нічого:
+ * ні бренду, ні слова «МЕНЮ», ні дій сторінки — «Поділитись» і серце сховані.
+ * Про роутер хедер не знає: перехід передає оболонка, висоту — `useAppBarHeight`.
  *
  * @module packages/ui/src/nav/AppBar
  */
 
-import { useContext, useRef, useState, type ReactElement } from "react";
-import { Icon, type IconName } from "@wwwuabot/shared";
-import type { FavoriteTarget } from "@wwwuabot/shared/favorites";
+import { useContext, useRef, type ReactElement } from "react";
 import { ScreenChromeContext, type ScreenChrome, type ScreenCrumb } from "./screen-chrome";
 import { useAppBarHeight } from "./useAppBarHeight";
-import { ShareModal } from "./ShareModal";
-import { useFavorite } from "../favorites/useFavorite";
-import { LikeToast } from "../favorites/LikeToast";
+import { MenuButton } from "./MenuButton";
 
 /** Дії, які знає тільки оболонка: вона одна володіє роутером. */
 export interface AppBarActions {
@@ -41,12 +22,8 @@ export interface AppBarActions {
   onNavigate?: (href: string) => void;
   /** Відкрити або закрити меню продукту (правий сайдбар). */
   onMenu?: () => void;
-  /** Меню відкрите — для `aria-expanded`. */
+  /** Меню відкрите — для `aria-expanded` і стану знака. */
   menuOpen?: boolean;
-  /** Ім'я бота для діплінка «Поділитись»; `null` — діплінка не буде. */
-  botUsername?: string | null;
-  /** Головна: назва продукту вже на обкладинці, у хедері лишається «МЕНЮ». */
-  hideBrand?: boolean;
 }
 
 export function AppBar({
@@ -54,21 +31,10 @@ export function AppBar({
   onMenu,
   onNavigate,
   menuOpen = false,
-  botUsername = null,
-  hideBrand = false,
 }: AppBarActions): ReactElement | null {
   const chrome = given ?? useContext(ScreenChromeContext)?.chrome;
   if (!chrome) return null;
-  return (
-    <AppBarView
-      chrome={chrome}
-      onMenu={onMenu}
-      onNavigate={onNavigate}
-      menuOpen={menuOpen}
-      botUsername={botUsername}
-      hideBrand={hideBrand}
-    />
-  );
+  return <AppBarView chrome={chrome} onMenu={onMenu} onNavigate={onNavigate} menuOpen={menuOpen} />;
 }
 
 /**
@@ -80,12 +46,9 @@ export function AppBarView({
   onMenu,
   onNavigate,
   menuOpen = false,
-  botUsername = null,
-  hideBrand = false,
 }: { chrome: ScreenChrome } & AppBarActions): ReactElement {
-  const { title, ancestors, share, favorite } = chrome;
+  const { title, ancestors } = chrome;
   const header = useRef<HTMLElement>(null);
-  const [sharing, setSharing] = useState(false);
   // Останній рівень — поточна сторінка; попередні — її батьки (з реєстру).
   const trail: readonly ScreenCrumb[] = title
     ? [...ancestors, { label: title, href: null }]
@@ -95,33 +58,6 @@ export function AppBarView({
 
   return (
     <header className="wb-appbar" ref={header}>
-      {/* Підтвердження лайка народжується тут, у серці, і малюється порталом
-          поверх екрана: місце йому — не в смузі й не в шапці. */}
-      <LikeToast />
-      <div className="wb-appbar__top">
-        {hideBrand ? null : (
-          <div className="wb-appbar__brand">
-            <span className="wb-appbar__brand-name">ПАЛЯНИЦЯ</span>
-          </div>
-        )}
-
-        <div className="wb-appbar__actions">
-          {share && <BarButton icon="share" label="Поділитись" onClick={() => setSharing(true)} />}
-          {favorite && <FavoriteAction target={favorite} />}
-          {onMenu && (
-            <button
-              type="button"
-              className="wb-appbar__menu"
-              aria-label="Меню"
-              aria-expanded={menuOpen}
-              onClick={onMenu}
-            >
-              МЕНЮ
-            </button>
-          )}
-        </div>
-      </div>
-
       {trail.length > 0 && (
         <nav className="wb-appbar__trail" aria-label="Шлях сторінки">
           {trail.map((crumb, index) => {
@@ -164,58 +100,12 @@ export function AppBarView({
           })}
         </nav>
       )}
-      {share && sharing && (
-        <ShareModal share={share} botUsername={botUsername} onClose={() => setSharing(false)} />
+
+      {onMenu && (
+        <div className="wb-appbar__actions">
+          <MenuButton open={menuOpen} onClick={onMenu} />
+        </div>
       )}
     </header>
-  );
-}
-
-/** Кнопка-знак: мінімум 44×44, підпис лише для скриньок і довідки. */
-function BarButton({
-  icon,
-  label,
-  onClick,
-  on = false,
-  disabled = false,
-}: {
-  icon: IconName;
-  label: string;
-  onClick: () => void;
-  on?: boolean;
-  disabled?: boolean;
-}): ReactElement {
-  return (
-    <button
-      type="button"
-      className={`wb-appbar__btn${on ? " wb-appbar__btn--on" : ""}`}
-      aria-label={label}
-      title={label}
-      aria-pressed={on}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      <Icon name={icon} size={20} />
-    </button>
-  );
-}
-
-/**
- * Серце: те саме обране, що й було на сторінці, — лише знаком у хедері.
- *
- * Коли сторінка в обраному, знак стає **залитим**: контур акцентного кольору
- * виглядав тією самою кнопкою, лише пофарбованою, тож стан доводилось
- * згадувати замість того, щоб його побачити.
- */
-function FavoriteAction({ target }: { target: FavoriteTarget }): ReactElement {
-  const favorite = useFavorite(target);
-  return (
-    <BarButton
-      icon={favorite.liked ? "heart-solid" : "heart"}
-      label={favorite.liked ? "Прибрати з обраного" : "Додати в обране"}
-      onClick={() => void favorite.toggle()}
-      on={favorite.liked}
-      disabled={favorite.busy}
-    />
   );
 }
