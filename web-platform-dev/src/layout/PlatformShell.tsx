@@ -7,7 +7,7 @@
  * @module web-platform-dev/src/layout/PlatformShell
  */
 
-import { useCallback, useContext, useEffect, useState, type ReactElement } from "react";
+import { useCallback, useContext, useEffect, useRef, useState, type ReactElement } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { matchScreen } from "@wwwuabot/shared/screens";
 import { AppBar, ScreenChromeContext, ScreenChromeProvider } from "@wwwuabot/ui/nav";
@@ -34,17 +34,33 @@ function PlatformFrame(): ReactElement {
   const chrome = useContext(ScreenChromeContext)?.chrome;
   const { rows } = useScreens();
   const [navOpen, setNavOpen] = useState(false);
-  const closeNav = useCallback(() => setNavOpen(false), []);
-  const toggleNav = useCallback(() => setNavOpen((current) => !current), []);
+  // Хто відкрив меню: після закриття фокус повертається туди ж, а не на початок
+  // сторінки — інакше клавіатура й скрінрідер втрачали місце.
+  const navOpener = useRef<HTMLElement | null>(null);
+  const closeNav = useCallback(() => {
+    setNavOpen(false);
+    const opener = navOpener.current;
+    navOpener.current = null;
+    if (opener) queueMicrotask(() => opener.focus({ preventScroll: true }));
+  }, []);
+  const toggleNav = useCallback(() => {
+    if (navOpen) {
+      closeNav();
+      return;
+    }
+    const active = document.activeElement;
+    navOpener.current = active instanceof HTMLElement ? active : null;
+    setNavOpen(true);
+  }, [closeNav, navOpen]);
 
   useEffect(() => {
     if (!navOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setNavOpen(false);
+      if (event.key === "Escape") closeNav();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [navOpen]);
+  }, [closeNav, navOpen]);
 
   // Назву й крохи дає реєстр; екран лише уточнює назву з даних (трекер, товар).
   const shellChrome = shellChromeFor(chrome, rows, pathname);
@@ -128,7 +144,9 @@ function PlatformFrame(): ReactElement {
       {/* Меню — на весь екран, тож затемнення під ним немає: дотик поза ним
           неможливий, а закривають хрестик у самому меню, Escape чи перехід. */}
       <PlatformSidebar open={navOpen} onClose={closeNav} screens={rows} pathname={pathname} />
-      <div className="wb-platform-main">
+      {/* Сторінка під меню неактивна: Tab і клік лишаються в меню, а не в
+          крошках, які воно накриває. */}
+      <div className="wb-platform-main" inert={navOpen}>
         <div className="wb-screen" data-depth={depth} data-tone={sectionTone(pathname)}>
           {!isHome && (
             <AppBar

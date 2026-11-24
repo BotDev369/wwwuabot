@@ -1,5 +1,5 @@
 {
-  "version": "e085653",
+  "version": "4949ef1",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -174,7 +174,7 @@
     {
       "file": "platform.css",
       "tokens": 25,
-      "classes": 50
+      "classes": 55
     },
     {
       "file": "research.css",
@@ -204,7 +204,7 @@
     {
       "file": "showcase.css",
       "tokens": 6,
-      "classes": 13
+      "classes": 17
     },
     {
       "file": "subbar.css",
@@ -6016,6 +6016,27 @@
           "wb-showcase-list",
           "wb-showcase-row"
         ]
+      },
+      {
+        "section": "Пошук у меню",
+        "names": [
+          "wb-platform-search",
+          "wb-platform-search-empty",
+          "wb-platform-search__box",
+          "wb-platform-search__field",
+          "wb-platform-search__icon"
+        ]
+      },
+      {
+        "section": "Відкриття меню: короткий каскад",
+        "names": [
+          "wb-platform-close",
+          "wb-platform-menutop",
+          "wb-platform-nav",
+          "wb-platform-search",
+          "wb-platform-sidebar--open",
+          "wb-platform-theme"
+        ]
       }
     ],
     "research.css": [
@@ -6601,15 +6622,19 @@
         "names": [
           "wb-showcase",
           "wb-showcase-brand",
+          "wb-showcase-cue",
           "wb-showcase-group",
           "wb-showcase-groups",
           "wb-showcase-hero",
           "wb-showcase-list",
+          "wb-showcase-motes",
           "wb-showcase-photo",
           "wb-showcase-row",
           "wb-showcase-row-icon",
           "wb-showcase-row-label",
           "wb-showcase-row-more",
+          "wb-showcase-rule",
+          "wb-showcase-sheen",
           "wb-showcase-tagline",
           "wb-showcase-title"
         ]

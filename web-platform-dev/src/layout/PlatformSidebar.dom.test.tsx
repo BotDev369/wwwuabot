@@ -120,6 +120,40 @@ describe("PlatformSidebar", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it("фільтрує пункти полем пошуку й каже, коли збігів немає", () => {
+    render(
+      <MemoryRouter initialEntries={["/trackers"]}>
+        <PlatformSidebar screens={ROWS} pathname="/trackers" open onClose={() => undefined} />
+      </MemoryRouter>,
+    );
+
+    const labels = (): (string | null)[] =>
+      [...document.querySelectorAll(".wb-showcase-row-label")].map((node) => node.textContent);
+
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "трек" } });
+    expect(labels()).toEqual(["Трекери"]);
+
+    // «Головна» теж шукається: вона пункт меню, а не рядок поза ним.
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "голов" } });
+    expect(labels()).toEqual(["Головна"]);
+
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "zzz" } });
+    expect(labels()).toEqual([]);
+    expect(screen.getByText("Нічого не знайдено")).toBeTruthy();
+    // Поле лишається на місці: інакше зі списку без збігів не вийти.
+    expect(screen.getByRole("searchbox")).toBeTruthy();
+  });
+
+  it("ставить фокус у меню, щоб Tab не повів сторінку під ним", () => {
+    render(
+      <MemoryRouter initialEntries={["/trackers"]}>
+        <PlatformSidebar screens={ROWS} pathname="/trackers" open onClose={() => undefined} />
+      </MemoryRouter>,
+    );
+
+    expect(document.activeElement).toBe(document.querySelector(".wb-platform-close"));
+  });
+
   it("перемикає тему тією самою круглою кнопкою", () => {
     render(
       <MemoryRouter initialEntries={["/trackers"]}>

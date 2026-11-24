@@ -10,7 +10,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 const mocks = vi.hoisted(() => ({ request: vi.fn() }));
@@ -180,6 +180,20 @@ describe("каркас", () => {
     // поточним, а не просто існувати.
     const current = await screen.findByRole("link", { name: /Трекери/ });
     expect(current.getAttribute("aria-current")).toBe("page");
+  });
+
+  it("тримає фокус у меню й повертає його на кнопку після закриття", async () => {
+    renderShell();
+
+    const button = await screen.findByRole("button", { name: "Меню" });
+    button.focus();
+    fireEvent.click(button);
+
+    // Фокус пішов у меню: сторінка під ним `inert`.
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Закрити меню" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Закрити меню" }));
+    await waitFor(() => expect(document.activeElement).toBe(button));
   });
 
   it("каже журналу, що людина відкрила екран", async () => {

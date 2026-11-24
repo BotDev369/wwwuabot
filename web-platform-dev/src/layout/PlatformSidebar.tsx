@@ -1,11 +1,12 @@
 /**
  * Сайдбар платформи — та сама коробка `SideBar`, що в адмінці: тут лишається
  * рівно склад пунктів. Пункти — **список головної** (`PlatformNavList`), а не
- * друга навігація: людина бачить у меню те саме, що й на обкладинці.
+ * друга навігація: людина бачить у меню те саме, що й на обкладинці. Пошук
+ * фільтрує цей самий список, а не заводить другу навігацію.
  *
  * @module web-platform-dev/src/layout/PlatformSidebar
  */
-import type { ReactElement } from "react";
+import { useEffect, useRef, useState, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { MENU_LABEL, SideBar } from "@wwwuabot/ui/nav";
 import { Icon, themeById, useStyleTheme } from "@wwwuabot/shared";
@@ -33,6 +34,9 @@ export function PlatformSidebar({
   const navigate = useNavigate();
   const { scheme, setScheme } = useStyleTheme();
   const dark = scheme === "dark";
+  const [query, setQuery] = useState("");
+  const [wasOpen, setWasOpen] = useState(open);
+  const closeRef = useRef<HTMLButtonElement>(null);
   // «Головна» — перший пункт меню й окремою групою: це повернення на обкладинку,
   // а не ще один розділ серед розділів. Пункт — дані, тож і додається до груп.
   const groups: PlatformNavGroup[] = [
@@ -51,6 +55,31 @@ export function PlatformSidebar({
     },
     ...platformNav(screens, pathname),
   ];
+
+  // Меню — поверхня на весь екран: фокус входить у неї разом із нею, інакше
+  // Tab вів би сторінку під меню. Закриття повертає фокус туди, звідки прийшли
+  // (це робить каркас).
+  useEffect(() => {
+    if (open) closeRef.current?.focus({ preventScroll: true });
+  }, [open]);
+
+  // Запит живе разом із меню: наступного разу поле чисте. Це та сама правка,
+  // що й "adjusting state when a prop changes" — без ефекту й зайвого рендера.
+  if (open !== wasOpen) {
+    if (!open) setQuery("");
+    setWasOpen(open);
+  }
+
+  const needle = query.trim().toLowerCase();
+  const shown =
+    needle === ""
+      ? groups
+      : groups
+          .map((group) => ({
+            ...group,
+            items: group.items.filter((item) => item.label.toLowerCase().includes(needle)),
+          }))
+          .filter((group) => group.items.length > 0);
 
   return (
     <SideBar
@@ -75,6 +104,7 @@ export function PlatformSidebar({
               type="button"
               className="wb-platform-close"
               aria-label="Закрити меню"
+              ref={closeRef}
               onClick={() => onClose?.()}
             >
               <Icon name="close" size={20} />
@@ -83,18 +113,43 @@ export function PlatformSidebar({
         </div>
       }
     >
-      <PlatformNavList
-        groups={groups}
-        label="Навігація платформи"
-        className="wb-platform-nav"
-        // Перехід у межах SPA: повне перезавантаження в TWA втрачає стан.
-        // Дотик по пункту закриває меню — інакше воно лишалось би поверх нової
-        // сторінки.
-        onNavigate={(href) => {
-          navigate(href);
-          onClose?.();
-        }}
-      />
+      {/* Поле над списком, а не в хедері: воно фільтрує саме пункти меню.
+          `type="search"` дає нативне очищення там, де воно є. */}
+      <div className="wb-platform-search" role="search">
+        <span className="wb-platform-search__box">
+          <span className="wb-platform-search__icon" aria-hidden="true">
+            <Icon name="search" size={18} />
+          </span>
+          <input
+            className="wb-platform-search__field"
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            aria-label="Пошук розділу"
+            placeholder="Знайти розділ"
+            autoComplete="off"
+            spellCheck={false}
+            enterKeyHint="search"
+          />
+        </span>
+      </div>
+
+      {shown.length > 0 ? (
+        <PlatformNavList
+          groups={shown}
+          label="Навігація платформи"
+          className="wb-platform-nav"
+          // Перехід у межах SPA: повне перезавантаження в TWA втрачає стан.
+          // Дотик по пункту закриває меню — інакше воно лишалось би поверх нової
+          // сторінки.
+          onNavigate={(href) => {
+            navigate(href);
+            onClose?.();
+          }}
+        />
+      ) : (
+        <p className="wb-platform-search-empty">Нічого не знайдено</p>
+      )}
     </SideBar>
   );
 }

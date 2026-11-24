@@ -30,27 +30,137 @@
   background: var(--gradient-hero);
 }
 
-/* Живе фото: наїзд за 14 секунд, туди й назад. Рух м’який і безкінечний —
-   обкладинка не мусить «смикатись» від дотику, — але його видно вже за
-   перші секунди: на 26 секундах кадр здавався нерухомим знімком. */
+/* Фото не наїжджає: масштаб усього поля за секунди читався як тиск на очі.
+   Кадр лишається кадром, а живе обкладинка паралаксом — від прокрутки, а не
+   сама по собі: `--hero-shift` рахує сторінка. */
 .wb-showcase-photo {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform-origin: 50% 42%;
-  animation: wb-showcase-drift 14s var(--ease) infinite alternate;
-  will-change: transform;
+  object-position: 50% 42%;
+  transform: translate3d(0, calc(var(--hero-shift, 0px) * 0.16), 0);
 }
 
-@keyframes wb-showcase-drift {
-  from {
-    transform: scale(1.03) translate3d(0, 0, 0);
+/* Відблиск скла: одна світла смуга проходить полем і йде. Це те «життя», яке
+   не рухає саму картинку й не тримає око в напрузі. */
+.wb-showcase-sheen {
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  background: linear-gradient(
+    104deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.14) 47%,
+    rgba(255, 255, 255, 0.05) 53%,
+    transparent 62%
+  );
+  animation: wb-showcase-sheen 14s var(--ease) 600ms infinite;
+}
+
+@keyframes wb-showcase-sheen {
+  0% {
+    transform: translate3d(-55%, 0, 0);
   }
 
-  to {
-    transform: scale(1.16) translate3d(0, -2%, 0);
+  38%,
+  100% {
+    transform: translate3d(55%, 0, 0);
+  }
+}
+
+/* Порошинки: сім крапок, що повільно піднімаються. Їх видно лише боковим
+   зором — і саме тому обкладинка не здається нерухомим знімком. */
+.wb-showcase-motes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform: translate3d(0, calc(var(--hero-shift, 0px) * 0.32), 0);
+}
+
+.wb-showcase-motes span {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.65);
+  opacity: 0;
+  animation: wb-showcase-mote 13s linear infinite;
+}
+
+.wb-showcase-motes span:nth-child(1) {
+  left: 12%;
+  top: 84%;
+}
+
+.wb-showcase-motes span:nth-child(2) {
+  left: 26%;
+  top: 68%;
+  width: 3px;
+  height: 3px;
+  animation-delay: -4s;
+  animation-duration: 16s;
+}
+
+.wb-showcase-motes span:nth-child(3) {
+  left: 38%;
+  top: 92%;
+  animation-delay: -8s;
+  animation-duration: 18s;
+}
+
+.wb-showcase-motes span:nth-child(4) {
+  left: 55%;
+  top: 74%;
+  width: 5px;
+  height: 5px;
+  animation-delay: -2s;
+  animation-duration: 15s;
+}
+
+.wb-showcase-motes span:nth-child(5) {
+  left: 68%;
+  top: 88%;
+  width: 3px;
+  height: 3px;
+  animation-delay: -11s;
+  animation-duration: 17s;
+}
+
+.wb-showcase-motes span:nth-child(6) {
+  left: 81%;
+  top: 62%;
+  animation-delay: -6s;
+  animation-duration: 14s;
+}
+
+.wb-showcase-motes span:nth-child(7) {
+  left: 91%;
+  top: 80%;
+  width: 2px;
+  height: 2px;
+  animation-delay: -9s;
+  animation-duration: 19s;
+}
+
+@keyframes wb-showcase-mote {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.8);
+  }
+
+  18% {
+    opacity: 0.45;
+  }
+
+  70% {
+    opacity: 0.22;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(8px, -32vh, 0) scale(1.15);
   }
 }
 
@@ -60,6 +170,7 @@
   width: 100%;
   padding: 0 var(--sp-5) var(--sp-6);
   text-align: center;
+  transform: translate3d(0, calc(var(--hero-shift, 0px) * -0.1), 0);
 }
 
 /* Тінь тримає читабельність на скляній графіці без затемнення всього низу. */
@@ -84,6 +195,72 @@
   animation: wb-showcase-rise 600ms 150ms var(--ease) both;
 }
 
+/* Риска під підписом: тонка лінія, що прокреслюється після появи тексту.
+   Вона й тримає низ обкладинки, і показує, що під нею ще є сторінка. */
+.wb-showcase-rule {
+  display: block;
+  width: 40px;
+  height: 1px;
+  margin: var(--sp-4) auto 0;
+  background: rgba(255, 255, 255, 0.45);
+  transform-origin: 50% 50%;
+  animation: wb-showcase-rule 900ms 420ms var(--ease) both;
+}
+
+@keyframes wb-showcase-rule {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* Підказка скролу: обкладинка на весь екран не каже, що під нею є пункти.
+   Це кнопка, а не малюнок: дотик веде до списку, клавіатура теж. */
+.wb-showcase-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: 44px;
+  margin-top: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: none;
+  color: rgba(255, 255, 255, 0.9);
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.wb-showcase-cue svg {
+  animation: wb-showcase-cue 2.6s var(--ease) infinite;
+}
+
+.wb-showcase-cue:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 2px;
+}
+
+@keyframes wb-showcase-cue {
+  0%,
+  60%,
+  100% {
+    transform: none;
+  }
+
+  75% {
+    transform: translateY(3px);
+  }
+}
+
 /* Назва й підпис виходять по черзі, без блюру: блюр на повному екрані коштує
    кадрів на телефоні й читався як «не догрузилось». */
 @keyframes wb-showcase-rise {
@@ -99,10 +276,28 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wb-showcase-photo,
   .wb-showcase-title,
   .wb-showcase-tagline {
     animation: none;
+  }
+
+  /* Відблиск, порошинки, риска й шеврон — рух заради руху: без них обкладинка
+     лишається тією самою, просто спокійною. */
+  .wb-showcase-sheen,
+  .wb-showcase-motes span,
+  .wb-showcase-rule,
+  .wb-showcase-cue svg {
+    animation: none;
+  }
+
+  .wb-showcase-motes span {
+    opacity: 0.3;
+  }
+
+  .wb-showcase-photo,
+  .wb-showcase-motes,
+  .wb-showcase-brand {
+    transform: none;
   }
 }
 
