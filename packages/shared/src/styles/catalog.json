@@ -1,5 +1,5 @@
 {
-  "version": "26b05ca",
+  "version": "adfc515",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -98,7 +98,7 @@
     },
     {
       "file": "app-chrome.css",
-      "tokens": 2,
+      "tokens": 3,
       "classes": 147
     },
     {
@@ -2074,6 +2074,13 @@
       "selector": ".wb-tools-controls",
       "value": "var(--tools-cell)",
       "section": "Смуга керування колекцією (спільний кирпичик)"
+    },
+    {
+      "name": "--chrome-appbar-ink",
+      "file": "app-chrome.css",
+      "selector": ".wb-appbar",
+      "value": "#ffffff",
+      "section": "Глобальний хедер (.wb-appbar)"
     },
     {
       "name": "--collection-cols",

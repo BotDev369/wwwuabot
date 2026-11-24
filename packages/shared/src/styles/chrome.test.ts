@@ -243,12 +243,12 @@ describe("рядок хлібного шляху", () => {
 describe("шапка екрана — тон розділу", () => {
   const PLATFORM = rulesOf("packages/shared/src/styles/platform.css");
 
-  it("хедер фарбується фактичним кольором шапки клієнта, тон — запасний", () => {
-    // `--chrome-appbar-bg` публікує `telegram-chrome`: тон розділу або власний
-    // колір клієнта (якщо він тон не взяв). Токен розділу — лише як запасний.
-    const body = rule(".wb-appbar")?.body ?? "";
-    expect(body).toContain("var(--chrome-appbar-bg");
-    expect(body).toContain("var(--chrome-section-bg");
+  it("хедер фарбується акцентом екрана, колір клієнта — запасний", () => {
+    // Акцент — це і є колір, який ми ставимо рідній шапці. Якщо клієнт не
+    // віддав його назад, смуга не мусить ставати сірою: акцент — перший.
+    const index = (needle: string) => (rule(".wb-appbar")?.body ?? "").indexOf(needle);
+    expect(index("var(--chrome-section-bg")).toBeGreaterThanOrEqual(0);
+    expect(index("var(--chrome-section-bg")).toBeLessThan(index("var(--chrome-appbar-bg"));
   });
 
   it("верхівка: одна висота, акцент на все фото, колір шапки — на шві", () => {
@@ -261,7 +261,7 @@ describe("шапка екрана — тон розділу", () => {
     // Акцент екрана (= колір шапки клієнта) фарбує **все** фото, а не смугу:
     // простий напівпрозорий шар, без `mix-blend-mode` — його не тягне WebView.
     const tint = PLATFORM.find((entry) => entry.selector === ".wb-screen-head::after")?.body ?? "";
-    expect(tint).toContain("var(--chrome-appbar-bg, var(--chrome-section-bg))");
+    expect(tint).toContain("var(--chrome-section-bg, var(--chrome-appbar-bg))");
     expect(tint).toContain("opacity:");
     expect(tint).not.toContain("mix-blend-mode");
     // Рівно колір шапки лишається тільки на шві — верхні відсотки обкладинки.

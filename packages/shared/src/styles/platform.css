@@ -562,7 +562,7 @@
   position: absolute;
   inset: 0;
   z-index: -2;
-  background: var(--chrome-appbar-bg, var(--chrome-section-bg));
+  background: var(--chrome-section-bg, var(--chrome-appbar-bg));
   opacity: 0.62;
 }
 
@@ -576,14 +576,14 @@
   background:
     linear-gradient(
       180deg,
-      var(--chrome-appbar-bg, var(--chrome-section-bg)) 0%,
-      color-mix(in srgb, var(--chrome-appbar-bg, var(--chrome-section-bg)) 60%, transparent) 16%,
+      var(--chrome-section-bg, var(--chrome-appbar-bg)) 0%,
+      color-mix(in srgb, var(--chrome-section-bg, var(--chrome-appbar-bg)) 60%, transparent) 16%,
       transparent 38%
     ),
     linear-gradient(
       0deg,
-      var(--chrome-appbar-bg, var(--chrome-section-bg)) 0%,
-      color-mix(in srgb, var(--chrome-appbar-bg, var(--chrome-section-bg)) 70%, transparent) 10%,
+      var(--chrome-section-bg, var(--chrome-appbar-bg)) 0%,
+      color-mix(in srgb, var(--chrome-section-bg, var(--chrome-appbar-bg)) 70%, transparent) 10%,
       transparent 28%
     ),
     linear-gradient(0deg, rgba(10, 7, 14, 0.42) 0%, rgba(10, 7, 14, 0.06) 52%, transparent 64%);

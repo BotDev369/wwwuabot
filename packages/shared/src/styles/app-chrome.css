@@ -129,11 +129,12 @@
      шов там, де його не мусить бути. */
   border-bottom: 0;
   padding: calc(var(--safe-top) + var(--sp-2)) var(--sp-5) var(--sp-2);
-  /* **Фактичний** колір шапки клієнта (`--chrome-appbar-bg`, публікує
-     `app/telegram-chrome.ts`): тон розділу — лише якщо клієнт його підтвердив,
-     інакше — його власний колір. Верхівка бере те саме значення, тому шва
-     немає за побудовою, а не «на око». */
-  background: var(--chrome-appbar-bg, var(--chrome-section-bg, var(--chrome-header-bg)));
+  /* Акцент екрана — понад усе: саме його ми ставимо рідної шапці, тож наша
+     смуга мусить бути тим самим кольором. `--chrome-appbar-bg` — лише
+     запасний: частина клієнтів не віддає назад щойно поставлений колір, і
+     тоді смуга ставала сірою, хоч шапка вже акцентна. */
+  --chrome-appbar-ink: #ffffff;
+  background: var(--chrome-section-bg, var(--chrome-appbar-bg, var(--chrome-header-bg)));
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
