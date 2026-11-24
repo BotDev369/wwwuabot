@@ -224,13 +224,10 @@ export function AnalysisPeoplePage(): ReactElement {
           До розділів
         </a>
 
-        <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title">Люди і події</h1>
-          <p className="an-hero__lead">
-            Групи, люди й події. Позначайте потрібні чекбоксами — і беріть у співставлення будь-який
-            склад.
-          </p>
-        </header>
+        <p className="an-page-lead">
+          Групи, люди й події. Позначайте потрібні чекбоксами — і беріть у співставлення будь-який
+          склад.
+        </p>
 
         {error && <p className="an-empty">{error}</p>}
 

@@ -180,12 +180,9 @@ export function AnalysisQualitiesPage(): ReactElement {
           До розділів
         </a>
 
-        <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title">Типові якості людей і подій</h1>
-          <p className="an-hero__lead">
-            Що це, як проявляється у високому й низькому рівні та які системи це визначають.
-          </p>
-        </header>
+        <p className="an-page-lead">
+          Що це, як проявляється у високому й низькому рівні та які системи це визначають.
+        </p>
 
         <section className="an-section">
           <label className="an-field">

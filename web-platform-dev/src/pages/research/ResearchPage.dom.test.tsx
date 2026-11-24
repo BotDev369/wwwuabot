@@ -77,7 +77,8 @@ describe("ResearchPage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole("heading", { level: 1, name: "Дослідження: тест" })).toBeTruthy();
+    // Назву книжки показує верхівка каркаса; у тілі лишаються факти.
+    expect(screen.queryByRole("heading", { level: 1 })).toBeNull();
     expect(screen.getByText("блоків")).toBeTruthy();
     expect(screen.getByText("розділів")).toBeTruthy();
     expect(screen.getByText("12")).toBeTruthy();

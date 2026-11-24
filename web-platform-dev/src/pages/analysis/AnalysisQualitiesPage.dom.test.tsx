@@ -45,7 +45,8 @@ describe("типові якості", () => {
     vi.mocked(api.fetchMyDates).mockResolvedValue([]);
     renderPage();
 
-    expect(screen.getByRole("heading", { name: "Типові якості людей і подій" })).toBeTruthy();
+    // Назву й підпис малює каркас — сторінка їх не дублює.
+    expect(screen.queryByRole("heading", { name: "Типові якості людей і подій" })).toBeNull();
     expect(screen.getByText("Воля")).toBeTruthy();
     expect(screen.getByText("Цілеспрямованість")).toBeTruthy();
     expect(screen.getAllByText("Не визначено").length).toBeGreaterThan(0);

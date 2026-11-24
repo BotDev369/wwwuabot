@@ -8,7 +8,6 @@
 import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
 import { Icon, type IconName } from "@wwwuabot/shared";
-import { ANALYSIS_TITLE, useAnalysisChrome } from "./analysis-chrome";
 import {
   ANALYSIS_COMPARE_PATH,
   ANALYSIS_PEOPLE_PATH,
@@ -78,26 +77,15 @@ export type AnalysisHubVariant = 1 | 2 | 3;
 interface AnalysisHubProps {
   /** Яка розкладка: 1 — плитка, 2 — затверджений рядок V2, 3 — значок праворуч. */
   variant?: AnalysisHubVariant;
-  /** `false` — без шапки: так варіанти стоять поруч на сторінці порівняння. */
-  withHero?: boolean;
 }
 
-export function AnalysisHub({ variant = 2, withHero = true }: AnalysisHubProps = {}): ReactElement {
-  // Шапка належить платформі, а не одній фічі: шість розділів нижче —
-  // рівноправні входи, і жоден не називає весь застосунок. Хлібний шлях
-  // у хедері лишається видимим і тоді, коли назва стоїть великою в контенті.
-  useAnalysisChrome(ANALYSIS_TITLE, { enabled: withHero });
-
+export function AnalysisHub({ variant = 2 }: AnalysisHubProps = {}): ReactElement {
+  // Власної шапки немає: назву й підпис малює каркас — одна верхівка на всі
+  // екрани. Шість розділів нижче — рівноправні входи, і жоден не називає
+  // весь застосунок.
   return (
     <div className="wb-page wb-page-scroll">
       <div className="an-hub" data-variant={variant}>
-        {withHero && (
-          <header className="an-hero an-hero--plain">
-            <h1 className="an-hero__title">{ANALYSIS_TITLE}</h1>
-            <p className="an-hero__lead">Пізнай себе, оточуючих та події.</p>
-          </header>
-        )}
-
         <nav className="an-entries" aria-label="Розділи аналізу">
           {SECTIONS.map((section) => (
             <Link key={section.title} className="an-entry" data-tone={section.tone} to={section.to}>

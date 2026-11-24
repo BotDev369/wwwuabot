@@ -1,5 +1,5 @@
 {
-  "version": "4f15b76",
+  "version": "bd2824e",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -94,7 +94,7 @@
     {
       "file": "analysis.css",
       "tokens": 0,
-      "classes": 168
+      "classes": 169
     },
     {
       "file": "app-chrome.css",
@@ -173,13 +173,13 @@
     },
     {
       "file": "platform.css",
-      "tokens": 28,
-      "classes": 48
+      "tokens": 19,
+      "classes": 50
     },
     {
       "file": "research.css",
       "tokens": 0,
-      "classes": 48
+      "classes": 49
     },
     {
       "file": "reset.css",
@@ -2118,69 +2118,6 @@
       "section": ""
     },
     {
-      "name": "--cover-h",
-      "file": "platform.css",
-      "selector": ".wb-screen[data-depth=\"1\"]",
-      "value": "clamp(280px, 60dvh, 620px)",
-      "section": "Екран: графічна верхівка як продовження шапки"
-    },
-    {
-      "name": "--cover-h",
-      "file": "platform.css",
-      "selector": ".wb-screen[data-depth=\"2\"]",
-      "value": "clamp(220px, 45dvh, 480px)",
-      "section": "Екран: графічна верхівка як продовження шапки"
-    },
-    {
-      "name": "--cover-h",
-      "file": "platform.css",
-      "selector": ".wb-screen[data-depth=\"3\"]",
-      "value": "clamp(170px, 30dvh, 340px)",
-      "section": "Екран: графічна верхівка як продовження шапки"
-    },
-    {
-      "name": "--cover-tone",
-      "file": "platform.css",
-      "selector": ".wb-screen[data-tone=\"1\"]",
-      "value": "var(--data-1)",
-      "section": "Екран: графічна верхівка як продовження шапки"
-    },
-    {
-      "name": "--cover-tone",
-      "file": "platform.css",
-      "selector": ".wb-screen[data-tone=\"2\"]",
-      "value": "var(--data-2)",
-      "section": "Екран: графічна верхівка як продовження шапки"
-    },
-    {
-      "name": "--cover-tone",
-      "file": "platform.css",
-      "selector": ".wb-screen[data-tone=\"3\"]",
-      "value": "var(--data-3)",
-      "section": "Екран: графічна верхівка як продовження шапки"
-    },
-    {
-      "name": "--cover-tone",
-      "file": "platform.css",
-      "selector": ".wb-screen[data-tone=\"4\"]",
-      "value": "var(--data-4)",
-      "section": "Екран: графічна верхівка як продовження шапки"
-    },
-    {
-      "name": "--cover-tone",
-      "file": "platform.css",
-      "selector": ".wb-screen[data-tone=\"5\"]",
-      "value": "var(--data-5)",
-      "section": "Екран: графічна верхівка як продовження шапки"
-    },
-    {
-      "name": "--cover-tone",
-      "file": "platform.css",
-      "selector": ".wb-screen[data-tone=\"6\"]",
-      "value": "var(--data-6)",
-      "section": "Екран: графічна верхівка як продовження шапки"
-    },
-    {
       "name": "--depth",
       "file": "trackers.css",
       "selector": ".wb-trackers-page",
@@ -3917,7 +3854,8 @@
           "an-hero--slim",
           "an-hero__kicker",
           "an-hero__lead",
-          "an-hero__title"
+          "an-hero__title",
+          "an-page-lead"
         ]
       },
       {
@@ -6005,8 +5943,15 @@
       {
         "section": "Екран: графічна верхівка як продовження шапки",
         "names": [
-          "wb-screen",
-          "wb-screen-cover"
+          "wb-screen"
+        ]
+      },
+      {
+        "section": "Верхівка екрана",
+        "names": [
+          "wb-screen-head",
+          "wb-screen-head__lead",
+          "wb-screen-head__title"
         ]
       },
       {
@@ -6104,6 +6049,7 @@
           "wb-article-next__title",
           "wb-research-card",
           "wb-research-facts",
+          "wb-research-facts-card",
           "wb-research-title"
         ]
       }

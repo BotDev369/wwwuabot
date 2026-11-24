@@ -550,3 +550,11 @@
     text-align: left;
   }
 }
+
+/* Факти книжки — звичайний блок у тілі, а не частина верхівки: верхівка одна
+   на всі екрани (`.wb-screen-head`), тож сторінка не малює власної шапки. */
+.wb-research-facts-card {
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+}

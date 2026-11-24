@@ -426,21 +426,6 @@
   isolation: isolate;
 }
 
-/* Висоту дає **глибина екрана**, а не смак: корінь розділу — 60, підрозділ —
-   45, сторінка всередині — 30. Це та сама міра, за якою людина розуміє, де
-   вона: більше повітря — ширший контекст. */
-.wb-screen[data-depth="1"] {
-  --cover-h: clamp(280px, 60dvh, 620px);
-}
-
-.wb-screen[data-depth="2"] {
-  --cover-h: clamp(220px, 45dvh, 480px);
-}
-
-.wb-screen[data-depth="3"] {
-  --cover-h: clamp(170px, 30dvh, 340px);
-}
-
 /* Тон розділу — той самий голос, що в плитці пункту на головній. Він же
    фарбує шапку: `data-tone` каркас ставить і на `<html>`, звідки його читає
    і CSS (`.wb-appbar`), і `telegram-chrome` для нативної шапки клієнта.
@@ -496,97 +481,33 @@
   --chrome-section-bg: #2c393d;
 }
 
-.wb-screen[data-tone="1"] {
-  --cover-tone: var(--data-1);
+/* ═══ Верхівка екрана ═══════════════════════════════════════════════════════
+   Один колір із шапкою Telegram і нашим хедером; на ньому — назва й підпис.
+   Тому смуга бере той самий `--chrome-appbar-bg`, що й `.wb-appbar`, без
+   градієнтів і власних верхівок у сторінок (docs/PLATFORM.md). */
+.wb-screen-head {
+  position: relative;
+  z-index: 1;
+  padding: var(--sp-2) var(--sp-5) var(--sp-5);
+  background: var(--chrome-appbar-bg, var(--chrome-section-bg, var(--chrome-header-bg)));
+  color: var(--chrome-appbar-ink, var(--text-primary));
 }
 
-.wb-screen[data-tone="2"] {
-  --cover-tone: var(--data-2);
+.wb-screen-head__title {
+  margin: 0;
+  font-size: clamp(24px, 7vw, 30px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: inherit;
 }
 
-.wb-screen[data-tone="3"] {
-  --cover-tone: var(--data-3);
-}
-
-.wb-screen[data-tone="4"] {
-  --cover-tone: var(--data-4);
-}
-
-.wb-screen[data-tone="5"] {
-  --cover-tone: var(--data-5);
-}
-
-.wb-screen[data-tone="6"] {
-  --cover-tone: var(--data-6);
-}
-
-/* Графіка починається **рівно кольором шапки** і тримає його на всю висоту
-   хедера: перший піксель під хедером дорівнює його кольору, тож смуга
-   шапки клієнта, наш хедер і верхівка — одна поверхня без шва. Далі колір
-   переходить у тон розділу й повертається до тла сторінки. */
-.wb-screen-cover {
-  position: absolute;
-  inset: 0 0 auto;
-  z-index: -1;
-  height: var(--cover-h, 45dvh);
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    var(--chrome-appbar-bg, var(--chrome-section-bg)) 0,
-    var(--chrome-appbar-bg, var(--chrome-section-bg)) var(--appbar-h),
-    color-mix(in srgb, var(--chrome-section-bg) 45%, var(--cover-tone, var(--accent))) 40%,
-    var(--bg-page) 92%
-  );
-}
-
-/* Кольорові плями — окремим шаром із маскою: без неї вони тонували б перший
-   піксель під хедером і шов повертався б. */
-.wb-screen-cover::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(
-      120% 92% at 6% -8%,
-      color-mix(in srgb, var(--cover-tone, var(--accent)) 28%, transparent),
-      transparent 62%
-    ),
-    radial-gradient(
-      96% 76% at 102% -4%,
-      color-mix(in srgb, var(--cover-tone, var(--accent)) 18%, transparent),
-      transparent 58%
-    );
-  -webkit-mask-image: linear-gradient(
-    180deg,
-    transparent 0,
-    transparent var(--appbar-h),
-    #000 calc(var(--appbar-h) + 72px)
-  );
-  mask-image: linear-gradient(
-    180deg,
-    transparent 0,
-    transparent var(--appbar-h),
-    #000 calc(var(--appbar-h) + 72px)
-  );
-}
-
-/* Скляна куля — та сама мова, що й паляниця на обкладинці: одне велике
-   відблискове коло, без зображення й без розмиття (коштувало б кадрів у TWA). */
-.wb-screen-cover::after {
-  content: "";
-  position: absolute;
-  top: calc(var(--sp-6) * -1);
-  right: -56px;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 34% 28%,
-    color-mix(in srgb, #ffffff 30%, transparent),
-    color-mix(in srgb, #ffffff 5%, transparent) 56%,
-    transparent 70%
-  );
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ffffff 16%, transparent);
+.wb-screen-head__lead {
+  margin: var(--sp-2) 0 0;
+  max-width: 46ch;
+  font-size: var(--text-sm);
+  line-height: 1.35;
+  color: color-mix(in srgb, currentColor 76%, transparent);
 }
 
 /* ═══ Меню: той самий список, що на головній ════════════════════════════════

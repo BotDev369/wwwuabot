@@ -122,9 +122,9 @@ export function AnalysisCompare(): ReactElement {
 
         <header className="an-hero an-hero--slim">
           <p className="an-hero__kicker">Співставити</p>
-          <h1 className="an-hero__title">
+          <h2 className="an-hero__title">
             {dates.length >= 2 ? "Що вас об'єднує" : "Кого співставляємо?"}
-          </h1>
+          </h2>
           <p className="an-hero__lead">
             {dates.length >= 2
               ? `${dates.length} людини, ${result.compared} ${plural(result.compared, QUALITIES)} порівнюються в усіх. Різні рівні — це різні опори, а не оцінка.`

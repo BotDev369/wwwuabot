@@ -104,7 +104,7 @@ export function AssessmentRun({
           >
             <Icon name="refresh" size={20} />
           </button>
-          <h1 className="wb-page-title">{test.title}</h1>
+          <h2 className="wb-page-title">{test.title}</h2>
         </div>
         <AssessmentResultCard test={test} records={finished} history={history} peers={peers} />
         {resultHref && (
@@ -127,7 +127,7 @@ export function AssessmentRun({
         >
           <Icon name="arrow-left" size={20} />
         </button>
-        <h1 className="wb-page-title wb-page-title--slim">{test.title}</h1>
+        <h2 className="wb-page-title wb-page-title--slim">{test.title}</h2>
         <span className="wb-run-count">
           {step + 1} / {total}
         </span>

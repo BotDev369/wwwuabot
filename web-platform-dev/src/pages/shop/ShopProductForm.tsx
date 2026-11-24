@@ -175,7 +175,7 @@ export function ShopProductForm(): ReactElement {
   return (
     <div className="wb-page">
       <div className="wb-page-head">
-        <h1 className="wb-page-title">
+        <h2 className="wb-page-title">
           <button
             type="button"
             className="wb-close-btn"
@@ -185,7 +185,7 @@ export function ShopProductForm(): ReactElement {
             <Icon name="arrow-left" size={18} />
           </button>
           {editing ? "Товар" : "Новий товар"}
-        </h1>
+        </h2>
       </div>
 
       <Field label="Назва">

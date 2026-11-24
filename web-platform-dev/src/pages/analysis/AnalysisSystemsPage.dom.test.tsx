@@ -68,7 +68,8 @@ describe("системи аналізу", () => {
   it("картка каже назву, кількість показників і що система бере з дати", () => {
     renderPage();
 
-    expect(screen.getByRole("heading", { name: "Про системи аналізу" })).toBeTruthy();
+    // Назву й підпис малює каркас — сторінка їх не дублює.
+    expect(screen.queryByRole("heading", { name: "Про системи аналізу" })).toBeNull();
     expect(screen.getByRole("heading", { name: "Західна астрологія" })).toBeTruthy();
     expect(screen.getByText("2 показників")).toBeTruthy();
     expect(screen.getByText("Тропічна астрологія читає положення Сонця.")).toBeTruthy();

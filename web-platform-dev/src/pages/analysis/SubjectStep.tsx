@@ -175,7 +175,7 @@ export function SubjectStep({ mode }: SubjectStepProps): ReactElement {
         </a>
 
         <header className="an-setup__head">
-          <h1 className="an-setup__title">{copy.title}</h1>
+          <h2 className="an-setup__title">{copy.title}</h2>
           <p className="an-setup__lead">{copy.lead}</p>
         </header>
 

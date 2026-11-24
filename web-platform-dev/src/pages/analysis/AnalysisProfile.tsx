@@ -174,7 +174,7 @@ export function AnalysisProfile({ mode }: AnalysisProfileProps): ReactElement {
                   <p className="an-profile__kicker">
                     {dossier.kind === "event" ? "Подія" : "Людина"}
                   </p>
-                  <h1 className="an-profile__name">{name}</h1>
+                  <h2 className="an-profile__name">{name}</h2>
                   <p className="an-profile__meta">
                     {humanDate(dossier.date)} · {known} із 36 якостей
                   </p>

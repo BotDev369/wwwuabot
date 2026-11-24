@@ -37,13 +37,13 @@ const SECTIONS: readonly [string, string][] = [
 ];
 
 describe("головна аналізу", () => {
-  it("показує велику назву фічі й називає себе хедеру", () => {
+  it("не малює власної шапки: назву й підпис дає каркас", () => {
     renderHub();
 
-    // Хедер малює назву й крохи завжди — великий `h1` цього не вимикає.
-    expect(chrome).toHaveBeenCalledWith({ title: "Аналіз людей і подій" }, true);
-    expect(screen.getByRole("heading", { name: "Аналіз людей і подій" })).toBeTruthy();
-    expect(screen.getByText("Пізнай себе, оточуючих та події.")).toBeTruthy();
+    // Одна верхівка на всі екрани: сторінка не дублює ні назву, ні гасло.
+    expect(chrome).not.toHaveBeenCalled();
+    expect(screen.queryByRole("heading", { name: "Аналіз людей і подій" })).toBeNull();
+    expect(screen.queryByText("Пізнай себе, оточуючих та події.")).toBeNull();
     expect(screen.queryByText("ПАЛЯНИЦЯ")).toBeNull();
   });
 

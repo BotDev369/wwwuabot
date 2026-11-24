@@ -35,12 +35,9 @@ export function AnalysisSystemsPage(): ReactElement {
           До розділів
         </a>
 
-        <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title">Про системи аналізу</h1>
-          <p className="an-hero__lead">
-            Кожна система окремо: що це, звідки взялася, де побутує, що дає й чого не знає.
-          </p>
-        </header>
+        <p className="an-page-lead">
+          Кожна система окремо: що це, звідки взялася, де побутує, що дає й чого не знає.
+        </p>
 
         <label className="an-field an-field--inline">
           <span className="an-field__label">Приклад для дати</span>

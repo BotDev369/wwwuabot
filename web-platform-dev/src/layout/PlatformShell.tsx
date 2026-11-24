@@ -9,11 +9,14 @@
 
 import { useCallback, useContext, useEffect, useState, type ReactElement } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { matchScreen } from "@wwwuabot/shared/screens";
 import { AppBar, ScreenChromeContext, ScreenChromeProvider } from "@wwwuabot/ui/nav";
 import { JournalBridge } from "./JournalBridge";
 import { PlatformSidebar } from "./PlatformSidebar";
+import { ScreenHead } from "./ScreenHead";
 import { ScreensProvider } from "./ScreensProvider";
 import { shellChromeFor } from "./shell-chrome";
+import { screenLead } from "./screen-lead";
 import { sectionTone } from "./screen-tone";
 import { useScreens } from "./useScreens";
 
@@ -44,6 +47,9 @@ function PlatformFrame(): ReactElement {
 
   // Назву й крохи дає реєстр; екран лише уточнює назву з даних (трекер, товар).
   const shellChrome = shellChromeFor(chrome, rows, pathname);
+  // Ведучий рядок верхівки — з тієї самої адреси, що й назва: підпис не може
+  // відстати від екрана, бо береться з реєстру, а не з розмітки сторінки.
+  const lead = screenLead(matchScreen(pathname)?.screen.key ?? null);
   // Головна — обкладинка від самого верху: нашого хедера на ній немає зовсім,
   // а рідний хедер Telegram фарбується кольором верхньої смуги графіки.
   const isHome = pathname === "/";
@@ -120,9 +126,6 @@ function PlatformFrame(): ReactElement {
       )}
       <div className="wb-platform-main">
         <div className="wb-screen" data-depth={depth} data-tone={sectionTone(pathname)}>
-          {/* Верхівка екрана — декорація: вона не приймає дотиків і не несе
-              змісту, тож від скрінрідера схована. */}
-          {!isHome && <div className="wb-screen-cover" aria-hidden="true" />}
           {!isHome && (
             <AppBar
               chrome={shellChrome}
@@ -134,6 +137,9 @@ function PlatformFrame(): ReactElement {
               }}
             />
           )}
+          {/* Назва й підпис — на тому самому кольорі, що й хедер: три смуги
+              (шапка Telegram, наш хедер, початок тла) — одна поверхня. */}
+          {!isHome && <ScreenHead title={shellChrome.title} lead={lead} />}
           <Outlet />
         </div>
       </div>

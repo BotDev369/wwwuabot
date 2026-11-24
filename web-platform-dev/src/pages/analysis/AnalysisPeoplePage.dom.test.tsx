@@ -82,7 +82,8 @@ describe("люди і події", () => {
     await waitFor(() => expect(screen.getByText("Груп ще немає.")).toBeTruthy());
     expect(screen.getByText("Людей ще немає.")).toBeTruthy();
     expect(screen.getByText("Подій ще немає.")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Люди і події" })).toBeTruthy();
+    // Назву й підпис малює каркас — сторінка їх не дублює.
+    expect(screen.queryByRole("heading", { name: "Люди і події" })).toBeNull();
   });
 
   it("показує групи, людей і події та веде обраних у співставлення", async () => {

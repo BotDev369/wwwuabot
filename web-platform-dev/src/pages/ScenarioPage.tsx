@@ -81,7 +81,7 @@ function LoadingScreen() {
 function ErrorScreen({ message }: { message: string }) {
   return (
     <div className="page-error">
-      <h1>Помилка</h1>
+      <h2>Помилка</h2>
       <p>{message}</p>
     </div>
   );

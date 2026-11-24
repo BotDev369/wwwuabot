@@ -251,17 +251,14 @@ describe("шапка екрана — тон розділу", () => {
     expect(body).toContain("var(--chrome-section-bg");
   });
 
-  it("верхівка тримає колір шапки на всю висоту хедера — шва немає", () => {
-    const cover = PLATFORM.find((entry) => entry.selector === ".wb-screen-cover");
-    // Те саме значення, що й у `.wb-appbar`: одна поверхня, не два схожих кольори.
-    expect(cover?.body).toContain("var(--chrome-appbar-bg, var(--chrome-section-bg)) 0");
-    expect(cover?.body).toContain(
-      "var(--chrome-appbar-bg, var(--chrome-section-bg)) var(--appbar-h)",
+  it("верхівка — той самий колір, що й шапка, без власного градієнта", () => {
+    const head = PLATFORM.find((entry) => entry.selector === ".wb-screen-head");
+    // Одне значення з `.wb-appbar`: шапка, хедер і початок тла — одна поверхня.
+    expect(head?.body).toContain(
+      "var(--chrome-appbar-bg, var(--chrome-section-bg, var(--chrome-header-bg)))",
     );
-    // Плями не тонують перший піксель: маска починається під хедером.
-    const blobs = PLATFORM.find((entry) => entry.selector === ".wb-screen-cover::before");
-    expect(blobs?.body).toContain("mask-image");
-    expect(blobs?.body).toContain("transparent var(--appbar-h)");
+    // Жодного окремого «верху сторінки»: ні градієнта, ні плям, ні скла.
+    expect(PLATFORM.some((entry) => entry.selector.startsWith(".wb-screen-cover"))).toBe(false);
   });
 
   it("кожен розділ має власний тон в обох схемах", () => {

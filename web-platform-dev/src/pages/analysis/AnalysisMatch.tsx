@@ -208,7 +208,7 @@ export function AnalysisMatch(): ReactElement {
 
         <header className="an-hero an-hero--slim">
           <p className="an-hero__kicker">Роль у парі</p>
-          <h1 className="an-hero__title">{ready ? role.name : "Під кого підбираємо?"}</h1>
+          <h2 className="an-hero__title">{ready ? role.name : "Під кого підбираємо?"}</h2>
           <p className="an-hero__lead">
             {ready
               ? role.lead

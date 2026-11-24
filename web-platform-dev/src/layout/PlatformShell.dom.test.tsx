@@ -85,8 +85,11 @@ describe("каркас", () => {
     // Хедер малюється каркасом: крохи з реєстру ще до відповіді `/api/screens`.
     expect(document.querySelector(".wb-appbar__trail")?.textContent).toBe("Трекери");
     expect(screen.getByRole("button", { name: "Меню" })).toBeTruthy();
-    // Верхівка екрана — та сама графіка, що на головній, лише кодом.
-    expect(document.querySelector(".wb-screen-cover")).not.toBeNull();
+    // Верхівка екрана — назва й підпис на кольорі шапки, одна на всі екрани.
+    expect(document.querySelector(".wb-screen-head__title")?.textContent).toBe("Трекери");
+    expect(document.querySelector(".wb-screen-head__lead")?.textContent).toBe(
+      "Мірки й записи: що рахуєте, те й бачите",
+    );
     // Тон розділу каркас публікує на `<html>`: звідти його бере нативна шапка.
     expect(document.documentElement.getAttribute("data-tone")).toBe("2");
     // Тема — перший пункт меню, а не кнопка в хедері.

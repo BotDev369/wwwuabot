@@ -42,7 +42,8 @@ describe("крок систем", () => {
   it("усі системи вже вибрані й підписані іменами", () => {
     renderStep("?dates=1980-03-03&labels=Іван");
 
-    expect(screen.getByRole("heading", { name: "Хто читає дату?" })).toBeTruthy();
+    // Назву й підпис малює каркас — сторінка їх не дублює.
+    expect(screen.queryByRole("heading", { name: "Хто читає дату?" })).toBeNull();
     expect(screen.getByText("Іван")).toBeTruthy();
     expect(screen.getByText("Чотири традиції незалежно одна від одної.")).toBeTruthy();
     for (const lens of LENSES) {

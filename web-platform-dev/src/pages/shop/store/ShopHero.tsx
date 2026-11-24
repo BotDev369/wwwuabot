@@ -36,7 +36,7 @@ export function ShopHero({ photoUrl, title, tagline }: ShopHeroProps): ReactElem
       {photoUrl && <img className="shop-store-cover" src={photoUrl} alt="" />}
 
       <div className="shop-store-hero-body">
-        <h1 className="shop-store-title">{title?.trim() || "Магазин"}</h1>
+        <h2 className="shop-store-title">{title?.trim() || "Магазин"}</h2>
         {tagline && <p className="shop-store-tagline">{tagline}</p>}
       </div>
     </header>

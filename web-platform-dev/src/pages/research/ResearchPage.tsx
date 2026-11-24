@@ -45,23 +45,21 @@ function cardMeta(block: ResearchBlock, texts: ScreenTexts): string {
 export function ResearchPage(): ReactElement {
   const { texts, ready } = useScreenTexts(SCREEN_KEY);
   const title = screenText(texts, "research.title");
-  useScreenChrome({ title });
   const navigate = useNavigate();
   const { catalog, loading } = useResearchCatalog();
 
   const blocks = catalog?.blocks ?? [];
   const chapters = researchChapters(blocks);
   const minutes = researchReadingMinutes(blocks);
+  // Назву книжки показує верхівка каркаса — та сама, що й на решті екранів.
+  useScreenChrome({ title: catalog?.title || title });
 
   if (!ready) return <div className="wb-page wb-research" />;
 
   return (
     <div className="wb-page wb-research">
-      <header className="wb-research-hero">
-        <p className="wb-research-kicker">{screenText(texts, "research.kicker")}</p>
-        <h1 className="wb-research-title">{catalog?.title || title}</h1>
-        <p className="wb-research-lead">{screenText(texts, "research.lead")}</p>
-        {blocks.length > 0 && (
+      {blocks.length > 0 && (
+        <section className="wb-research-facts-card" aria-label={screenText(texts, "research.lead")}>
           <ul className="wb-research-facts">
             <li>
               <strong>{blocks.length}</strong>
@@ -76,8 +74,8 @@ export function ResearchPage(): ReactElement {
               <span>{screenText(texts, "research.fact.minutes")}</span>
             </li>
           </ul>
-        )}
-      </header>
+        </section>
+      )}
 
       {loading && (
         <div className="wb-research-loading" aria-hidden="true">

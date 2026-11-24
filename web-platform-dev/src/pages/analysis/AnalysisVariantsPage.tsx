@@ -10,7 +10,6 @@
 
 import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
-import { useAnalysisChrome } from "./analysis-chrome";
 import { AnalysisHub, type AnalysisHubVariant } from "./AnalysisHub";
 import { ANALYSIS_PATH, ANALYSIS_VARIANT_PATH } from "@/app/routes";
 
@@ -29,21 +28,12 @@ const OPTIONS: readonly Option[] = [
 ];
 
 export function AnalysisVariantsPage(): ReactElement {
-  useAnalysisChrome("Варіанти головної");
-
   return (
     <div className="wb-page wb-page-scroll">
       <div className="an-hub">
         <a className="an-back" href={ANALYSIS_PATH}>
           До розділів
         </a>
-
-        <header className="an-hero an-hero--slim">
-          <h1 className="an-hero__title">Варіанти головної</h1>
-          <p className="an-hero__lead">
-            Той самий вміст, три різні розкладки. Відкрий кожен окремо або скажи номер.
-          </p>
-        </header>
 
         {OPTIONS.map((option) => (
           <section className="an-variant" key={option.variant}>
@@ -53,7 +43,7 @@ export function AnalysisVariantsPage(): ReactElement {
               Відкрити варіант {option.variant}
             </Link>
             <div className="an-variant__frame">
-              <AnalysisHub variant={option.variant} withHero={false} />
+              <AnalysisHub variant={option.variant} />
             </div>
           </section>
         ))}
