@@ -24,6 +24,15 @@ import { useScreens } from "./useScreens";
 const MAX_DEPTH = 3;
 
 /**
+ * Два кадри кнопки меню: паляниця з обкладинки головної, вирізана разом із
+ * бульбашкою. Закрите меню — як є, відкрите — з другою лінією розрізу.
+ */
+const MENU_BREAD = {
+  closed: "/media/menu-bread.png",
+  open: "/media/menu-bread-open.png",
+} as const;
+
+/**
  * Внутрішній каркас: стоїть **усередині** провайдерів, бо крохи потребують і
  * назву з екрана, і реєстр із бази.
  */
@@ -140,6 +149,7 @@ function PlatformFrame(): ReactElement {
               chrome={shellChrome}
               onMenu={toggleNav}
               menuOpen={navOpen}
+              menuPhoto={MENU_BREAD}
               onNavigate={(href) => {
                 navigate(href);
                 closeNav();

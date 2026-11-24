@@ -24,6 +24,8 @@ export interface AppBarActions {
   onMenu?: () => void;
   /** Меню відкрите — для `aria-expanded` і стану знака. */
   menuOpen?: boolean;
+  /** Два кадри паляниці для кнопки меню; без них — гамбургер. */
+  menuPhoto?: { closed: string; open: string };
 }
 
 export function AppBar({
@@ -31,10 +33,19 @@ export function AppBar({
   onMenu,
   onNavigate,
   menuOpen = false,
+  menuPhoto,
 }: AppBarActions): ReactElement | null {
   const chrome = given ?? useContext(ScreenChromeContext)?.chrome;
   if (!chrome) return null;
-  return <AppBarView chrome={chrome} onMenu={onMenu} onNavigate={onNavigate} menuOpen={menuOpen} />;
+  return (
+    <AppBarView
+      chrome={chrome}
+      onMenu={onMenu}
+      onNavigate={onNavigate}
+      menuOpen={menuOpen}
+      menuPhoto={menuPhoto}
+    />
+  );
 }
 
 /**
@@ -46,6 +57,7 @@ export function AppBarView({
   onMenu,
   onNavigate,
   menuOpen = false,
+  menuPhoto,
 }: { chrome: ScreenChrome } & AppBarActions): ReactElement {
   const { title, ancestors } = chrome;
   const header = useRef<HTMLElement>(null);
@@ -103,7 +115,7 @@ export function AppBarView({
 
       {onMenu && (
         <div className="wb-appbar__actions">
-          <MenuButton open={menuOpen} onClick={onMenu} />
+          <MenuButton open={menuOpen} onClick={onMenu} photo={menuPhoto} />
         </div>
       )}
     </header>

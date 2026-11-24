@@ -203,10 +203,11 @@
   margin-left: auto;
 }
 
-/* ═══ Гамбургер (`.wb-menubtn`) ════════════════════════════════════════════
-   Три смуги — мова, яку людина вже знає; власного характеру додають різна
-   довжина й акцентна середня. Кнопка — 44×44, скляна плишка, як решта знаків
-   хедера: це вхід у навігацію, а не ще один текст у рядку. */
+/* ═══ Кнопка меню (`.wb-menubtn`) ══════════════════════════════════════════
+   Два види одного входу. У платформі — паляниця з обкладинки головної, у
+   власній бульбашці: закрите меню показує її як є, відкрите — з другою лінією
+   розрізу й тоном шапки. В адмінці фото немає, тож там лишаються три смуги.
+   Мірка одна: 44×44, як у решти знаків хедера. */
 .wb-menubtn {
   display: inline-flex;
   flex: 0 0 auto;
@@ -281,6 +282,60 @@
 .wb-menubtn[data-open] .wb-menubtn__bar:nth-child(3) {
   width: 100%;
   transform: translateY(-6.5px) rotate(-45deg);
+}
+
+/* ── Паляниця ──────────────────────────────────────────────────────────────
+   Плишки під фото немає: сама страва в бульбашці і є кнопкою. Кадри вже
+   вирізані по колу, тож кнопка лише тримає їх у своїй мірці. */
+.wb-menubtn--bread {
+  border: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.wb-menubtn__bread {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  box-shadow:
+    0 6px 14px -8px rgba(40, 24, 8, 0.6),
+    inset 0 0 0 1px var(--glass-stroke-soft);
+}
+
+.wb-menubtn__bread img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter var(--duration-fast) var(--ease);
+}
+
+/* Відкрите меню — той самий тон, що шапка клієнта й наша смуга: акцент
+   лягає поверх фото так само, як на обкладинці екрана. */
+.wb-menubtn__tint {
+  position: absolute;
+  inset: 0;
+  background: var(--chrome-section-bg, var(--accent));
+  opacity: 0;
+  transition: opacity var(--duration) var(--ease);
+}
+
+.wb-menubtn--bread[data-open] .wb-menubtn__bread img {
+  filter: grayscale(0.75) contrast(1.04);
+}
+
+.wb-menubtn--bread[data-open] .wb-menubtn__tint {
+  opacity: 0.5;
+}
+
+@media (hover: hover) {
+  .wb-menubtn--bread:hover {
+    background: none;
+    transform: scale(1.04);
+  }
 }
 
 @media (hover: hover) {

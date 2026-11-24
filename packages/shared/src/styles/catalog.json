@@ -1,5 +1,5 @@
 {
-  "version": "adfc515",
+  "version": "b7ee355",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -99,7 +99,7 @@
     {
       "file": "app-chrome.css",
       "tokens": 3,
-      "classes": 147
+      "classes": 150
     },
     {
       "file": "assessments.css",
@@ -174,7 +174,7 @@
     {
       "file": "platform.css",
       "tokens": 25,
-      "classes": 51
+      "classes": 52
     },
     {
       "file": "research.css",
@@ -4148,14 +4148,23 @@
         ]
       },
       {
-        "section": "Гамбургер (`.wb-menubtn`)",
+        "section": "Кнопка меню (`.wb-menubtn`)",
+        "names": [
+          "wb-menubtn",
+          "wb-menubtn__bar",
+          "wb-menubtn__bars"
+        ]
+      },
+      {
+        "section": "Паляниця",
         "names": [
           "wb-app-body",
           "wb-app-hamburger",
           "wb-app-logout",
           "wb-menubtn",
-          "wb-menubtn__bar",
-          "wb-menubtn__bars"
+          "wb-menubtn--bread",
+          "wb-menubtn__bread",
+          "wb-menubtn__tint"
         ]
       },
       {
@@ -5993,6 +6002,7 @@
       {
         "section": "Меню: той самий список, що на головній",
         "names": [
+          "wb-close-btn",
           "wb-nav-close-row",
           "wb-nav-item",
           "wb-nav-item--active",

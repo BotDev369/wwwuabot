@@ -200,6 +200,11 @@ export interface SideBarProps {
    * як друга дія.
    */
   onClose?: () => void;
+  /**
+   * Те, що стоїть **у тому самому рядку перед хрестиком**: у меню платформи це
+   * тумблер теми. Закриття й стан продукту читаються разом, з верхнього краю.
+   */
+  closeExtra?: ReactNode;
   /** Список пунктів: `SideBarMenu` або свій (адмінка). */
   children: ReactNode;
 }
@@ -210,6 +215,7 @@ export function SideBar({
   header,
   footer,
   onClose,
+  closeExtra,
   children,
 }: SideBarProps): ReactElement {
   return (
@@ -220,6 +226,7 @@ export function SideBar({
           у його верх, як у модалки, а не шукаючи вихід унизу. */}
       {onClose != null && !collapsed && (
         <div className="wb-nav-close-row">
+          {closeExtra}
           <button
             type="button"
             className="wb-close-btn"

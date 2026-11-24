@@ -12,7 +12,7 @@ import { SideBar } from "@wwwuabot/ui/nav";
 import { Icon, SwitchRow, themeById, useStyleTheme } from "@wwwuabot/shared";
 import type { ScreenRow } from "@wwwuabot/shared/screens";
 import { PlatformNavList } from "./PlatformNavList";
-import { platformNav } from "./screen-nav";
+import { platformNav, type PlatformNavGroup } from "./screen-nav";
 
 interface PlatformSidebarProps {
   /** Екрани з реєстру: підпис, іконка й адреса пункту живуть у базі. */
@@ -34,27 +34,47 @@ export function PlatformSidebar({
   const navigate = useNavigate();
   const { scheme, setScheme } = useStyleTheme();
   const dark = scheme === "dark";
+  // «Головна» — перший пункт меню й окремою групою: це повернення на обкладинку,
+  // а не ще один розділ серед розділів. Пункт — дані, тож і додається до груп.
+  const groups: PlatformNavGroup[] = [
+    {
+      key: "home",
+      title: null,
+      items: [
+        {
+          key: "home",
+          label: "Головна",
+          icon: "home",
+          href: "/",
+          active: pathname === "/",
+        },
+      ],
+    },
+    ...platformNav(screens, pathname),
+  ];
 
   return (
     <SideBar
       className={`wb-platform-sidebar${open ? " wb-platform-sidebar--open" : ""}`}
       onClose={onClose}
+      // Тема — у рядку закриття, перед хрестиком: стан усього продукту стоїть
+      // на верхньому краю меню, поруч із виходом, а не серед переходів.
+      closeExtra={
+        <div className="wb-platform-theme">
+          <span className="wb-platform-theme__icon" aria-hidden="true">
+            <Icon name={dark ? "moon" : "sun"} size={20} />
+          </span>
+          <SwitchRow
+            label="Тема"
+            hint={themeById(scheme).label}
+            checked={dark}
+            onToggle={(on) => setScheme(on ? "dark" : "light")}
+          />
+        </div>
+      }
     >
-      {/* Тема — першим пунктом меню: це стан усього продукту, а не дія
-          сторінки, тож вона не має губитись серед переходів. */}
-      <div className="wb-platform-theme">
-        <span className="wb-platform-theme__icon" aria-hidden="true">
-          <Icon name={dark ? "moon" : "sun"} size={20} />
-        </span>
-        <SwitchRow
-          label="Тема"
-          hint={themeById(scheme).label}
-          checked={dark}
-          onToggle={(on) => setScheme(on ? "dark" : "light")}
-        />
-      </div>
       <PlatformNavList
-        groups={platformNav(screens, pathname)}
+        groups={groups}
         label="Навігація платформи"
         className="wb-platform-nav"
         // Перехід у межах SPA: повне перезавантаження в TWA втрачає стан.

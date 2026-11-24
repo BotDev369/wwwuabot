@@ -86,4 +86,21 @@ describe("PlatformSidebar", () => {
     expect(screen.getByText("/account")).toBeTruthy();
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it("ставить «Головну» першим пунктом, а тему — у рядок закриття", () => {
+    render(
+      <MemoryRouter initialEntries={["/trackers"]}>
+        <PlatformSidebar screens={ROWS} pathname="/trackers" open onClose={() => undefined} />
+      </MemoryRouter>,
+    );
+
+    const labels = [...document.querySelectorAll(".wb-showcase-row-label")].map(
+      (node) => node.textContent,
+    );
+    expect(labels[0]).toBe("Головна");
+    // Тема — не серед переходів: вона стоїть у верхньому рядку, перед хрестиком.
+    const closeRow = document.querySelector(".wb-nav-close-row");
+    expect(closeRow?.querySelector(".wb-platform-theme")).toBeTruthy();
+    expect(closeRow?.querySelector(".wb-close-btn")).toBeTruthy();
+  });
 });

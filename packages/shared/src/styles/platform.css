@@ -630,15 +630,18 @@
   flex: 1;
   min-height: 0;
   gap: var(--sp-3);
+  width: 100%;
+  max-width: 620px;
+  margin-inline: auto;
   padding: var(--sp-3) var(--sidebar-pad) var(--sidebar-pad);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
 
+/* Блоки пунктів — папір, а не ще одне скло: на акцентному тлі меню
+   напівпрозора плишка зливалась із ним і текст губився. */
 .wb-platform-nav .wb-showcase-list {
-  background: var(--glass-fill);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  backdrop-filter: blur(12px) saturate(150%);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
 }
 
 .wb-platform-nav .wb-showcase-row {
@@ -650,38 +653,88 @@
   font-weight: var(--weight-semibold);
 }
 
-/* Правий сайдбар-поверхня: і на телефоні, і на десктопі він виїжджає з
-   правого краю поверх сторінки. У потоці його більше немає — відкриває його
-   «МЕНЮ» в хедері, закриває хрестик, скрим або Escape. */
+/* Меню — **увесь екран під хедером**: список розділів не мусить ділити місце
+   зі сторінкою, а на телефоні вузька шухляда різала і назви, і пальці.
+   Сам хедер лишається зверху — у відкритому стані паляниця показує хрестик і
+   закриває меню тим самим дотиком, яким відкрила.
+   Поверхня — акцент екрана з прозорістю та склом: меню відкривається над
+   своєю ж сторінкою, тож крізь нього видно, де людина стояла. */
 .wb-platform-sidebar {
   position: fixed;
-  inset: 0 0 0 auto;
+  inset: var(--appbar-h, 0px) 0 0;
   z-index: 1000;
-  width: min(360px, var(--sidebar-w-vw));
-  min-width: min(360px, var(--sidebar-w-vw));
-  height: 100dvh;
-  padding-top: var(--safe-top);
+  width: 100%;
+  min-width: 0;
   padding-bottom: var(--safe-bottom);
-  border-right: 0;
-  border-left: 1px solid var(--glass-stroke);
-  box-shadow: var(--glass-shadow);
+  border: 0;
+  background: color-mix(
+    in srgb,
+    var(--chrome-section-bg, var(--chrome-header-bg)) 62%,
+    transparent
+  );
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  backdrop-filter: blur(26px) saturate(150%);
+  box-shadow: none;
   transform: translateX(100%);
   transition: transform var(--duration-slow) var(--ease);
+  overflow: hidden;
 }
 
 .wb-platform-sidebar--open {
   transform: none;
 }
 
-/* Хрестик видно на всіх ширинах: правий сайдбар — завжди поверхня. */
+/* Хедер і меню — одна поверхня: тон шапки зверху сходить у скляний акцент
+   меню без лінії на місці, де починається список. */
+.wb-platform-sidebar::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 48px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--chrome-section-bg, var(--chrome-header-bg)) 0%,
+    transparent 100%
+  );
+}
+
+/* Хрестик закриття стоїть на акценті, тож він — біле скло, а не плашка теми:
+   читається на будь-якому тоні розділу. */
+.wb-platform-sidebar .wb-close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.38);
+}
+
+/* Верхній рядок меню: стан продукту (тема) ліворуч, вихід (хрестик) праворуч.
+   Обидва — з верхнього краю, як у модалки, а не десь посеред списку. */
 .wb-platform-sidebar .wb-nav-close-row {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  max-width: 620px;
+  margin-inline: auto;
+  padding: var(--sp-3) var(--sidebar-pad) 0;
+}
+
+/* У рядку тема — не окрема плашка з власними берегами, а половина рядка. */
+.wb-nav-close-row .wb-platform-theme {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
 }
 
 .wb-platform-sidebar .wb-nav-menu {
   flex: 1;
   gap: var(--sp-2);
   overflow-y: auto;
+  width: 100%;
+  max-width: 620px;
+  margin-inline: auto;
   padding: var(--sidebar-pad);
 }
 
@@ -691,7 +744,7 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  margin: var(--sidebar-pad) var(--sidebar-pad) 0;
+  margin: 0;
   padding: var(--sp-2) var(--sp-3);
   border: 1px solid var(--glass-stroke-soft);
   border-radius: var(--radius-lg);
@@ -780,7 +833,7 @@
 .wb-platform-scrim {
   display: block;
   position: fixed;
-  inset: 0;
+  inset: var(--appbar-h, 0px) 0 0;
   z-index: 999;
   border: 0;
   background: var(--scrim);
