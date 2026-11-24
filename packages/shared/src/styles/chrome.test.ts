@@ -258,10 +258,12 @@ describe("шапка екрана — тон розділу", () => {
     expect(PLATFORM.some((entry) => entry.selector.startsWith('.wb-screen[data-depth="'))).toBe(
       false,
     );
-    // Акцент екрана (= колір шапки клієнта) фарбує **все** фото, а не смугу.
+    // Акцент екрана (= колір шапки клієнта) фарбує **все** фото, а не смугу:
+    // простий напівпрозорий шар, без `mix-blend-mode` — його не тягне WebView.
     const tint = PLATFORM.find((entry) => entry.selector === ".wb-screen-head::after")?.body ?? "";
     expect(tint).toContain("var(--chrome-appbar-bg, var(--chrome-section-bg))");
-    expect(tint).toContain("mix-blend-mode: color");
+    expect(tint).toContain("opacity:");
+    expect(tint).not.toContain("mix-blend-mode");
     // Рівно колір шапки лишається тільки на шві — верхні відсотки обкладинки.
     const shade = PLATFORM.find((entry) => entry.selector === ".wb-screen-head__shade")?.body ?? "";
     expect(shade).toContain("var(--chrome-appbar-bg");

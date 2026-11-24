@@ -397,46 +397,39 @@
 .wb-platform {
   display: flex;
   min-height: 100dvh;
-  /* Уся поверхня екрана — світла версія акценту: і тло, і липкі смуги. */
-  --bg-page: color-mix(in srgb, var(--chrome-section-bg) 32%, var(--bg-0));
-  /* Тло сторінки — світла версія акценту екрана: та сама гама, що й шапка. */
-  background:
-    radial-gradient(
-      60% 42% at 8% 0%,
-      color-mix(in srgb, var(--chrome-section-bg) 24%, transparent),
-      transparent 64%
-    ),
-    radial-gradient(
-      52% 36% at 96% 16%,
-      color-mix(in srgb, var(--chrome-section-bg) 16%, transparent),
-      transparent 66%
-    ),
-    linear-gradient(
-      170deg,
-      color-mix(in srgb, var(--chrome-section-bg) 34%, var(--bg-0)),
-      var(--bg-0) 60%
-    );
-}
-
-/* Темна тема: акцент темний, тож у суміші його більше — інакше поверхня
-   читається як чорна й акценту не видно. */
-:root[data-theme="dark"] .wb-platform {
-  --bg-page: color-mix(in srgb, var(--chrome-section-bg) 62%, #211f30);
+  /* Тло — продовження акценту: той самий колір під обкладинкою, далі він
+     плавно світлішає до світлої версії акценту. */
+  --bg-page: color-mix(in srgb, var(--chrome-section-bg) 26%, var(--bg-0));
   background:
     radial-gradient(
       62% 44% at 8% 0%,
-      color-mix(in srgb, var(--chrome-section-bg) 78%, transparent),
+      color-mix(in srgb, var(--chrome-section-bg) 34%, transparent),
       transparent 70%
     ),
+    linear-gradient(
+      180deg,
+      var(--chrome-section-bg) 0px,
+      color-mix(in srgb, var(--chrome-section-bg) 58%, var(--bg-0)) 260px,
+      color-mix(in srgb, var(--chrome-section-bg) 26%, var(--bg-0)) 620px,
+      color-mix(in srgb, var(--chrome-section-bg) 14%, var(--bg-0)) 100%
+    );
+}
+
+/* Темна тема: акцент темний, тому його більше — інакше поверхня чорна. */
+:root[data-theme="dark"] .wb-platform {
+  --bg-page: color-mix(in srgb, var(--chrome-section-bg) 40%, #211f30);
+  background:
     radial-gradient(
-      54% 38% at 96% 18%,
-      color-mix(in srgb, var(--chrome-section-bg) 64%, transparent),
+      62% 44% at 8% 0%,
+      color-mix(in srgb, var(--chrome-section-bg) 60%, transparent),
       transparent 72%
     ),
     linear-gradient(
-      170deg,
-      color-mix(in srgb, var(--chrome-section-bg) 68%, #211f30),
-      color-mix(in srgb, var(--chrome-section-bg) 24%, #1b1928) 68%
+      180deg,
+      var(--chrome-section-bg) 0px,
+      color-mix(in srgb, var(--chrome-section-bg) 62%, #1b1928) 320px,
+      color-mix(in srgb, var(--chrome-section-bg) 30%, #1b1928) 720px,
+      color-mix(in srgb, var(--chrome-section-bg) 18%, #1b1928) 100%
     );
 }
 
@@ -518,6 +511,16 @@
   --chrome-section-bg: #2c393d;
 }
 
+/* Блоки-пункти мусять читатися на акцентному тлі: поверхня карток — світло
+   сіра в обох темах, а не тон тла. */
+.wb-screen {
+  --surface: color-mix(in srgb, #ffffff 86%, var(--chrome-section-bg));
+}
+
+:root[data-theme="dark"] .wb-screen {
+  --surface: color-mix(in srgb, #302e42 82%, var(--chrome-section-bg));
+}
+
 /* ═══ Верхівка екрана ═══════════════════════════════════════════════════════
    Структура одна на всі екрани: шапка Telegram → наш хедер (крохи + бургер) →
    обкладинка розділу з назвою й підписом. Шапка, хедер і верх обкладинки —
@@ -541,30 +544,30 @@
   color: #fff;
 }
 
-/* Фото головної: та сама куля. Спершу знебарвлюємо — далі його фарбує
-   акцент екрана на всю площу, а не смугою. */
+/* Фото головної: та сама куля. Спершу знебарвлюємо — далі фарбуємо акцентом
+   простим напівпрозорим шаром: `mix-blend-mode` частина WebView не тягне. */
 .wb-screen-head::before {
   content: "";
   position: absolute;
   inset: -2%;
   z-index: -3;
   background: url("/media/home-hero.jpg") center 32% / cover no-repeat;
-  filter: grayscale(1) contrast(1.06) brightness(0.94);
+  filter: grayscale(1) contrast(1.08) brightness(0.9);
   transform: scale(1.04);
 }
 
-/* Акцент на **всю** обкладинку: той самий колір, що й шапка клієнта. */
+/* Акцент на **всю** обкладинку — той самий колір, що й шапка клієнта. */
 .wb-screen-head::after {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -2;
   background: var(--chrome-appbar-bg, var(--chrome-section-bg));
-  mix-blend-mode: color;
-  opacity: 0.92;
+  opacity: 0.62;
 }
 
-/* Шов і контраст: зверху — рівно колір шапки, знизу — м'яка тінь під текст. */
+/* Одне полотно: зверху — рівно колір шапки, знизу — рівно він же, щоб
+   обкладинка переходила у тло сторінки без обриву. */
 .wb-screen-head__shade {
   position: absolute;
   inset: 0;
@@ -574,10 +577,16 @@
     linear-gradient(
       180deg,
       var(--chrome-appbar-bg, var(--chrome-section-bg)) 0%,
-      color-mix(in srgb, var(--chrome-appbar-bg, var(--chrome-section-bg)) 72%, transparent) 15%,
-      transparent 36%
+      color-mix(in srgb, var(--chrome-appbar-bg, var(--chrome-section-bg)) 60%, transparent) 16%,
+      transparent 38%
     ),
-    linear-gradient(0deg, rgba(10, 7, 14, 0.5) 0%, rgba(10, 7, 14, 0.08) 48%, transparent 62%);
+    linear-gradient(
+      0deg,
+      var(--chrome-appbar-bg, var(--chrome-section-bg)) 0%,
+      color-mix(in srgb, var(--chrome-appbar-bg, var(--chrome-section-bg)) 70%, transparent) 10%,
+      transparent 28%
+    ),
+    linear-gradient(0deg, rgba(10, 7, 14, 0.42) 0%, rgba(10, 7, 14, 0.06) 52%, transparent 64%);
 }
 
 .wb-screen-head__title {

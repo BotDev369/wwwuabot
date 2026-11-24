@@ -1,5 +1,5 @@
 {
-  "version": "71fe5fe",
+  "version": "26b05ca",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -173,7 +173,7 @@
     },
     {
       "file": "platform.css",
-      "tokens": 23,
+      "tokens": 25,
       "classes": 51
     },
     {
@@ -1981,7 +1981,7 @@
       "name": "--bg-page",
       "file": "platform.css",
       "selector": ".wb-platform",
-      "value": "color-mix(in srgb, var(--chrome-section-bg) 32%, var(--bg-0))",
+      "value": "color-mix(in srgb, var(--chrome-section-bg) 26%, var(--bg-0))",
       "section": "Каркас платформи: сайдбар замість футера"
     },
     {
@@ -2893,6 +2893,13 @@
       "selector": ".spend",
       "value": "var(--sp-3)",
       "section": "Аналізи: коди платежів і отримувачі"
+    },
+    {
+      "name": "--surface",
+      "file": "platform.css",
+      "selector": ".wb-screen",
+      "value": "color-mix(in srgb, #ffffff 86%, var(--chrome-section-bg))",
+      "section": "Екран: графічна верхівка як продовження шапки"
     },
     {
       "name": "--tabs-h",
