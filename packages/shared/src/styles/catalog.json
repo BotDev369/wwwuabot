@@ -1,5 +1,5 @@
 {
-  "version": "20c5f1f",
+  "version": "003efaa",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -218,12 +218,12 @@
     },
     {
       "file": "themes.css",
-      "tokens": 79,
+      "tokens": 80,
       "classes": 0
     },
     {
       "file": "tokens.css",
-      "tokens": 214,
+      "tokens": 215,
       "classes": 0
     },
     {
@@ -494,6 +494,14 @@
       "section": "Нативний хром Telegram",
       "light": "#fff8f2",
       "dark": "#1b1928",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--chrome-hero-header-bg",
+      "section": "Нативний хром Telegram",
+      "light": "#9f6239",
+      "dark": "#9f6239",
       "palette": "",
       "paletteDark": ""
     },

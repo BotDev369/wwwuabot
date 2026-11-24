@@ -37,7 +37,6 @@ function install(over: Partial<TelegramWebApp> = {}): Stub {
     setBackgroundColor: (color) => calls.push(`background:${color}`),
     setBottomBarColor: (color) => calls.push(`bottom:${color}`),
     isVersionAtLeast: () => true,
-    requestFullscreen: () => calls.push("fullscreen"),
     onEvent: (event, handler) => void handlers.set(event, handler),
     offEvent: (event) => {
       handlers.delete(event);
@@ -62,10 +61,11 @@ function mockTokens(tokens: Record<string, string>): void {
 afterEach(() => {
   vi.restoreAllMocks();
   delete window.Telegram;
+  document.documentElement.removeAttribute("data-chrome");
 });
 
 describe("initTelegramChrome", () => {
-  it("фарбує шапку, фон і низ кольорами теми та просить повний екран", () => {
+  it("фарбує шапку, фон і низ кольорами теми (без повного екрана — шапка лишається)", () => {
     mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
     const { calls } = install();
 
@@ -75,7 +75,7 @@ describe("initTelegramChrome", () => {
     expect(calls).toContain(`header:${HEADER}`);
     expect(calls).toContain(`background:${HEADER}`);
     expect(calls).toContain(`bottom:${BOTTOM}`);
-    expect(calls).toContain("fullscreen");
+    expect(calls).not.toContain("fullscreen");
   });
 
   it("без токенів у CSS кольорів не шле (розмітка ще не готова) — але повний екран просить", () => {
@@ -84,8 +84,25 @@ describe("initTelegramChrome", () => {
 
     initTelegramChrome();
 
-    // Кольорів немає зовсім: у списку викликів лишаються тільки ці два.
-    expect(calls).toEqual(["ready", "fullscreen"]);
+    // Кольорів немає зовсім: у списку лишається тільки `ready`.
+    expect(calls).toEqual(["ready"]);
+  });
+
+  it("обкладинка фарбує шапку клієнта кольором графіки, а фон лишає теми", () => {
+    mockTokens({
+      "--chrome-header-bg": HEADER,
+      "--chrome-bottom-bg": BOTTOM,
+      "--chrome-hero-header-bg": "#9f6239",
+    });
+    document.documentElement.setAttribute("data-chrome", "hero");
+    const { calls } = install();
+
+    initTelegramChrome();
+
+    expect(calls).toContain("header:#9f6239");
+    // Фон — тема: його видно на прокрутці за межі обкладинки.
+    expect(calls).toContain(`background:${HEADER}`);
+    expect(calls).toContain(`bottom:${BOTTOM}`);
   });
 
   it("на зміну теми клієнта перечитує токени", () => {

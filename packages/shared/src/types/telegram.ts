@@ -60,6 +60,19 @@ export interface TelegramWebApp {
    * «меню», які клієнт малює поверх застосунку.
    */
   requestFullscreen?: () => void;
+  /** Вихід із повноекранного режиму (Bot API 8.0+) — повертає рідну шапку клієнта. */
+  exitFullscreen?: () => void;
+  /**
+   * Кнопка «←» у нативній шапці клієнта (Bot API 6.1+). Її малює Telegram, а
+   * застосунок лише показує/ховає її й обробляє натиск.
+   */
+  BackButton?: {
+    isVisible?: boolean;
+    show?: () => void;
+    hide?: () => void;
+    onClick?: (callback: () => void) => void;
+    offClick?: (callback: () => void) => void;
+  };
   /** Колір нативної шапки над Mini App (Bot API 6.1+). */
   setHeaderColor?: (color: TelegramChromeColor) => void;
   /** Колір фону Mini App (Bot API 6.1+). */

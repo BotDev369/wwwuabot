@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   applyChromeColors,
-  applyFullscreen,
   clientInsets,
   isTelegramWebApp,
   normalizeChromeColor,
@@ -96,63 +95,6 @@ describe("applyChromeColors", () => {
 
   it("порожній WebApp — без викликів і без падінь", () => {
     expect(() => applyChromeColors({}, header, bottom)).not.toThrow();
-  });
-});
-
-/**
- * Повноекранний режим — єдиний спосіб прибрати власну шапку клієнта (рядок
- * з іменем бота й кнопкою «розгорнути»). Перевіряємо саме ті три умови, за
- * якими він запитується: клієнт досить новий, екран ще не повний і відмова
- * клієнта нічого не зриває.
- */
-describe("applyFullscreen", () => {
-  /** Клієнт Bot API 8.0+: метод є, версія та сама. */
-  function makeApp(over: Partial<TelegramWebApp> = {}): {
-    app: TelegramWebApp;
-    calls: string[];
-  } {
-    const calls: string[] = [];
-    const app: TelegramWebApp = {
-      isVersionAtLeast: () => true,
-      requestFullscreen: () => calls.push("fullscreen"),
-      ...over,
-    };
-    return { app, calls };
-  }
-
-  it("просить повний екран у клієнта, який його вміє", () => {
-    const { app, calls } = makeApp();
-    applyFullscreen(app);
-    expect(calls).toEqual(["fullscreen"]);
-  });
-
-  it("уже повний екран — не просить ще раз (кожна синхронізація теми не перезапускає перехід)", () => {
-    const { app, calls } = makeApp({ isFullscreen: true });
-    applyFullscreen(app);
-    expect(calls).toEqual([]);
-  });
-
-  it("старий клієнт (до Bot API 8.0) — мовчимо, а не кидаємо", () => {
-    const { app, calls } = makeApp({ isVersionAtLeast: () => false });
-    expect(() => applyFullscreen(app)).not.toThrow();
-    expect(calls).toEqual([]);
-  });
-
-  it("клієнт без `isVersionAtLeast` або без методу — без викликів і без падінь", () => {
-    const { app, calls } = makeApp({ isVersionAtLeast: undefined });
-    expect(() => applyFullscreen(app)).not.toThrow();
-    expect(() => applyFullscreen({ requestFullscreen: undefined })).not.toThrow();
-    expect(calls).toEqual([]);
-  });
-
-  it("відмова клієнта (виняток) не летить у застосунок", () => {
-    const app: TelegramWebApp = {
-      isVersionAtLeast: () => true,
-      requestFullscreen: () => {
-        throw new Error("fullscreen is not supported");
-      },
-    };
-    expect(() => applyFullscreen(app)).not.toThrow();
   });
 });
 

@@ -19,14 +19,14 @@
  *                             під час скролу за межі viewport)
  *   смуга під Mini App     ← `--chrome-bottom-bg` (те саме місце, що й футер)
  *
- * **Хедер застосунку — наш, тож шапку клієнта прибираємо.** Рядок, який
- * Telegram малює над Mini App (ім'я бота, «розгорнути», «закрити», «меню»),
- * застосунку не підкоряється: з нього керується лише колір. Зате клієнт уміє
- * **повноекранний режим** (Bot API 8.0+) — і в ньому власної шапки немає:
- * лишаються тільки «закрити» й «меню», які клієнт малює поверх застосунку.
- * Тому тут же просимо повний екран (`applyFullscreen`), а місце під ці дві
- * кнопки резервують `--safe-*` (`styles/tokens.css`) з вставок клієнта
- * (`applyClientInsets`) — з підлогою, бо не кожен клієнт їх доносить.
+ * **Шапку клієнта залишаємо — і фарбуємо її.** Рядок, який Telegram малює
+ * над Mini App (ім'я бота, «←», «розгорнути», «меню»), застосунку не
+ * підкоряється: з нього керується лише колір. Повноекранний режим (Bot API
+ * 8.0+) **не просимо**: у ньому шапка прозора й імені бота немає зовсім — а
+ * еталон (Tribute) тримає саме рідну шапку, пофарбовану в колір обкладинки.
+ * Тому на головній шапка бере колір верхньої смуги графіки
+ * (`--chrome-hero-header-bg`, атрибут `data-chrome="hero"`), на решті екранів
+ * — колір теми.
  *
  * Коли: старт застосунку (разом з `initTheme()`), кожна зміна `data-theme`
  * (MutationObserver) і подія клієнта `themeChanged` (користувач повернув тему
@@ -48,7 +48,14 @@ const THEME_CHANGED_EVENT = "themeChanged";
  * при кожному виборі теми. Кожна тема несе власні `--chrome-*`, тож саме зміна
  * цього атрибута і є моментом, коли хром клієнта мусить перефарбуватись.
  */
-const OBSERVED_ATTRS = ["data-theme"] as const;
+const OBSERVED_ATTRS = ["data-theme", "data-chrome"] as const;
+
+/**
+ * Атрибут на `<html>`, яким екран просить власний колір шапки клієнта.
+ * Значення `hero` — обкладинка головної: її графіка впирається в самий верх,
+ * тож шапка клієнта мусить бути кольором цієї графіки, а не кольором теми.
+ */
+const CHROME_ATTR = "data-chrome";
 
 /**
  * Зчитує плоский колір з CSS-змінної на `<html>`.
@@ -90,6 +97,7 @@ export function applyChromeColors(
   webApp: Pick<TelegramWebApp, "setHeaderColor" | "setBackgroundColor" | "setBottomBarColor">,
   header: TelegramChromeColor,
   bottom: TelegramChromeColor,
+  background: TelegramChromeColor = header,
 ): void {
   try {
     webApp.setHeaderColor?.(header);
@@ -97,7 +105,7 @@ export function applyChromeColors(
     /* клієнт не знає методу — лишаємо його колір */
   }
   try {
-    webApp.setBackgroundColor?.(header);
+    webApp.setBackgroundColor?.(background);
   } catch {
     /* те саме */
   }
@@ -105,28 +113,6 @@ export function applyChromeColors(
     webApp.setBottomBarColor?.(bottom);
   } catch {
     /* те саме */
-  }
-}
-
-/** Версія клієнта, з якої існує повноекранний режим (Bot API 8.0). */
-const FULLSCREEN_VERSION = "8.0";
-
-/**
- * Просить клієнт відкрити Mini App на весь екран — це і є «забрати шапку
- * Telegram»: у повноекранному режимі її немає, а хедером стає наш `AppBar` з
- * назвою **сторінки**. Старіший клієнт (до Bot API 8.0) і той, що вже на весь
- * екран, — мовчимо; відмову клієнта глушимо: без повного екрана застосунок
- * просто лишається таким, як був (деталі — `docs/PLATFORM.md`).
- */
-export function applyFullscreen(
-  webApp: Pick<TelegramWebApp, "isFullscreen" | "isVersionAtLeast" | "requestFullscreen">,
-): void {
-  if (webApp.isFullscreen === true) return;
-  if (webApp.isVersionAtLeast?.(FULLSCREEN_VERSION) !== true) return;
-  try {
-    webApp.requestFullscreen?.();
-  } catch {
-    /* клієнт відмовив — працюємо в звичайній шапці */
   }
 }
 
@@ -214,13 +200,26 @@ export function applyClientInsets(
   el.style.setProperty("--client-inset-bottom", `${bottom}px`);
 }
 
-/** Зчитує обидва токени; `undefined`, коли CSS ще не підвантажився. */
-export function readChromeColors():
-  { header: TelegramChromeColor; bottom: TelegramChromeColor } | undefined {
-  const header = readChromeColor("--chrome-header-bg");
+/**
+ * Зчитує токени; `undefined`, коли CSS ще не підвантажився.
+ *
+ * `background` — завжди колір теми: його видно на прокрутці за межі вмісту, і
+ * колір обкладинки там був би плямою. `header` на обкладинці бере свій токен.
+ */
+export interface ChromeColors {
+  header: TelegramChromeColor;
+  background: TelegramChromeColor;
+  bottom: TelegramChromeColor;
+}
+
+export function readChromeColors(): ChromeColors | undefined {
+  const background = readChromeColor("--chrome-header-bg");
   const bottom = readChromeColor("--chrome-bottom-bg");
-  if (!header || !bottom) return undefined;
-  return { header, bottom };
+  if (!background || !bottom) return undefined;
+  const heroAttr =
+    typeof document === "undefined" ? null : document.documentElement.getAttribute(CHROME_ATTR);
+  const hero = heroAttr === "hero" ? readChromeColor("--chrome-hero-header-bg") : undefined;
+  return { header: hero ?? background, background, bottom };
 }
 
 /** Чи WebApp схожий на справжній: має хоча б один метод кольору. */
@@ -260,7 +259,7 @@ export function initTelegramChrome(): () => void {
   // Перший прохід: CSS вже підвантажений (імпорт у index.css стоїть до рендеру).
   const sync = () => {
     const colors = readChromeColors();
-    if (colors) applyChromeColors(webApp, colors.header, colors.bottom);
+    if (colors) applyChromeColors(webApp, colors.header, colors.bottom, colors.background);
   };
 
   sync();
@@ -270,9 +269,6 @@ export function initTelegramChrome(): () => void {
   // (саме через це хедер стояв під кнопками клієнта).
   webApp.ready?.();
   applyClientInsets(webApp);
-
-  // Повний екран — теж хром: він прибирає шапку клієнта (див. `applyFullscreen`).
-  applyFullscreen(webApp);
 
   // Один кадр по тому — ще раз: у dev CSS доливається модулем (може встигнути
   // пізніше за перший sync), а частина клієнтів застосовує колір лише після ready.

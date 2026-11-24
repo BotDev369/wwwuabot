@@ -67,6 +67,8 @@ const SCREENS = [
 
 beforeEach(() => {
   vi.clearAllMocks();
+  delete window.Telegram;
+  document.documentElement.removeAttribute("data-chrome");
   mocks.request.mockImplementation(async (url: string) => {
     if (url === "/api/screens") return { ok: true, screens: SCREENS };
     if (url === "/api/messages/badge") return 0;
@@ -99,7 +101,64 @@ describe("каркас", () => {
     expect(screen.getAllByText("ПАЛЯНИЦЯ")).toHaveLength(1);
     expect(document.querySelector(".wb-appbar__brand-name")).toBeNull();
     expect(document.querySelector(".wb-appbar__trail")).toBeNull();
-    expect(screen.getByRole("button", { name: "Меню" })).toBeTruthy();
+    // Нашого хедера на обкладинці немає зовсім: вона впирається в самий верх,
+    // а рідний хедер Telegram фарбується кольором графіки.
+    expect(document.querySelector(".wb-appbar")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Меню" })).toBeNull();
+    expect(document.documentElement.getAttribute("data-chrome")).toBe("hero");
+  });
+
+  it("на головній просить вийти з повного екрана й показує рідну «←»", () => {
+    const show = vi.fn();
+    const hide = vi.fn();
+    const onClick = vi.fn();
+    const exitFullscreen = vi.fn();
+    const requestFullscreen = vi.fn();
+    window.Telegram = {
+      WebApp: {
+        exitFullscreen,
+        requestFullscreen,
+        BackButton: { show, hide, onClick, offClick: vi.fn() },
+      },
+    };
+
+    const view = render(
+      <MemoryRouter initialEntries={["/"]}>
+        <Routes>
+          <Route element={<PlatformShell />}>
+            <Route index element={<EntryPage />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(exitFullscreen).toHaveBeenCalled();
+    expect(requestFullscreen).not.toHaveBeenCalled();
+    expect(show).toHaveBeenCalled();
+    expect(onClick).toHaveBeenCalled();
+    view.unmount();
+    expect(hide).toHaveBeenCalled();
+    delete window.Telegram;
+  });
+
+  it("на внутрішньому екрані повертає повний екран і не чіпає рідну «←»", () => {
+    const show = vi.fn();
+    const exitFullscreen = vi.fn();
+    const requestFullscreen = vi.fn();
+    window.Telegram = {
+      WebApp: {
+        exitFullscreen,
+        requestFullscreen,
+        BackButton: { show, hide: vi.fn(), onClick: vi.fn(), offClick: vi.fn() },
+      },
+    };
+
+    renderShell();
+
+    expect(requestFullscreen).toHaveBeenCalled();
+    expect(exitFullscreen).not.toHaveBeenCalled();
+    expect(show).not.toHaveBeenCalled();
+    delete window.Telegram;
   });
 
   it("підсвічує пункт, у якому людина стоїть", async () => {

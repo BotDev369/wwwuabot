@@ -75,8 +75,44 @@ function PlatformFrame(): ReactElement {
   // Тому екран без `useScreenChrome` не лишається без шапки, а вітрина `/` —
   // такий самий екран, як решта.
   const shellChrome = shellChromeFor(chrome, rows, pathname);
-  // Головна — обкладинка: назва продукту на ній, у хедері лишається «МЕНЮ».
+  // Головна — обкладинка від самого верху: нашого хедера на ній немає зовсім,
+  // а рідний хедер Telegram фарбується кольором верхньої смуги графіки.
   const isHome = pathname === "/";
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isHome) root.setAttribute("data-chrome", "hero");
+    else root.removeAttribute("data-chrome");
+    return () => root.removeAttribute("data-chrome");
+  }, [isHome]);
+
+  // Головна — єдиний екран із рідною шапкою Telegram. На решті екранів хедер
+  // наш, тож там повертаємо повний екран, як було до цієї правки.
+  useEffect(() => {
+    const webApp = window.Telegram?.WebApp;
+    if (!webApp) return;
+    try {
+      if (isHome) webApp.exitFullscreen?.();
+      else webApp.requestFullscreen?.();
+    } catch {
+      /* клієнт не знає методу — лишається як є */
+    }
+  }, [isHome]);
+
+  // «←» у рідній шапці — теж лише на головній: у повноекранному режимі
+  // внутрішніх екранів шапки немає взагалі.
+  useEffect(() => {
+    const webApp = window.Telegram?.WebApp;
+    const back = webApp?.BackButton;
+    if (!back?.show || !isHome) return;
+    const onBack = () => webApp?.close?.();
+    back.onClick?.(onBack);
+    back.show();
+    return () => {
+      back.offClick?.(onBack);
+      back.hide?.();
+    };
+  }, [isHome]);
 
   return (
     <div className="wb-platform">
@@ -93,17 +129,18 @@ function PlatformFrame(): ReactElement {
         />
       )}
       <div className="wb-platform-main">
-        <AppBar
-          chrome={shellChrome}
-          onMenu={toggleNav}
-          menuOpen={navOpen}
-          botUsername={botUsername}
-          hideBrand={isHome}
-          onNavigate={(href) => {
-            navigate(href);
-            closeNav();
-          }}
-        />
+        {!isHome && (
+          <AppBar
+            chrome={shellChrome}
+            onMenu={toggleNav}
+            menuOpen={navOpen}
+            botUsername={botUsername}
+            onNavigate={(href) => {
+              navigate(href);
+              closeNav();
+            }}
+          />
+        )}
         <Outlet />
       </div>
     </div>
