@@ -441,7 +441,61 @@
   --cover-h: clamp(170px, 30dvh, 340px);
 }
 
-/* Тон розділу — той самий голос, що в плитці пункту на головній. */
+/* Тон розділу — той самий голос, що в плитці пункту на головній. Він же
+   фарбує шапку: `data-tone` каркас ставить і на `<html>`, звідки його читає
+   і CSS (`.wb-appbar`), і `telegram-chrome` для нативної шапки клієнта.
+
+   Значення — ПЛОСКІ hex (їх приймає `setHeaderColor`): 16% тону на підкладці
+   теми. Більше — і підписи крошок падають нижче AA (найгірший випадок 4.66:1). */
+:root[data-tone="1"] {
+  --chrome-section-bg: #f5dbd3;
+}
+
+:root[data-tone="2"] {
+  --chrome-section-bg: #d9e3dd;
+}
+
+:root[data-tone="3"] {
+  --chrome-section-bg: #eddece;
+}
+
+:root[data-tone="4"] {
+  --chrome-section-bg: #dedeeb;
+}
+
+:root[data-tone="5"] {
+  --chrome-section-bg: #f3d8dc;
+}
+
+:root[data-tone="6"] {
+  --chrome-section-bg: #dbe2d6;
+}
+
+/* Темна схема — ті самі 16% тону на темній підкладці, з контрастом ≥4.5:1. */
+:root[data-theme="dark"][data-tone="1"] {
+  --chrome-section-bg: #3f2e37;
+}
+
+:root[data-theme="dark"][data-tone="2"] {
+  --chrome-section-bg: #2b3842;
+}
+
+:root[data-theme="dark"][data-tone="3"] {
+  --chrome-section-bg: #3e3438;
+}
+
+:root[data-theme="dark"][data-tone="4"] {
+  --chrome-section-bg: #2e354a;
+}
+
+:root[data-theme="dark"][data-tone="5"] {
+  --chrome-section-bg: #3e2e40;
+}
+
+:root[data-theme="dark"][data-tone="6"] {
+  --chrome-section-bg: #2c393d;
+}
+
 .wb-screen[data-tone="1"] {
   --cover-tone: var(--data-1);
 }
@@ -466,12 +520,31 @@
   --cover-tone: var(--data-6);
 }
 
+/* Графіка починається **рівно кольором шапки** і тримає його на всю висоту
+   хедера: перший піксель під хедером дорівнює його кольору, тож смуга
+   шапки клієнта, наш хедер і верхівка — одна поверхня без шва. Далі колір
+   переходить у тон розділу й повертається до тла сторінки. */
 .wb-screen-cover {
   position: absolute;
   inset: 0 0 auto;
   z-index: -1;
   height: var(--cover-h, 45dvh);
   pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--chrome-section-bg) 0,
+    var(--chrome-section-bg) var(--appbar-h),
+    color-mix(in srgb, var(--chrome-section-bg) 45%, var(--cover-tone, var(--accent))) 40%,
+    var(--bg-page) 92%
+  );
+}
+
+/* Кольорові плями — окремим шаром із маскою: без неї вони тонували б перший
+   піксель під хедером і шов повертався б. */
+.wb-screen-cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   background:
     radial-gradient(
       120% 92% at 6% -8%,
@@ -482,13 +555,19 @@
       96% 76% at 102% -4%,
       color-mix(in srgb, var(--cover-tone, var(--accent)) 18%, transparent),
       transparent 58%
-    ),
-    linear-gradient(
-      180deg,
-      var(--chrome-header-bg) 0%,
-      color-mix(in srgb, var(--chrome-header-bg) 56%, var(--cover-tone, var(--accent))) 34%,
-      var(--bg-page) 92%
     );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0,
+    transparent var(--appbar-h),
+    #000 calc(var(--appbar-h) + 72px)
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0,
+    transparent var(--appbar-h),
+    #000 calc(var(--appbar-h) + 72px)
+  );
 }
 
 /* Скляна куля — та сама мова, що й паляниця на обкладинці: одне велике

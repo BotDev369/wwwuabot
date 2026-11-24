@@ -233,3 +233,39 @@ describe("рядок хлібного шляху", () => {
     expect(CHROME.some((entry) => entry.selector === ".wb-appbar--compact")).toBe(false);
   });
 });
+
+/**
+ * Шапка екрана — **тон розділу**, а не колір теми: нативна шапка клієнта, наш
+ * хедер і верхівка графіки мусять бути однією поверхнею. Ламається мовчки:
+ * досить повернути `--chrome-header-bg` у `.wb-appbar` — і під шапкою з'явиться
+ * світла смуга іншого кольору, а клієнт малюватиме шапку не тим тоном.
+ */
+describe("шапка екрана — тон розділу", () => {
+  const PLATFORM = rulesOf("packages/shared/src/styles/platform.css");
+
+  it("хедер фарбується токеном розділу", () => {
+    expect(rule(".wb-appbar")?.body).toContain("var(--chrome-section-bg");
+  });
+
+  it("верхівка тримає колір шапки на всю висоту хедера — шва немає", () => {
+    const cover = PLATFORM.find((entry) => entry.selector === ".wb-screen-cover");
+    expect(cover?.body).toContain("var(--chrome-section-bg) 0");
+    expect(cover?.body).toContain("var(--chrome-section-bg) var(--appbar-h)");
+    // Плями не тонують перший піксель: маска починається під хедером.
+    const blobs = PLATFORM.find((entry) => entry.selector === ".wb-screen-cover::before");
+    expect(blobs?.body).toContain("mask-image");
+    expect(blobs?.body).toContain("transparent var(--appbar-h)");
+  });
+
+  it("кожен розділ має власний тон в обох схемах", () => {
+    for (let tone = 1; tone <= 6; tone += 1) {
+      const light = PLATFORM.find((entry) => entry.selector === `:root[data-tone="${tone}"]`);
+      const dark = PLATFORM.find(
+        (entry) => entry.selector === `:root[data-theme="dark"][data-tone="${tone}"]`,
+      );
+      // Плоский hex, а не `var()`: саме його приймає `setHeaderColor`.
+      expect(light?.body, `тон ${tone}`).toMatch(/--chrome-section-bg: #[0-9a-f]{6};/);
+      expect(dark?.body, `темний тон ${tone}`).toMatch(/--chrome-section-bg: #[0-9a-f]{6};/);
+    }
+  });
+});

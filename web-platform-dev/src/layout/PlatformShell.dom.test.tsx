@@ -87,6 +87,8 @@ describe("каркас", () => {
     expect(screen.getByRole("button", { name: "Меню" })).toBeTruthy();
     // Верхівка екрана — та сама графіка, що на головній, лише кодом.
     expect(document.querySelector(".wb-screen-cover")).not.toBeNull();
+    // Тон розділу каркас публікує на `<html>`: звідти його бере нативна шапка.
+    expect(document.documentElement.getAttribute("data-tone")).toBe("2");
     // Тема — перший пункт меню, а не кнопка в хедері.
     expect(screen.getByRole("switch", { name: "Тема" })).toBeTruthy();
     expect(document.querySelector(".wb-platform")).not.toBeNull();
@@ -106,6 +108,8 @@ describe("каркас", () => {
     expect(document.querySelector(".wb-appbar")).toBeNull();
     expect(screen.queryByRole("button", { name: "Меню" })).toBeNull();
     expect(document.documentElement.getAttribute("data-chrome")).toBe("hero");
+    // У розділу тону немає — обкладинка фарбує хром сама.
+    expect(document.documentElement.getAttribute("data-tone")).toBeNull();
   });
 
   it("на головній виходить із повного екрана і ховає «←» — клієнт малює «✕»", () => {

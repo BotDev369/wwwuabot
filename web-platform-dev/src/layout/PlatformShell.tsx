@@ -53,12 +53,23 @@ function PlatformFrame(): ReactElement {
     Math.max(1, shellChrome.ancestors.length + (shellChrome.title ? 1 : 0)),
   );
 
+  // Атрибути на `<html>` — єдиний шлях до нативного хрому: `data-chrome`
+  // фарбує шапку клієнта кольором обкладинки, `data-tone` — тоном розділу.
+  // Обидва читають CSS (`.wb-appbar`, верхівка) і `telegram-chrome`.
   useEffect(() => {
     const root = document.documentElement;
-    if (isHome) root.setAttribute("data-chrome", "hero");
-    else root.removeAttribute("data-chrome");
-    return () => root.removeAttribute("data-chrome");
-  }, [isHome]);
+    if (isHome) {
+      root.setAttribute("data-chrome", "hero");
+      root.removeAttribute("data-tone");
+    } else {
+      root.removeAttribute("data-chrome");
+      root.setAttribute("data-tone", String(sectionTone(pathname)));
+    }
+    return () => {
+      root.removeAttribute("data-chrome");
+      root.removeAttribute("data-tone");
+    };
+  }, [isHome, pathname]);
 
   // Повноекранного режиму більше немає ніде: рідна шапка клієнта лишається на
   // кожному екрані — як на головній. `exitFullscreen` — лише прибиральник:

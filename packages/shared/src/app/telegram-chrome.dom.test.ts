@@ -62,6 +62,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   delete window.Telegram;
   document.documentElement.removeAttribute("data-chrome");
+  document.documentElement.removeAttribute("data-tone");
 });
 
 describe("initTelegramChrome", () => {
@@ -103,6 +104,22 @@ describe("initTelegramChrome", () => {
     // Фон — тема: його видно на прокрутці за межі обкладинки.
     expect(calls).toContain(`background:${HEADER}`);
     expect(calls).toContain(`bottom:${BOTTOM}`);
+  });
+
+  it("шапка екрана йде в тон розділу — тим самим, що й наш хедер і верхівка", () => {
+    mockTokens({
+      "--chrome-header-bg": HEADER,
+      "--chrome-bottom-bg": BOTTOM,
+      "--chrome-section-bg": "#dedeeb",
+    });
+    document.documentElement.setAttribute("data-tone", "4");
+    const { calls } = install();
+
+    initTelegramChrome();
+
+    expect(calls).toContain("header:#dedeeb");
+    // Фон — тема: його видно на прокрутці за межі верхівки.
+    expect(calls).toContain(`background:${HEADER}`);
   });
 
   it("на зміну теми клієнта перечитує токени", () => {

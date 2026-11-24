@@ -48,7 +48,7 @@ const THEME_CHANGED_EVENT = "themeChanged";
  * при кожному виборі теми. Кожна тема несе власні `--chrome-*`, тож саме зміна
  * цього атрибута і є моментом, коли хром клієнта мусить перефарбуватись.
  */
-const OBSERVED_ATTRS = ["data-theme", "data-chrome"] as const;
+const OBSERVED_ATTRS = ["data-theme", "data-chrome", "data-tone"] as const;
 
 /**
  * Атрибут на `<html>`, яким екран просить власний колір шапки клієнта.
@@ -219,7 +219,9 @@ export function readChromeColors(): ChromeColors | undefined {
   const heroAttr =
     typeof document === "undefined" ? null : document.documentElement.getAttribute(CHROME_ATTR);
   const hero = heroAttr === "hero" ? readChromeColor("--chrome-hero-header-bg") : undefined;
-  return { header: hero ?? background, background, bottom };
+  // Тон розділу — той самий, що в нашого хедера й верхівки графіки.
+  const section = readChromeColor("--chrome-section-bg");
+  return { header: hero ?? section ?? background, background, bottom };
 }
 
 /** Чи WebApp схожий на справжній: має хоча б один метод кольору. */
