@@ -39,6 +39,20 @@
  */
 
 import type { TelegramChromeColor, TelegramWebApp } from "../types/telegram";
+import { afterDelay, publishAppbarColor, readChromeColors, readClientHeader } from "./chrome-color";
+
+// Кольорова частина (що каже клієнт, що просимо ми) — окремий модуль: тут
+// лишаються події, вставки й синхронізація, там — саме кольори.
+export {
+  chromeInk,
+  normalizeChromeColor,
+  publishAppbarColor,
+  readAppbarColor,
+  readChromeColor,
+  readChromeColors,
+  readClientHeader,
+} from "./chrome-color";
+export type { ChromeColors, ClientHeader, ClientHeaderSource } from "./chrome-color";
 
 /** Подія клієнта, яку Telegram шле при зміні теми в налаштуваннях. */
 const THEME_CHANGED_EVENT = "themeChanged";
@@ -49,42 +63,6 @@ const THEME_CHANGED_EVENT = "themeChanged";
  * цього атрибута і є моментом, коли хром клієнта мусить перефарбуватись.
  */
 const OBSERVED_ATTRS = ["data-theme", "data-chrome", "data-tone"] as const;
-
-/**
- * Атрибут на `<html>`, яким екран просить власний колір шапки клієнта.
- * Значення `hero` — обкладинка головної: її графіка впирається в самий верх,
- * тож шапка клієнта мусить бути кольором цієї графіки, а не кольором теми.
- */
-const CHROME_ATTR = "data-chrome";
-
-/**
- * Зчитує плоский колір з CSS-змінної на `<html>`.
- *
- * Чому `getComputedStyle`, а не власна таблиця «схема → колір»:
- * таблиця задублювала б значення з `themes.css`, і рано чи пізно
- * хтось оновив би CSS і забув TS — а це саме той клас розсинхрону, який у
- * проєкті ловлять гейти, а не очі. `#f00` розгортається до `#ff0000`: старі
- * клієнти Telegram траплялись і на 3-значних значеннях.
- *
- * Повертає `undefined`, коли змінної немає або значення не схоже на колір —
- * тоді виклик до Telegram просто не робиться (нічого не ламає).
- */
-export function readChromeColor(name: string): TelegramChromeColor | undefined {
-  if (typeof getComputedStyle !== "function" || typeof document === "undefined") return undefined;
-
-  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  return normalizeChromeColor(raw);
-}
-
-/**
- * Приводить значення CSS-змінної до `#rrggbb`, який приймає Telegram.
- * Експортовано для тестів: невалідне (градієнт, порожнє, `var(...)`) → `undefined`.
- */
-export function normalizeChromeColor(raw: string): TelegramChromeColor | undefined {
-  const value = raw.trim().toLowerCase();
-  if (!/^#[0-9a-f]{6}$/.test(value)) return undefined;
-  return value as TelegramChromeColor;
-}
 
 /**
  * Шле клієнту три методи кольору. Окрема чиста функція — щоб тести могли
@@ -200,30 +178,6 @@ export function applyClientInsets(
   el.style.setProperty("--client-inset-bottom", `${bottom}px`);
 }
 
-/**
- * Зчитує токени; `undefined`, коли CSS ще не підвантажився.
- *
- * `background` — завжди колір теми: його видно на прокрутці за межі вмісту, і
- * колір обкладинки там був би плямою. `header` на обкладинці бере свій токен.
- */
-export interface ChromeColors {
-  header: TelegramChromeColor;
-  background: TelegramChromeColor;
-  bottom: TelegramChromeColor;
-}
-
-export function readChromeColors(): ChromeColors | undefined {
-  const background = readChromeColor("--chrome-header-bg");
-  const bottom = readChromeColor("--chrome-bottom-bg");
-  if (!background || !bottom) return undefined;
-  const heroAttr =
-    typeof document === "undefined" ? null : document.documentElement.getAttribute(CHROME_ATTR);
-  const hero = heroAttr === "hero" ? readChromeColor("--chrome-hero-header-bg") : undefined;
-  // Тон розділу — той самий, що в нашого хедера й верхівки графіки.
-  const section = readChromeColor("--chrome-section-bg");
-  return { header: hero ?? section ?? background, background, bottom };
-}
-
 /** Чи WebApp схожий на справжній: має хоча б один метод кольору. */
 export function isTelegramWebApp(value: unknown): value is TelegramWebApp {
   if (typeof value !== "object" || value === null) return false;
@@ -258,10 +212,71 @@ export function initTelegramChrome(): () => void {
   const webApp = window.Telegram?.WebApp;
   if (!isTelegramWebApp(webApp)) return () => undefined;
 
-  // Перший прохід: CSS вже підвантажений (імпорт у index.css стоїть до рендеру).
+  // Що ми вже просили в клієнта — щоб не смикати його тим самим кольором
+  // на кожну подію (і не ганяти колір туди-сюди після підтвердження).
+  let asked: string | null = null;
+
+  /**
+   * 1. Смуга = колір, який **клієнт назвав своїм** (безпечно завжди).
+   * 2. Просимо тон розділу й **читаємо назад**: підтвердив — смуга й графіка
+   *    беруть тон, ні — повертаємо клієнту його власний колір.
+   */
   const sync = () => {
     const colors = readChromeColors();
-    if (colors) applyChromeColors(webApp, colors.header, colors.bottom, colors.background);
+    if (!colors) return;
+
+    const client = readClientHeader(webApp);
+    if (!client || client.source === "theme") {
+      // Поза Telegram або клієнт без `themeParams`: показуємо свій тон.
+      applyChromeColors(webApp, colors.header, colors.bottom, colors.background);
+      publishAppbarColor(colors.header);
+      return;
+    }
+
+    // 1. Факт від клієнта — понад усе.
+    publishAppbarColor(client.color);
+
+    // Вже той самий колір (або прийшов у відповідь `themeChanged`) — просити нічого.
+    if (client.color === colors.header) {
+      applyChromeColors(webApp, colors.header, colors.bottom, colors.background);
+      return;
+    }
+
+    const key = `${colors.header}|${client.color}`;
+    if (asked === key) return;
+    asked = key;
+    applyChromeColors(webApp, colors.header, colors.bottom, colors.background);
+
+    // Клієнти відповідають по-різному швидко: перевіряємо двічі, перш ніж
+    // вирішити, що він наш колір не взяв.
+    const verify = (attempt: number): void => {
+      afterDelay(
+        () => {
+          const echo = readClientHeader(webApp);
+          // Клієнт віддав назад наш колір — тон розділу підтверджено.
+          if (echo && echo.color === colors.header) {
+            publishAppbarColor(colors.header);
+            return;
+          }
+          if (attempt < 1) {
+            verify(attempt + 1);
+            return;
+          }
+          // Не підтвердив: повертаємо клієнту його власний колір — і смуга, і
+          // шапка лишаються однією поверхнею, хай тон і не застосувався.
+          if (readClientHeader(webApp)?.color !== client.color) {
+            try {
+              webApp.setHeaderColor?.(client.color);
+            } catch {
+              /* клієнт не знає методу — його власний колір і так лишився */
+            }
+          }
+          publishAppbarColor(client.color);
+        },
+        attempt === 0 ? 80 : 260,
+      );
+    };
+    verify(0);
   };
 
   sync();

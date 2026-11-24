@@ -532,8 +532,8 @@
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    var(--chrome-section-bg) 0,
-    var(--chrome-section-bg) var(--appbar-h),
+    var(--chrome-appbar-bg, var(--chrome-section-bg)) 0,
+    var(--chrome-appbar-bg, var(--chrome-section-bg)) var(--appbar-h),
     color-mix(in srgb, var(--chrome-section-bg) 45%, var(--cover-tone, var(--accent))) 40%,
     var(--bg-page) 92%
   );

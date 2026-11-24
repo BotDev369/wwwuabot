@@ -6,17 +6,36 @@ import path from "path";
 
 import { telegramPreviewSession } from "./dev/telegram-session.ts";
 
-import { createHash } from "crypto";
+import { execSync } from "child_process";
+
+/**
+ * Мітка збірки: короткий git-хеш плюс час. Хеш дає відповідь «це той самий
+ * білд?» (його видно і в HTML, і в `data-build` на `<html>`), час — щоб
+ * `reloadOnNewBuild` бачив нову збірку навіть при тому самому коміті (дев-деплой).
+ */
+function buildStamp(): string {
+  const sha = process.env.GITHUB_SHA ?? "";
+  let head = sha.slice(0, 7);
+  if (!head) {
+    try {
+      head = execSync("git rev-parse --short=7 HEAD", { encoding: "utf8" }).trim();
+    } catch {
+      head = "local";
+    }
+  }
+  return `${head}-${Date.now().toString(36).slice(-4)}`;
+}
 
 /** Post-process HTML to remove crossorigin and add build hash for cache busting. */
 function fixHtml() {
-  const buildHash = createHash("md5").update(Date.now().toString()).digest("hex").slice(0, 8);
+  const buildHash = buildStamp();
   return {
     name: "fix-html",
     enforce: "post",
     transformIndexHtml(html: string) {
       return html
         .replace(/\s+crossorigin/g, "")
+        .replace(/<html lang="uk">/, `<html lang="uk" data-build="${buildHash}">`)
         .replace(
           /<title>([^<]*)<\/title>/,
           `<title>$1</title><meta name="x-build" content="${buildHash}">`,

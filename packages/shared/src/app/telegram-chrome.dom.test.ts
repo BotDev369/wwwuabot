@@ -12,8 +12,13 @@
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { applyClientInsets, initTelegramChrome } from "./telegram-chrome";
-import type { TelegramWebApp } from "../types/telegram";
+import {
+  applyClientInsets,
+  initTelegramChrome,
+  readAppbarColor,
+  readClientHeader,
+} from "./telegram-chrome";
+import type { TelegramWebApp, TelegramWebAppThemeParams } from "../types/telegram";
 
 const HEADER = "#1c1c1e";
 const BOTTOM = "#2c2c2e";
@@ -60,10 +65,44 @@ function mockTokens(tokens: Record<string, string>): void {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.useRealTimers();
   delete window.Telegram;
   document.documentElement.removeAttribute("data-chrome");
   document.documentElement.removeAttribute("data-tone");
+  document.documentElement.style.removeProperty("--chrome-appbar-bg");
+  document.documentElement.style.removeProperty("--chrome-appbar-ink");
 });
+
+/**
+ * Клієнт, який сам каже, яка в нього шапка (`themeParams`), і може або
+ * **приймати** `setHeaderColor` (тоді віддає новий колір назад), або
+ * **ігнорувати** його (тоді `themeParams` не міняється).
+ */
+function installClient(options: { header?: string; bg?: string; echo?: boolean }): {
+  calls: string[];
+  themeParams: TelegramWebAppThemeParams;
+} {
+  const calls: string[] = [];
+  const themeParams: TelegramWebAppThemeParams = {
+    bg_color: options.bg,
+    header_bg_color: options.header,
+  };
+  window.Telegram = {
+    WebApp: {
+      themeParams,
+      isVersionAtLeast: () => true,
+      setHeaderColor: (color) => {
+        calls.push(`header:${color}`);
+        if (options.echo) themeParams.header_bg_color = color;
+      },
+      setBackgroundColor: (color) => void calls.push(`background:${color}`),
+      setBottomBarColor: (color) => void calls.push(`bottom:${color}`),
+      onEvent: () => undefined,
+      offEvent: () => undefined,
+    },
+  };
+  return { calls, themeParams };
+}
 
 describe("initTelegramChrome", () => {
   it("фарбує шапку, фон і низ кольорами теми (без повного екрана — шапка лишається)", () => {
@@ -204,5 +243,83 @@ describe("applyClientInsets", () => {
     const el = document.createElement("div");
     applyClientInsets({ isFullscreen: true }, el);
     expect(el.style.getPropertyValue("--client-inset-top")).toBe("48px");
+  });
+});
+
+/**
+ * Головне правило шапки: наша смуга й шапка клієнта — **одна поверхня**.
+ * Тому смуга бере колір, який клієнт назвав своїм, а тон розділу стає
+ * кольором лише тоді, коли клієнт підтвердив, що взяв його.
+ */
+describe("колір шапки від клієнта", () => {
+  const SECTION = "#dedeeb";
+
+  function tokens(): void {
+    mockTokens({
+      "--chrome-header-bg": "#fff8f2",
+      "--chrome-bottom-bg": "#fff8f2",
+      "--chrome-section-bg": SECTION,
+    });
+    document.documentElement.setAttribute("data-tone", "4");
+  }
+
+  it("клієнт ігнорує setHeaderColor — смуга лишається ЙОГО кольором", async () => {
+    vi.useFakeTimers();
+    tokens();
+    const { calls } = installClient({ header: "#17212b" });
+
+    initTelegramChrome();
+    // До будь-якого підтвердження на екрані вже безпечний стан.
+    expect(readAppbarColor()).toBe("#17212b");
+
+    await vi.advanceTimersByTimeAsync(500);
+
+    expect(readAppbarColor()).toBe("#17212b");
+    // Тон таки попросили — але клієнт його не взяв, тож його власний колір і
+    // лишився: повторно слати його не треба.
+    expect(calls).toContain(`header:${SECTION}`);
+    expect(calls).not.toContain("header:#17212b");
+  });
+
+  it("клієнт підтвердив колір — смуга стає тоном розділу", async () => {
+    vi.useFakeTimers();
+    tokens();
+    const { calls } = installClient({ header: "#17212b", echo: true });
+
+    initTelegramChrome();
+    await vi.advanceTimersByTimeAsync(500);
+
+    expect(readAppbarColor()).toBe(SECTION);
+    // Повертати клієнту його колір не треба: він узяв наш.
+    expect(calls).not.toContain("header:#17212b");
+  });
+
+  it("темна шапка клієнта дає світлий підпис, світла — темний", async () => {
+    vi.useFakeTimers();
+    tokens();
+    const ink = () => document.documentElement.style.getPropertyValue("--chrome-appbar-ink");
+
+    const stopDark = initTelegramChrome();
+    await vi.advanceTimersByTimeAsync(500);
+    expect(readAppbarColor()).toBe(SECTION); // без themeParams — токен розділу
+    stopDark();
+
+    installClient({ header: "#17212b" });
+    const stop = initTelegramChrome();
+    await vi.advanceTimersByTimeAsync(500);
+    expect(ink()).toBe("#ffffff");
+    stop();
+
+    installClient({ header: "#f6f6f6" });
+    initTelegramChrome();
+    await vi.advanceTimersByTimeAsync(500);
+    expect(ink()).toBe("#1d1a2b");
+  });
+
+  it("коли клієнт не має header_bg_color — береться його bg_color", () => {
+    const { themeParams } = installClient({ bg: "#f0f0f4" });
+    const client = readClientHeader({ themeParams });
+
+    expect(client).toEqual({ color: "#f0f0f4", source: "bg_color" });
   });
 });

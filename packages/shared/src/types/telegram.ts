@@ -28,8 +28,32 @@ export interface TelegramInset {
   right: number;
 }
 
+/**
+ * Тема клієнта (Bot API 6.1+; `header_bg_color` — 7.0+).
+ *
+ * `header_bg_color` — **єдине** місце, де Telegram сам називає колір своєї
+ * шапки над Mini App. Ним і фарбується наш хедер: інакше ми малюємо здогад, а
+ * клієнт — свій колір, і між ними видно шов.
+ */
+export interface TelegramWebAppThemeParams {
+  bg_color?: string;
+  secondary_bg_color?: string;
+  header_bg_color?: string;
+  bottom_bar_bg_color?: string;
+  section_bg_color?: string;
+  text_color?: string;
+  hint_color?: string;
+  link_color?: string;
+  button_color?: string;
+  button_text_color?: string;
+}
+
 export interface TelegramWebApp {
   initData?: string;
+  /** Схема клієнта: `light` чи `dark` (Bot API 6.1+). */
+  colorScheme?: "light" | "dark";
+  /** Кольори теми клієнта — те, що він сам каже про свій хром (Bot API 6.1+). */
+  themeParams?: TelegramWebAppThemeParams;
   /**
    * Платформа клієнта: `android`, `ios`, `macos`, `web`… (Bot API 6.1+).
    * Потрібна там, де клієнти поводяться по-різному — зокрема в повноекранних

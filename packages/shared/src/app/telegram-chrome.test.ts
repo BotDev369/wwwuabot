@@ -22,7 +22,10 @@ describe("normalizeChromeColor", () => {
 
   it("відхиляє те, що Telegram не прийме", () => {
     expect(normalizeChromeColor("")).toBeUndefined();
-    expect(normalizeChromeColor("#fff")).toBeUndefined(); // 3-значний
+    // 3-значний розгортається: `themeParams` старого клієнта іноді саме такий,
+    // а `setHeaderColor` приймає лише 6-значний.
+    expect(normalizeChromeColor("#fff")).toBe("#ffffff");
+    expect(normalizeChromeColor("#12345678")).toBe("#123456"); // альфу відкидаємо
     expect(normalizeChromeColor("#12345")).toBeUndefined();
     expect(normalizeChromeColor("radial-gradient(...)")).toBeUndefined();
     expect(normalizeChromeColor("var(--bg-1)")).toBeUndefined();

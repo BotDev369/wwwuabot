@@ -7,7 +7,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { buildStamp, watchBuild } from "./watch-build";
+import { buildStamp, dropLegacyServiceWorkers, watchBuild } from "./watch-build";
 
 function withStamp(stamp: string): void {
   document.head.innerHTML = `<meta name="x-build" content="${stamp}" />`;
@@ -79,5 +79,20 @@ describe("перевірка нової збірки", () => {
 
     await Promise.resolve();
     expect(reload).not.toHaveBeenCalled();
+  });
+});
+
+describe("старі сервіс-воркери", () => {
+  it("знімаються: інакше деплой лишився б у кеші воркера", async () => {
+    const unregister = vi.fn();
+    Object.defineProperty(navigator, "serviceWorker", {
+      configurable: true,
+      value: { getRegistrations: async () => [{ unregister }] },
+    });
+
+    dropLegacyServiceWorkers();
+
+    await vi.waitFor(() => expect(unregister).toHaveBeenCalled());
+    delete (navigator as { serviceWorker?: unknown }).serviceWorker;
   });
 });

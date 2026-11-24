@@ -28,7 +28,26 @@ const DEFAULT_INTERVAL_MS = 60_000;
  * `enabled` передає оболонка (`import.meta.env.PROD`): у `packages/shared` типів
  * Vite немає, а другого місця, де це вирішується, бути не має.
  */
+/**
+ * Знімає сервіс-воркери, що лишились від старих версій: такий воркер
+ * переживає деплой і віддає старий бандл, тому нова правка в клієнті
+ * просто не з'явиться.
+ */
+export function dropLegacyServiceWorkers(): void {
+  try {
+    void navigator.serviceWorker
+      ?.getRegistrations?.()
+      .then((registrations) =>
+        registrations.forEach((registration) => void registration.unregister()),
+      )
+      .catch(() => undefined);
+  } catch {
+    /* немає SW API — немає й чого знімати */
+  }
+}
+
 export function reloadOnNewBuild(options: WatchBuildOptions = {}): void {
+  dropLegacyServiceWorkers();
   watchBuild((stamp) => {
     // Не просто `reload()`: старий `index.html` міг лишитися в кеші WebView,
     // тож перезавантаження з міткою в адресі гарантує новий документ.

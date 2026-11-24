@@ -129,9 +129,11 @@
      шов там, де його не мусить бути. */
   border-bottom: 0;
   padding: calc(var(--safe-top) + var(--sp-2)) var(--sp-5) var(--sp-2);
-  /* Тон розділу — той самий, що йде нативній шапці (`--chrome-section-bg`)
-     і з якого починається верхівка графіки: три поверхні — одна. */
-  background: var(--chrome-section-bg, var(--chrome-header-bg));
+  /* **Фактичний** колір шапки клієнта (`--chrome-appbar-bg`, публікує
+     `app/telegram-chrome.ts`): тон розділу — лише якщо клієнт його підтвердив,
+     інакше — його власний колір. Верхівка бере те саме значення, тому шва
+     немає за побудовою, а не «на око». */
+  background: var(--chrome-appbar-bg, var(--chrome-section-bg, var(--chrome-header-bg)));
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
@@ -163,7 +165,7 @@
 
 .wb-appbar__sep {
   flex: 0 0 auto;
-  color: var(--text-secondary);
+  color: color-mix(in srgb, var(--chrome-appbar-ink, var(--text-secondary)) 70%, transparent);
 }
 
 .wb-appbar__crumb {
@@ -174,7 +176,9 @@
   font-weight: var(--weight-regular);
   line-height: 1.2;
   letter-spacing: var(--tracking-title);
-  color: var(--text-secondary);
+  /* Підпис — похідний від кольору смуги: клієнт може віддати й темну шапку
+     при світлій темі, і тоді токени теми дали б нечитабельний текст. */
+  color: color-mix(in srgb, var(--chrome-appbar-ink, var(--text-secondary)) 80%, transparent);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -187,7 +191,7 @@
 /* Поточна сторінка — останній рівень; її видно кольором, а не жирнішим
    накресленням: крохи — підпис шляху, а не заголовок. */
 .wb-appbar__crumb--current {
-  color: var(--text-primary);
+  color: var(--chrome-appbar-ink, var(--text-primary));
 }
 
 .wb-appbar__actions {

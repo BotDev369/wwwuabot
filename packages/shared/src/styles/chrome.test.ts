@@ -243,14 +243,21 @@ describe("рядок хлібного шляху", () => {
 describe("шапка екрана — тон розділу", () => {
   const PLATFORM = rulesOf("packages/shared/src/styles/platform.css");
 
-  it("хедер фарбується токеном розділу", () => {
-    expect(rule(".wb-appbar")?.body).toContain("var(--chrome-section-bg");
+  it("хедер фарбується фактичним кольором шапки клієнта, тон — запасний", () => {
+    // `--chrome-appbar-bg` публікує `telegram-chrome`: тон розділу або власний
+    // колір клієнта (якщо він тон не взяв). Токен розділу — лише як запасний.
+    const body = rule(".wb-appbar")?.body ?? "";
+    expect(body).toContain("var(--chrome-appbar-bg");
+    expect(body).toContain("var(--chrome-section-bg");
   });
 
   it("верхівка тримає колір шапки на всю висоту хедера — шва немає", () => {
     const cover = PLATFORM.find((entry) => entry.selector === ".wb-screen-cover");
-    expect(cover?.body).toContain("var(--chrome-section-bg) 0");
-    expect(cover?.body).toContain("var(--chrome-section-bg) var(--appbar-h)");
+    // Те саме значення, що й у `.wb-appbar`: одна поверхня, не два схожих кольори.
+    expect(cover?.body).toContain("var(--chrome-appbar-bg, var(--chrome-section-bg)) 0");
+    expect(cover?.body).toContain(
+      "var(--chrome-appbar-bg, var(--chrome-section-bg)) var(--appbar-h)",
+    );
     // Плями не тонують перший піксель: маска починається під хедером.
     const blobs = PLATFORM.find((entry) => entry.selector === ".wb-screen-cover::before");
     expect(blobs?.body).toContain("mask-image");
