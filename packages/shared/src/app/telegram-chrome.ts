@@ -206,15 +206,25 @@ const INSET_EVENTS = [
  * Немає WebApp, немає `document` або немає `MutationObserver` — no-op,
  * який повертає `() => undefined`.
  */
+/** Живий прохід — один на сторінку: новий ініціал знімає попередній. */
+let activeCleanup: (() => void) | undefined;
+
 export function initTelegramChrome(): () => void {
   if (typeof window === "undefined" || typeof document === "undefined") return () => undefined;
 
   const webApp = window.Telegram?.WebApp;
   if (!isTelegramWebApp(webApp)) return () => undefined;
 
+  activeCleanup?.();
+
   // Що ми вже просили в клієнта — щоб не смикати його тим самим кольором
   // на кожну подію (і не ганяти колір туди-сюди після підтвердження).
   let asked: string | null = null;
+  // Покоління проходу: перевірка, запущена раніше, не має права перефарбувати
+  // те, що вже вирішив новіший прохід (інакше стара «не прийняв» гасить тон).
+  let generation = 0;
+  // Відписка: жодна вже запланована перевірка не сміє фарбувати далі.
+  let disposed = false;
 
   /**
    * 1. Смуга = колір, який **клієнт назвав своїм** (безпечно завжди).
@@ -222,6 +232,8 @@ export function initTelegramChrome(): () => void {
    *    беруть тон, ні — повертаємо клієнту його власний колір.
    */
   const sync = () => {
+    if (disposed) return;
+    const myGeneration = ++generation;
     const colors = readChromeColors();
     if (!colors) return;
 
@@ -248,10 +260,11 @@ export function initTelegramChrome(): () => void {
     applyChromeColors(webApp, colors.header, colors.bottom, colors.background);
 
     // Клієнти відповідають по-різному швидко: перевіряємо двічі, перш ніж
-    // вирішити, що він наш колір не взяв.
+    // вирішити, що він наш колір не взяв. Застарілий прохід мовчить.
     const verify = (attempt: number): void => {
       afterDelay(
         () => {
+          if (disposed || myGeneration !== generation) return;
           const echo = readClientHeader(webApp);
           // Клієнт віддав назад наш колір — тон розділу підтверджено.
           if (echo && echo.color === colors.header) {
@@ -324,7 +337,10 @@ export function initTelegramChrome(): () => void {
     }
   }
 
-  return () => {
+  const cleanup = () => {
+    disposed = true;
+    generation += 1;
+    if (activeCleanup === cleanup) activeCleanup = undefined;
     observer?.disconnect();
     for (const [event, handler] of [
       [THEME_CHANGED_EVENT, onThemeChanged],
@@ -337,4 +353,7 @@ export function initTelegramChrome(): () => void {
       }
     }
   };
+
+  activeCleanup = cleanup;
+  return cleanup;
 }

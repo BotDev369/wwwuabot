@@ -63,7 +63,17 @@ function mockTokens(tokens: Record<string, string>): void {
   } as unknown as CSSStyleDeclaration);
 }
 
+/** Усі запущені проходи: на сторінці він один, у тестах — знімаємо кожен. */
+const started: Array<() => void> = [];
+
+function start(): () => void {
+  const stop = initTelegramChrome();
+  started.push(stop);
+  return stop;
+}
+
 afterEach(() => {
+  for (const stop of started.splice(0)) stop();
   vi.restoreAllMocks();
   vi.useRealTimers();
   delete window.Telegram;
@@ -109,7 +119,7 @@ describe("initTelegramChrome", () => {
     mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
     const { calls } = install();
 
-    initTelegramChrome();
+    start();
 
     expect(calls).toContain("ready");
     expect(calls).toContain(`header:${HEADER}`);
@@ -122,7 +132,7 @@ describe("initTelegramChrome", () => {
     mockTokens({});
     const { calls } = install();
 
-    initTelegramChrome();
+    start();
 
     // Кольорів немає зовсім: у списку лишається тільки `ready`.
     expect(calls).toEqual(["ready"]);
@@ -137,7 +147,7 @@ describe("initTelegramChrome", () => {
     document.documentElement.setAttribute("data-chrome", "hero");
     const { calls } = install();
 
-    initTelegramChrome();
+    start();
 
     expect(calls).toContain("header:#a06239");
     // Фон — тема: його видно на прокрутці за межі обкладинки.
@@ -154,7 +164,7 @@ describe("initTelegramChrome", () => {
     document.documentElement.setAttribute("data-tone", "4");
     const { calls } = install();
 
-    initTelegramChrome();
+    start();
 
     expect(calls).toContain("header:#dedeeb");
     // Фон — тема: його видно на прокрутці за межі верхівки.
@@ -165,7 +175,7 @@ describe("initTelegramChrome", () => {
     mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
     const { calls, handlers } = install();
 
-    initTelegramChrome();
+    start();
     const before = calls.length;
 
     expect(handlers.get("themeChanged"), "підписка на тему клієнта").toBeDefined();
@@ -179,7 +189,7 @@ describe("initTelegramChrome", () => {
     mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
     const { calls, handlers } = install();
 
-    const stop = initTelegramChrome();
+    const stop = start();
     stop();
 
     expect(calls).toContain("off:themeChanged");
@@ -190,7 +200,7 @@ describe("initTelegramChrome", () => {
     mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
     delete window.Telegram;
 
-    const stop = initTelegramChrome();
+    const stop = start();
 
     expect(() => stop()).not.toThrow();
   });
@@ -201,7 +211,7 @@ describe("initTelegramChrome", () => {
       contentSafeAreaInset: { top: 56, bottom: 12, left: 0, right: 0 },
     });
 
-    initTelegramChrome();
+    start();
 
     const root = document.documentElement.style;
     expect(root.getPropertyValue("--client-inset-top")).toBe("56px");
@@ -218,7 +228,7 @@ describe("initTelegramChrome", () => {
       },
     });
 
-    initTelegramChrome();
+    start();
 
     expect(document.documentElement.style.getPropertyValue("--client-inset-top")).toBe("64px");
   });
@@ -227,7 +237,7 @@ describe("initTelegramChrome", () => {
     mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
     const { app, handlers } = install();
 
-    initTelegramChrome();
+    start();
     expect(document.documentElement.style.getPropertyValue("--client-inset-top")).toBe("0px");
 
     expect(handlers.get("contentSafeAreaChanged"), "підписка на вставки").toBeDefined();
@@ -268,11 +278,12 @@ describe("колір шапки від клієнта", () => {
     tokens();
     const { calls } = installClient({ header: "#17212b" });
 
-    initTelegramChrome();
+    const stop = start();
     // До будь-якого підтвердження на екрані вже безпечний стан.
     expect(readAppbarColor()).toBe("#17212b");
 
     await vi.advanceTimersByTimeAsync(500);
+    stop();
 
     expect(readAppbarColor()).toBe("#17212b");
     // Тон таки попросили — але клієнт його не взяв, тож його власний колір і
@@ -286,8 +297,9 @@ describe("колір шапки від клієнта", () => {
     tokens();
     const { calls } = installClient({ header: "#17212b", echo: true });
 
-    initTelegramChrome();
+    const stop = start();
     await vi.advanceTimersByTimeAsync(500);
+    stop();
 
     expect(readAppbarColor()).toBe(SECTION);
     // Повертати клієнту його колір не треба: він узяв наш.
@@ -299,20 +311,23 @@ describe("колір шапки від клієнта", () => {
     tokens();
     const ink = () => document.documentElement.style.getPropertyValue("--chrome-appbar-ink");
 
-    const stopDark = initTelegramChrome();
+    // Клієнт без themeParams (старий): працює токен розділу.
+    installClient({});
+    const stopDark = start();
     await vi.advanceTimersByTimeAsync(500);
     expect(readAppbarColor()).toBe(SECTION); // без themeParams — токен розділу
     stopDark();
 
     installClient({ header: "#17212b" });
-    const stop = initTelegramChrome();
+    const stop = start();
     await vi.advanceTimersByTimeAsync(500);
     expect(ink()).toBe("#ffffff");
     stop();
 
     installClient({ header: "#f6f6f6" });
-    initTelegramChrome();
+    const stopLight = start();
     await vi.advanceTimersByTimeAsync(500);
+    stopLight();
     expect(ink()).toBe("#1d1a2b");
   });
 
