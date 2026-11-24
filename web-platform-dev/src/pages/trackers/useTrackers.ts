@@ -80,6 +80,10 @@ export function useTrackers(): TrackersState {
       // День людини: у Telegram-таймзоні він може бути вже іншим, ніж у воркера.
       const result = await apiFetch<TrackersPayload>(`/api/user/trackers?day=${todayTrackerDay()}`);
       if (request !== generation.current) return;
+      // Відповідь без масивів раніше валила рендер («not iterable») — тепер помилка.
+      if (!Array.isArray(result.trackers) || !Array.isArray(result.entries)) {
+        throw new Error("trackers: invalid payload");
+      }
       setTrackers(result.trackers);
       // Деплой котиться нерівно: прев'ю б'є в уже задеплоєний api-dev, і поки
       // він старий — відповіді без `groups`. Сторінка чекає на дерево, а не падає.

@@ -56,6 +56,17 @@ describe("стрічка", () => {
     expect(view.result.current.groups).toEqual([]);
   });
 
+  it("відповідь без масивів — помилка на екрані, а не падіння рендера", async () => {
+    // Живий білд падав саме так: 200 із тілом без `trackers`/`entries` доводив
+    // рендер до «e is not iterable» (білий екран).
+    mocks.request.mockResolvedValueOnce({ ok: true });
+    const view = renderHook(() => useTrackers());
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    expect(view.result.current.error).toBe("Не вдалося завантажити трекери.");
+    expect(view.result.current.trackers).toEqual([]);
+  });
+
   it("невдача називає причину і дає повторити", async () => {
     mocks.request.mockRejectedValueOnce(new Error("HTTP 500"));
     const view = renderHook(() => useTrackers());
