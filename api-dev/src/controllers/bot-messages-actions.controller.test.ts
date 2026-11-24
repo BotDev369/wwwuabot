@@ -26,6 +26,13 @@ interface Row {
   deleted_at: string | null;
 }
 
+/** Свіжий запис: 48-годинне вікно рахується від «зараз», стала дата протухає. */
+function freshStamp(): string {
+  const date = new Date(Date.now() - 60 * 60 * 1000);
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
+}
+
 function row(overrides: Partial<Row> = {}): Row {
   return {
     id: 1,
@@ -33,7 +40,7 @@ function row(overrides: Partial<Row> = {}): Row {
     message_id: 100,
     kind: "text",
     text: "старе",
-    created_at: "2026-11-22 10:00:00",
+    created_at: freshStamp(),
     deleted_at: null,
     ...overrides,
   };

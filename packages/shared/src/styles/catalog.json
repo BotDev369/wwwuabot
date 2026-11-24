@@ -1,5 +1,5 @@
 {
-  "version": "bd2824e",
+  "version": "71fe5fe",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -173,8 +173,8 @@
     },
     {
       "file": "platform.css",
-      "tokens": 19,
-      "classes": 50
+      "tokens": 23,
+      "classes": 51
     },
     {
       "file": "research.css",
@@ -1978,6 +1978,13 @@
       "section": ""
     },
     {
+      "name": "--bg-page",
+      "file": "platform.css",
+      "selector": ".wb-platform",
+      "value": "color-mix(in srgb, var(--chrome-section-bg) 32%, var(--bg-0))",
+      "section": "Каркас платформи: сайдбар замість футера"
+    },
+    {
       "name": "--block-hue",
       "file": "components.css",
       "selector": ":is(.spend, .mon, .wb-page-body, .wb-page-scroll, .wb-analysis) > :nth-child(6n + 1)",
@@ -2613,6 +2620,20 @@
       "selector": ".wb-game-screen[data-game=\"memory\"],\n.wb-game-stage[data-game=\"memory\"]",
       "value": "#fff5f1",
       "section": "Палітри ігор"
+    },
+    {
+      "name": "--head-h",
+      "file": "platform.css",
+      "selector": ".wb-screen-head",
+      "value": "clamp(300px, 52dvh, 560px)",
+      "section": "Верхівка екрана"
+    },
+    {
+      "name": "--head-hue",
+      "file": "platform.css",
+      "selector": ".wb-screen-head",
+      "value": "0deg",
+      "section": "Верхівка екрана"
     },
     {
       "name": "--hub-tone",
@@ -5951,6 +5972,7 @@
         "names": [
           "wb-screen-head",
           "wb-screen-head__lead",
+          "wb-screen-head__shade",
           "wb-screen-head__title"
         ]
       },

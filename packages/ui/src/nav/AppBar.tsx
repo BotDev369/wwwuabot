@@ -72,9 +72,9 @@ export function AppBarView({
                 )}
                 {current || !crumb.href || !onNavigate ? (
                   current ? (
-                    <h1 className="wb-appbar__crumb wb-appbar__crumb--current" title={label}>
+                    <span className="wb-appbar__crumb wb-appbar__crumb--current" title={label}>
                       {label}
-                    </h1>
+                    </span>
                   ) : (
                     <span className="wb-appbar__crumb" title={label}>
                       {label}

@@ -251,13 +251,21 @@ describe("шапка екрана — тон розділу", () => {
     expect(body).toContain("var(--chrome-section-bg");
   });
 
-  it("верхівка — той самий колір, що й шапка, без власного градієнта", () => {
-    const head = PLATFORM.find((entry) => entry.selector === ".wb-screen-head");
-    // Одне значення з `.wb-appbar`: шапка, хедер і початок тла — одна поверхня.
-    expect(head?.body).toContain(
-      "var(--chrome-appbar-bg, var(--chrome-section-bg, var(--chrome-header-bg)))",
+  it("верхівка: одна висота, акцент на все фото, колір шапки — на шві", () => {
+    // Висота одна для всіх сторінок: 52% екрана, без «рівневих» варіантів.
+    const head = PLATFORM.find((entry) => entry.selector === ".wb-screen-head")?.body ?? "";
+    expect(head).toContain("52dvh");
+    expect(PLATFORM.some((entry) => entry.selector.startsWith('.wb-screen[data-depth="'))).toBe(
+      false,
     );
-    // Жодного окремого «верху сторінки»: ні градієнта, ні плям, ні скла.
+    // Акцент екрана (= колір шапки клієнта) фарбує **все** фото, а не смугу.
+    const tint = PLATFORM.find((entry) => entry.selector === ".wb-screen-head::after")?.body ?? "";
+    expect(tint).toContain("var(--chrome-appbar-bg, var(--chrome-section-bg))");
+    expect(tint).toContain("mix-blend-mode: color");
+    // Рівно колір шапки лишається тільки на шві — верхні відсотки обкладинки.
+    const shade = PLATFORM.find((entry) => entry.selector === ".wb-screen-head__shade")?.body ?? "";
+    expect(shade).toContain("var(--chrome-appbar-bg");
+    // Жодного окремого «верху сторінки» зі своїм градієнтом.
     expect(PLATFORM.some((entry) => entry.selector.startsWith(".wb-screen-cover"))).toBe(false);
   });
 

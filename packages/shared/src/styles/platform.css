@@ -397,10 +397,47 @@
 .wb-platform {
   display: flex;
   min-height: 100dvh;
+  /* Уся поверхня екрана — світла версія акценту: і тло, і липкі смуги. */
+  --bg-page: color-mix(in srgb, var(--chrome-section-bg) 32%, var(--bg-0));
+  /* Тло сторінки — світла версія акценту екрана: та сама гама, що й шапка. */
   background:
-    radial-gradient(58% 40% at 6% 0%, var(--blob-1), transparent 62%),
-    radial-gradient(52% 36% at 96% 14%, var(--blob-2), transparent 64%),
-    radial-gradient(64% 44% at 52% 100%, var(--blob-3), transparent 62%), var(--gradient-page);
+    radial-gradient(
+      60% 42% at 8% 0%,
+      color-mix(in srgb, var(--chrome-section-bg) 24%, transparent),
+      transparent 64%
+    ),
+    radial-gradient(
+      52% 36% at 96% 16%,
+      color-mix(in srgb, var(--chrome-section-bg) 16%, transparent),
+      transparent 66%
+    ),
+    linear-gradient(
+      170deg,
+      color-mix(in srgb, var(--chrome-section-bg) 34%, var(--bg-0)),
+      var(--bg-0) 60%
+    );
+}
+
+/* Темна тема: акцент темний, тож у суміші його більше — інакше поверхня
+   читається як чорна й акценту не видно. */
+:root[data-theme="dark"] .wb-platform {
+  --bg-page: color-mix(in srgb, var(--chrome-section-bg) 62%, #211f30);
+  background:
+    radial-gradient(
+      62% 44% at 8% 0%,
+      color-mix(in srgb, var(--chrome-section-bg) 78%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      54% 38% at 96% 18%,
+      color-mix(in srgb, var(--chrome-section-bg) 64%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(
+      170deg,
+      color-mix(in srgb, var(--chrome-section-bg) 68%, #211f30),
+      color-mix(in srgb, var(--chrome-section-bg) 24%, #1b1928) 68%
+    );
 }
 
 .wb-platform-main {
@@ -482,32 +519,99 @@
 }
 
 /* ═══ Верхівка екрана ═══════════════════════════════════════════════════════
-   Один колір із шапкою Telegram і нашим хедером; на ньому — назва й підпис.
-   Тому смуга бере той самий `--chrome-appbar-bg`, що й `.wb-appbar`, без
-   градієнтів і власних верхівок у сторінок (docs/PLATFORM.md). */
+   Структура одна на всі екрани: шапка Telegram → наш хедер (крохи + бургер) →
+   обкладинка розділу з назвою й підписом. Шапка, хедер і верх обкладинки —
+   одне полотно: перші відсотки обкладинки — рівно колір шапки, далі він
+   розчиняється у фото. Фото — те саме, що на головній; гама зсувається в бік
+   акценту розділу (`--head-hue`). Висота за рівнем: 45 / 35 / 25%. */
 .wb-screen-head {
+  --head-h: clamp(300px, 52dvh, 560px);
+  --head-hue: 0deg;
   position: relative;
-  z-index: 1;
-  padding: var(--sp-2) var(--sp-5) var(--sp-5);
-  background: var(--chrome-appbar-bg, var(--chrome-section-bg, var(--chrome-header-bg)));
-  color: var(--chrome-appbar-ink, var(--text-primary));
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--sp-2);
+  min-height: var(--head-h);
+  padding: calc(var(--appbar-h, 0px) + var(--sp-4)) var(--sp-5) var(--sp-5);
+  text-align: center;
+  background: #120d16;
+  color: #fff;
+}
+
+/* Фото головної: та сама куля. Спершу знебарвлюємо — далі його фарбує
+   акцент екрана на всю площу, а не смугою. */
+.wb-screen-head::before {
+  content: "";
+  position: absolute;
+  inset: -2%;
+  z-index: -3;
+  background: url("/media/home-hero.jpg") center 32% / cover no-repeat;
+  filter: grayscale(1) contrast(1.06) brightness(0.94);
+  transform: scale(1.04);
+}
+
+/* Акцент на **всю** обкладинку: той самий колір, що й шапка клієнта. */
+.wb-screen-head::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: var(--chrome-appbar-bg, var(--chrome-section-bg));
+  mix-blend-mode: color;
+  opacity: 0.92;
+}
+
+/* Шов і контраст: зверху — рівно колір шапки, знизу — м'яка тінь під текст. */
+.wb-screen-head__shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      var(--chrome-appbar-bg, var(--chrome-section-bg)) 0%,
+      color-mix(in srgb, var(--chrome-appbar-bg, var(--chrome-section-bg)) 72%, transparent) 15%,
+      transparent 36%
+    ),
+    linear-gradient(0deg, rgba(10, 7, 14, 0.5) 0%, rgba(10, 7, 14, 0.08) 48%, transparent 62%);
 }
 
 .wb-screen-head__title {
   margin: 0;
-  font-size: clamp(24px, 7vw, 30px);
+  max-width: 16ch;
+  font-family: var(--font-display);
+  font-size: clamp(40px, 12vw, 56px);
   font-weight: 800;
-  line-height: 1.12;
-  letter-spacing: -0.01em;
-  color: inherit;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-shadow: 0 2px 20px rgba(10, 6, 14, 0.5);
+  text-wrap: balance;
 }
 
 .wb-screen-head__lead {
-  margin: var(--sp-2) 0 0;
-  max-width: 46ch;
-  font-size: var(--text-sm);
-  line-height: 1.35;
-  color: color-mix(in srgb, currentColor 76%, transparent);
+  margin: 0;
+  max-width: 24ch;
+  font-size: clamp(17px, 4.6vw, 19px);
+  font-weight: 500;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 1px 12px rgba(10, 6, 14, 0.55);
+  text-wrap: pretty;
+}
+
+@media (min-width: 560px) {
+  .wb-screen-head__title {
+    max-width: 20ch;
+  }
+
+  .wb-screen-head__lead {
+    max-width: 34ch;
+  }
 }
 
 /* ═══ Меню: той самий список, що на головній ════════════════════════════════

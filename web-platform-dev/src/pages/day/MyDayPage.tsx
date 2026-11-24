@@ -13,14 +13,12 @@ import { Icon } from "@wwwuabot/shared";
 import { todayTrackerDay } from "@wwwuabot/shared/trackers";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { TRACKERS_PATH } from "@/app/routes";
-import { useProfile } from "@/pages/useProfile";
 import { useTrackers } from "@/pages/trackers/useTrackers";
 import {
   dailyTrackers,
   dayHeadline,
   dayRhythm,
   daysLabel,
-  greeting,
   streakNote,
   waitingNote,
 } from "./day-rhythm";
@@ -28,7 +26,6 @@ import {
 export function MyDayPage(): ReactElement {
   useScreenChrome({ title: "Мій день" });
   const navigate = useNavigate();
-  const { profile } = useProfile();
   const { trackers, entries, loading, error } = useTrackers();
 
   // Година й дата — **один раз на монтування**: інакше привітання мінялося б під
@@ -42,17 +39,11 @@ export function MyDayPage(): ReactElement {
     entries.filter((entry) => entry.day === today).map((entry) => entry.trackerId),
   );
   const waiting = chosen.filter((tracker) => !recordedToday.has(tracker.id)).length;
-  const name = profile?.firstName ?? profile?.platformUsername ?? "";
 
   return (
     <div className="wb-page wb-day">
       <p className="wb-day-date">
         {head.weekday} · {head.date}
-      </p>
-
-      <p className="wb-day-hello">
-        {greeting(now.getHours())}
-        {name ? `, ${name}` : ""}
       </p>
 
       {loading && (

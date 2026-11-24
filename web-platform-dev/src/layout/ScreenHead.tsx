@@ -23,6 +23,7 @@ export function ScreenHead({ title, lead }: ScreenHeadProps): ReactElement | nul
 
   return (
     <header className="wb-screen-head">
+      <span className="wb-screen-head__shade" aria-hidden="true" />
       <h1 className="wb-screen-head__title">{title}</h1>
       {lead && <p className="wb-screen-head__lead">{lead}</p>}
     </header>

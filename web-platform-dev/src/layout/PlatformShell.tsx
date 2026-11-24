@@ -17,7 +17,7 @@ import { ScreenHead } from "./ScreenHead";
 import { ScreensProvider } from "./ScreensProvider";
 import { shellChromeFor } from "./shell-chrome";
 import { screenLead } from "./screen-lead";
-import { sectionTone } from "./screen-tone";
+import { accentHue, screenAccent, sectionTone } from "./screen-tone";
 import { useScreens } from "./useScreens";
 
 /** Скільки рівнів верхівки знає продукт: 1 — розділ, 2 — підрозділ, 3 — сторінка. */
@@ -49,7 +49,9 @@ function PlatformFrame(): ReactElement {
   const shellChrome = shellChromeFor(chrome, rows, pathname);
   // Ведучий рядок верхівки — з тієї самої адреси, що й назва: підпис не може
   // відстати від екрана, бо береться з реєстру, а не з розмітки сторінки.
-  const lead = screenLead(matchScreen(pathname)?.screen.key ?? null);
+  // Адреси поза реєстром (товар, замовлення, крок проходження) успадковують
+  // підпис свого розділу — верхівка без тексту не лишається ніде.
+  const lead = screenLead(matchScreen(pathname)?.screen.key ?? pathname.split("/")[1] ?? null);
   // Головна — обкладинка від самого верху: нашого хедера на ній немає зовсім,
   // а рідний хедер Telegram фарбується кольором верхньої смуги графіки.
   const isHome = pathname === "/";
@@ -67,13 +69,20 @@ function PlatformFrame(): ReactElement {
     if (isHome) {
       root.setAttribute("data-chrome", "hero");
       root.removeAttribute("data-tone");
+      root.style.removeProperty("--chrome-section-bg");
     } else {
       root.removeAttribute("data-chrome");
       root.setAttribute("data-tone", String(sectionTone(pathname)));
+      // Акцент екрана = колір шапки клієнта: від нього йде вся верхівка.
+      const accent = screenAccent(pathname);
+      root.style.setProperty("--chrome-section-bg", accent);
+      root.style.setProperty("--head-hue", `${accentHue(accent)}deg`);
     }
     return () => {
       root.removeAttribute("data-chrome");
       root.removeAttribute("data-tone");
+      root.style.removeProperty("--chrome-section-bg");
+      root.style.removeProperty("--head-hue");
     };
   }, [isHome, pathname]);
 

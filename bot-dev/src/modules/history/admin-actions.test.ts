@@ -11,6 +11,13 @@ vi.mock("@wwwuabot/shared/database/ensure-tables", () => ({
   ensureTables: async () => undefined,
 }));
 
+/** Свіжий запис: 48-годинне вікно рахується від «зараз», стала дата протухає. */
+function freshStamp(): string {
+  const date = new Date(Date.now() - 60 * 60 * 1000);
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
+}
+
 function row(overrides: Partial<HistoryRow> = {}): HistoryRow {
   return {
     id: 1,
@@ -20,7 +27,7 @@ function row(overrides: Partial<HistoryRow> = {}): HistoryRow {
     kind: "rich",
     text: "<p>старе</p>",
     meta: null,
-    created_at: "2026-11-22 10:00:00",
+    created_at: freshStamp(),
     edited_at: null,
     deleted_at: null,
     ...overrides,
