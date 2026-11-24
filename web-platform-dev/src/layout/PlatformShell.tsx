@@ -12,6 +12,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { matchScreen } from "@wwwuabot/shared/screens";
 import { AppBar, ScreenChromeContext, ScreenChromeProvider } from "@wwwuabot/ui/nav";
 import { JournalBridge } from "./JournalBridge";
+import { MENU_BREAD } from "./menu-bread";
 import { PlatformSidebar } from "./PlatformSidebar";
 import { ScreenHead } from "./ScreenHead";
 import { ScreensProvider } from "./ScreensProvider";
@@ -22,15 +23,6 @@ import { useScreens } from "./useScreens";
 
 /** Скільки рівнів верхівки знає продукт: 1 — розділ, 2 — підрозділ, 3 — сторінка. */
 const MAX_DEPTH = 3;
-
-/**
- * Два кадри кнопки меню: паляниця з обкладинки головної, вирізана разом із
- * бульбашкою. Закрите меню — як є, відкрите — з другою лінією розрізу.
- */
-const MENU_BREAD = {
-  closed: "/media/menu-bread.png",
-  open: "/media/menu-bread-open.png",
-} as const;
 
 /**
  * Внутрішній каркас: стоїть **усередині** провайдерів, бо крохи потребують і
@@ -133,15 +125,9 @@ function PlatformFrame(): ReactElement {
       {/* Журнал бачить «відкрив сторінку», «відкрив модалку» й дії в них — а не
           запити, які екран зробив сам. */}
       <JournalBridge />
+      {/* Меню — на весь екран, тож затемнення під ним немає: дотик поза ним
+          неможливий, а закривають хрестик у самому меню, Escape чи перехід. */}
       <PlatformSidebar open={navOpen} onClose={closeNav} screens={rows} pathname={pathname} />
-      {navOpen && (
-        <button
-          type="button"
-          className="wb-platform-scrim"
-          aria-label="Закрити меню"
-          onClick={closeNav}
-        />
-      )}
       <div className="wb-platform-main">
         <div className="wb-screen" data-depth={depth} data-tone={sectionTone(pathname)}>
           {!isHome && (

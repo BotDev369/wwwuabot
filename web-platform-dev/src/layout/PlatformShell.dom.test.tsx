@@ -92,8 +92,8 @@ describe("каркас", () => {
     );
     // Тон розділу каркас публікує на `<html>`: звідти його бере нативна шапка.
     expect(document.documentElement.getAttribute("data-tone")).toBe("2");
-    // Тема — перший пункт меню, а не кнопка в хедері.
-    expect(screen.getByRole("switch", { name: "Тема" })).toBeTruthy();
+    // Тема — кругла кнопка в меню, а не перемикач у хедері.
+    expect(screen.getByRole("button", { name: /^Тема: / })).toBeTruthy();
     expect(document.querySelector(".wb-platform")).not.toBeNull();
   });
 

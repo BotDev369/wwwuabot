@@ -1,5 +1,5 @@
 {
-  "version": "b7ee355",
+  "version": "e085653",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -99,7 +99,7 @@
     {
       "file": "app-chrome.css",
       "tokens": 3,
-      "classes": 150
+      "classes": 149
     },
     {
       "file": "assessments.css",
@@ -174,7 +174,7 @@
     {
       "file": "platform.css",
       "tokens": 25,
-      "classes": 52
+      "classes": 50
     },
     {
       "file": "research.css",
@@ -4163,8 +4163,7 @@
           "wb-app-logout",
           "wb-menubtn",
           "wb-menubtn--bread",
-          "wb-menubtn__bread",
-          "wb-menubtn__tint"
+          "wb-menubtn__bread"
         ]
       },
       {
@@ -6002,22 +6001,20 @@
       {
         "section": "Меню: той самий список, що на головній",
         "names": [
-          "wb-close-btn",
-          "wb-nav-close-row",
           "wb-nav-item",
           "wb-nav-item--active",
           "wb-nav-menu",
           "wb-nav-section",
+          "wb-platform-close",
+          "wb-platform-menutop",
+          "wb-platform-menutop__actions",
+          "wb-platform-menutop__word",
           "wb-platform-nav",
-          "wb-platform-scrim",
           "wb-platform-sidebar",
           "wb-platform-sidebar--open",
           "wb-platform-theme",
-          "wb-platform-theme__icon",
           "wb-showcase-list",
-          "wb-showcase-row",
-          "wb-switch-label",
-          "wb-switch-row"
+          "wb-showcase-row"
         ]
       }
     ],

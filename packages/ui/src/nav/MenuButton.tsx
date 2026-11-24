@@ -1,47 +1,48 @@
 /**
- * `MenuButton` — вхід у навігацію: паляниця у своїй бульбашці, а без фото — смуги.
- *
- * Закрите меню показує її як є, відкрите — з другою лінією розрізу й тоном шапки.
- * Фото передає місце: знак продукту живе не в спільному компоненті.
+ * `MenuButton` — вхід у навігацію: паляниця в закритому стані, смуги-хрестик у
+ * відкритому. Хрестик закриття не може виглядати як хліб: його впізнають, а не
+ * згадують. Фото передає місце — знак продукту живе не в спільному компоненті.
  *
  * @module packages/ui/src/nav/MenuButton
  */
 
 import type { ReactElement } from "react";
 
+/** Слово меню — одне на кнопку й на підпис поверхні, щоб не розходилось. */
+export const MENU_LABEL = "Меню";
+
 export interface MenuButtonProps {
-  /** Меню відкрите: паляниця перерізана навхрест і тонована акцентом. */
+  /** Меню відкрите: замість паляниці — смуги, складені в хрестик. */
   open?: boolean;
   onClick: () => void;
-  /** Підпис для скрінрідера; за замовчуванням — «Меню». */
+  /** Підпис для скрінрідера; за замовчуванням — `MENU_LABEL`. */
   label?: string;
   /**
-   * Два кадри паляниці: закрите й відкрите меню. Без них — три смуги, як у
-   * адмінки: знак місця, а не знак продукту.
+   * Кадр паляниці для закритого стану. Без нього — три смуги, як в адмінці:
+   * знак місця, а не знак продукту.
    */
-  photo?: { closed: string; open: string };
+  photo?: string;
 }
 
 export function MenuButton({
   open = false,
   onClick,
-  label = "Меню",
+  label = MENU_LABEL,
   photo,
 }: MenuButtonProps): ReactElement {
+  const bread = photo != null && !open;
   return (
     <button
       type="button"
-      className={`wb-menubtn${photo ? " wb-menubtn--bread" : ""}`}
+      className={`wb-menubtn${bread ? " wb-menubtn--bread" : ""}`}
       aria-label={label}
       aria-expanded={open}
       data-open={open ? "true" : undefined}
       onClick={onClick}
     >
-      {photo ? (
+      {bread ? (
         <span className="wb-menubtn__bread" aria-hidden="true">
-          {/* Кадри не змішуються: браузер має обидва, тож перемикання — без миготіння. */}
-          <img src={open ? photo.open : photo.closed} alt="" draggable={false} />
-          <span className="wb-menubtn__tint" />
+          <img src={photo} alt="" draggable={false} />
         </span>
       ) : (
         <span className="wb-menubtn__bars" aria-hidden="true">

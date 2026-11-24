@@ -24,7 +24,7 @@
  */
 
 export { AppBar } from "./AppBar";
-export { MenuButton } from "./MenuButton";
+export { MenuButton, MENU_LABEL } from "./MenuButton";
 export { ScreenChromeProvider } from "./ScreenChromeProvider";
 export { useScreenChrome } from "./useScreenChrome";
 export { useCopyLink } from "./useCopyLink";

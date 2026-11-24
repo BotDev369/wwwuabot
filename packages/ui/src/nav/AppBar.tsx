@@ -24,8 +24,8 @@ export interface AppBarActions {
   onMenu?: () => void;
   /** Меню відкрите — для `aria-expanded` і стану знака. */
   menuOpen?: boolean;
-  /** Два кадри паляниці для кнопки меню; без них — гамбургер. */
-  menuPhoto?: { closed: string; open: string };
+  /** Кадр паляниці для закритої кнопки меню; без нього — гамбургер. */
+  menuPhoto?: string;
 }
 
 export function AppBar({
@@ -69,7 +69,9 @@ export function AppBarView({
   useAppBarHeight(header);
 
   return (
-    <header className="wb-appbar" ref={header}>
+    // Відкрите меню накриває хедер повністю: крохи й кнопка меню лишаються в ньому
+    // неактивними, а єдина кнопка закриття стоїть уже в самому меню.
+    <header className="wb-appbar" ref={header} inert={menuOpen}>
       {trail.length > 0 && (
         <nav className="wb-appbar__trail" aria-label="Шлях сторінки">
           {trail.map((crumb, index) => {

@@ -633,7 +633,7 @@
   width: 100%;
   max-width: 620px;
   margin-inline: auto;
-  padding: var(--sp-3) var(--sidebar-pad) var(--sidebar-pad);
+  padding: var(--sp-2) var(--sidebar-pad) var(--sidebar-pad);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
@@ -653,27 +653,31 @@
   font-weight: var(--weight-semibold);
 }
 
-/* Меню — **увесь екран під хедером**: список розділів не мусить ділити місце
-   зі сторінкою, а на телефоні вузька шухляда різала і назви, і пальці.
-   Сам хедер лишається зверху — у відкритому стані паляниця показує хрестик і
-   закриває меню тим самим дотиком, яким відкрила.
-   Поверхня — акцент екрана з прозорістю та склом: меню відкривається над
-   своєю ж сторінкою, тож крізь нього видно, де людина стояла. */
+/* Меню — **увесь екран**, і воно накриває наш хедер разом із крохами: у
+   відкритому стані над сторінкою лишається тільки сама поверхня меню зі своїм
+   верхнім рядком. Вузька шухляда різала і назви пунктів, і пальці, а хедер,
+   що визирав із-під неї, читався як друга сторінка під меню.
+   Поверхня — акцент шапки з прозорістю та склом: крізь неї видно, де людина
+   стояла, і вона ж належить продуктові, а не сторінці під нею. */
 .wb-platform-sidebar {
   position: fixed;
-  inset: var(--appbar-h, 0px) 0 0;
+  inset: 0;
   z-index: 1000;
   width: 100%;
   min-width: 0;
   padding-bottom: var(--safe-bottom);
   border: 0;
-  background: color-mix(
-    in srgb,
-    var(--chrome-section-bg, var(--chrome-header-bg)) 62%,
-    transparent
-  );
-  -webkit-backdrop-filter: blur(26px) saturate(150%);
-  backdrop-filter: blur(26px) saturate(150%);
+  /* Скло трохи прозоріше внизу: світло зверху лягає на акцент, а не
+     затемнює його. */
+  background:
+    radial-gradient(120% 72% at 100% 0%, rgba(255, 255, 255, 0.18), transparent 62%),
+    linear-gradient(
+      168deg,
+      color-mix(in srgb, var(--chrome-section-bg, var(--chrome-header-bg)) 78%, transparent),
+      color-mix(in srgb, var(--chrome-section-bg, var(--chrome-header-bg)) 58%, transparent)
+    );
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  backdrop-filter: blur(28px) saturate(160%);
   box-shadow: none;
   transform: translateX(100%);
   transition: transform var(--duration-slow) var(--ease);
@@ -684,48 +688,70 @@
   transform: none;
 }
 
-/* Хедер і меню — одна поверхня: тон шапки зверху сходить у скляний акцент
-   меню без лінії на місці, де починається список. */
-.wb-platform-sidebar::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 48px;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    var(--chrome-section-bg, var(--chrome-header-bg)) 0%,
-    transparent 100%
-  );
-}
-
-/* Хрестик закриття стоїть на акценті, тож він — біле скло, а не плашка теми:
-   читається на будь-якому тоні розділу. */
-.wb-platform-sidebar .wb-close-btn {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.38);
-}
-
-/* Верхній рядок меню: стан продукту (тема) ліворуч, вихід (хрестик) праворуч.
-   Обидва — з верхнього краю, як у модалки, а не десь посеред списку. */
-.wb-platform-sidebar .wb-nav-close-row {
+/* Верхній рядок меню стоїть **рівно на місці хедера**: та сама висота, той
+   самий берег. Слово «Меню» — ліворуч (порожній кут читався як недобудована
+   шапка), дві круглі дії — праворуч: тема й єдине закриття. */
+.wb-platform-menutop {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-3);
-  width: 100%;
-  max-width: 620px;
-  margin-inline: auto;
-  padding: var(--sp-3) var(--sidebar-pad) 0;
+  min-height: var(--appbar-h, 64px);
+  padding: calc(var(--safe-top) + var(--sp-2)) var(--sp-5) var(--sp-2);
 }
 
-/* У рядку тема — не окрема плашка з власними берегами, а половина рядка. */
-.wb-nav-close-row .wb-platform-theme {
-  flex: 1 1 auto;
-  min-width: 0;
+/* Слово поверхні, а не пункт: без плишки й рамки, біле з тінню — щоб
+   трималось і на світлому акценті. */
+.wb-platform-menutop__word {
   margin: 0;
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  color: #ffffff;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 10px rgba(28, 12, 2, 0.35);
+}
+
+.wb-platform-menutop__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Тема й закриття — одна мірка й одне скло. На акцентній поверхні обрізана
+   картка з перемикачем різала око, а різні за розміром кнопки читались як
+   різні за вагою дії: це два рівноцінні знаки верхнього краю. */
+.wb-platform-theme,
+.wb-platform-close {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease),
+    transform var(--duration-fast) var(--ease);
+}
+
+.wb-platform-theme:active,
+.wb-platform-close:active {
+  transform: scale(0.95);
+}
+
+@media (hover: hover) {
+  .wb-platform-theme:hover,
+  .wb-platform-close:hover {
+    background: rgba(255, 255, 255, 0.28);
+  }
 }
 
 .wb-platform-sidebar .wb-nav-menu {
@@ -736,45 +762,6 @@
   max-width: 620px;
   margin-inline: auto;
   padding: var(--sidebar-pad);
-}
-
-/* Тема — перша скляна плашка меню. Вона не пункт переходу, але стоїть у тій
-   самій колонці й на тій самій лінії, що решта пунктів. */
-.wb-platform-theme {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  margin: 0;
-  padding: var(--sp-2) var(--sp-3);
-  border: 1px solid var(--glass-stroke-soft);
-  border-radius: var(--radius-lg);
-  background: var(--glass-fill);
-  box-shadow: inset 0 1px 0 var(--glass-stroke-soft);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  backdrop-filter: blur(12px) saturate(150%);
-}
-
-.wb-platform-theme__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.wb-platform-theme .wb-switch-row {
-  flex: 1;
-  min-width: 0;
-  padding: 0;
-}
-
-.wb-platform-theme .wb-switch-label {
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
 }
 
 /* Пункти платформи — більші за базові й кожен на скляній плашці. Обраний
@@ -826,17 +813,4 @@
   box-shadow:
     inset 0 1px 0 var(--glass-stroke),
     0 12px 28px -22px color-mix(in srgb, var(--accent) 70%, transparent);
-}
-
-/* Скрим — кнопка, а не div: дотик повз меню мусить закривати його й бути
-   доступним із клавіатури, як у модалки. */
-.wb-platform-scrim {
-  display: block;
-  position: fixed;
-  inset: var(--appbar-h, 0px) 0 0;
-  z-index: 999;
-  border: 0;
-  background: var(--scrim);
-  -webkit-backdrop-filter: blur(4px) saturate(120%);
-  backdrop-filter: blur(4px) saturate(120%);
 }

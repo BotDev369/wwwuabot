@@ -10,6 +10,7 @@ import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import type { ScreenRow } from "@wwwuabot/shared/screens";
+import { MENU_LABEL } from "@wwwuabot/ui/nav";
 import { PlatformSidebar } from "./PlatformSidebar";
 import { navFromScreens } from "./screen-nav";
 
@@ -87,10 +88,11 @@ describe("PlatformSidebar", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("ставить «Головну» першим пунктом, а тему — у рядок закриття", () => {
+  it("ставить «Головну» першим пунктом, а зверху — слово, тему й один хрестик", () => {
+    const onClose = vi.fn();
     render(
       <MemoryRouter initialEntries={["/trackers"]}>
-        <PlatformSidebar screens={ROWS} pathname="/trackers" open onClose={() => undefined} />
+        <PlatformSidebar screens={ROWS} pathname="/trackers" open onClose={onClose} />
       </MemoryRouter>,
     );
 
@@ -98,9 +100,40 @@ describe("PlatformSidebar", () => {
       (node) => node.textContent,
     );
     expect(labels[0]).toBe("Головна");
-    // Тема — не серед переходів: вона стоїть у верхньому рядку, перед хрестиком.
-    const closeRow = document.querySelector(".wb-nav-close-row");
-    expect(closeRow?.querySelector(".wb-platform-theme")).toBeTruthy();
-    expect(closeRow?.querySelector(".wb-close-btn")).toBeTruthy();
+
+    // Верхній рядок: слово «Меню» ліворуч, праворуч рівно дві круглі дії.
+    const top = document.querySelector(".wb-platform-menutop");
+    expect(top?.querySelector(".wb-platform-menutop__word")?.textContent).toBe(MENU_LABEL);
+    expect(top?.querySelectorAll(".wb-platform-theme")).toHaveLength(1);
+    expect(top?.querySelectorAll(".wb-platform-close")).toHaveLength(1);
+
+    // Вихід із меню рівно один: свій рядок коробки й паляниця в меню не
+    // дублюють хрестик — два виходи з однієї поверхні читались як дві дії.
+    const close = document.querySelectorAll(".wb-platform-close");
+    expect(close).toHaveLength(1);
+    // Доступне ім'я закриття теж одне: другої кнопки з тим самим смислом немає.
+    expect(screen.getAllByRole("button", { name: /Закрити/ })).toHaveLength(1);
+    expect(document.querySelector(".wb-nav-close-row")).toBeNull();
+    expect(document.querySelector(".wb-menubtn")).toBeNull();
+
+    fireEvent.click(close[0]);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("перемикає тему тією самою круглою кнопкою", () => {
+    render(
+      <MemoryRouter initialEntries={["/trackers"]}>
+        <PlatformSidebar screens={ROWS} pathname="/trackers" open onClose={() => undefined} />
+      </MemoryRouter>,
+    );
+
+    const label = (): string | null =>
+      screen.getByRole("button", { name: /^Тема: / }).getAttribute("aria-label");
+    const before = label();
+
+    fireEvent.click(screen.getByRole("button", { name: /^Тема: / }));
+
+    // Стан теми читається з тієї самої кнопки: вона називає наступний вибір.
+    expect(label()).not.toBe(before);
   });
 });
