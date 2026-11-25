@@ -160,7 +160,7 @@ describe("initTelegramChrome", () => {
       "--chrome-header-bg": HEADER,
       "--chrome-bottom-bg": "#f0f0f4",
       "--chrome-hero-header-bg": "#a06239",
-      "--chrome-hero-bottom-bg": "#5e3430",
+      "--chrome-hero-bottom-bg": "#7c4520",
     });
     document.documentElement.setAttribute("data-chrome", "hero");
     const { calls } = install();
@@ -168,7 +168,7 @@ describe("initTelegramChrome", () => {
     start();
 
     // Біла смуга під фото читалась як обрізана шапка.
-    expect(calls).toContain("bottom:#5e3430");
+    expect(calls).toContain("bottom:#7c4520");
   });
 
   it("шапка екрана йде в тон розділу — тим самим, що й наш хедер і верхівка", () => {

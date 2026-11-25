@@ -1,5 +1,5 @@
 {
-  "version": "a7ab4b3",
+  "version": "3c5d253",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -203,8 +203,8 @@
     },
     {
       "file": "showcase.css",
-      "tokens": 6,
-      "classes": 20
+      "tokens": 8,
+      "classes": 19
     },
     {
       "file": "subbar.css",
@@ -500,7 +500,7 @@
     {
       "name": "--chrome-hero-bottom-bg",
       "section": "Нативний хром Telegram",
-      "light": "#5e3430",
+      "light": "#7c4520",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -2649,6 +2649,20 @@
       "selector": ".wb-screen-head",
       "value": "0deg",
       "section": "Верхівка екрана"
+    },
+    {
+      "name": "--hero-art-bottom",
+      "file": "showcase.css",
+      "selector": ".wb-showcase-hero",
+      "value": "calc(var(--hero-text-block) + var(--sp-8) + var(--safe-bottom) + var(--sp-4))",
+      "section": ""
+    },
+    {
+      "name": "--hero-text-block",
+      "file": "showcase.css",
+      "selector": ".wb-showcase-hero",
+      "value": "calc(\n    var(--display-size-hero) + var(--sp-2) + var(--text-base) * 1.45 + var(--sp-3) + 44px\n  )",
+      "section": ""
     },
     {
       "name": "--hub-tone",
@@ -6644,7 +6658,6 @@
           "wb-showcase-row-icon",
           "wb-showcase-row-label",
           "wb-showcase-row-more",
-          "wb-showcase-shade",
           "wb-showcase-stars",
           "wb-showcase-tagline",
           "wb-showcase-title"

@@ -111,7 +111,6 @@ export function EntryPage(): ReactElement {
           </span>
         </span>
         <span className="wb-showcase-glow" aria-hidden="true" />
-        <span className="wb-showcase-shade" aria-hidden="true" />
         <div className="wb-showcase-brand">
           <h1 className="wb-showcase-title">ПАЛЯНИЦЯ</h1>
           <p className="wb-showcase-tagline">платформа для своїх</p>
