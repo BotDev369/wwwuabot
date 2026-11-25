@@ -50,7 +50,8 @@ const ADMIN_PATH_PREFIXES = ["/api/admin/", "/api/portal/", "/api/bot/"] as cons
  * - `/api/dev/preview-session` — підпис для перегляду сторінки поза Telegram.
  *   Питає **воркер вебу** до того, як у браузері з'явиться хтось, тож допуску
  *   ще немає. Ціна — нуль поза dev: сам контролер відповідає 404, коли
- *   `ENVIRONMENT` не `dev`, і підписує лише id власника.
+ *   `ENVIRONMENT` не `dev`, підписує лише id власника і **лише за секретом**
+ *   `PREVIEW_SESSION_KEY` у заголовку `X-Preview-Key` (без секрету — теж 404).
  */
 export const PLATFORM_EXEMPT_PATHS = [
   "/api/user/access",

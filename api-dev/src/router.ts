@@ -128,7 +128,7 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // її воркер, у якого є токен; поза `dev` шлях віддає 404
   // (`controllers/preview-session.controller.ts`).
   if (pathname === "/api/dev/preview-session" && request.method === "GET") {
-    return handlePreviewSession(env);
+    return handlePreviewSession(request, env);
   }
 
   // ── Bot Settings API ─────────────────────────────────────────────

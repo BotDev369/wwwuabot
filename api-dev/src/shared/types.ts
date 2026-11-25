@@ -79,6 +79,12 @@ export interface Env {
    */
   PLATFORM_OPEN_ACCESS?: string;
   /**
+   * Ключ прев'ю-сесії (Cloudflare Secret, ≥32 символів). Потрібен лише в `dev`:
+   * `/api/dev/preview-session` підписує власника тільки тому, хто надіслав його
+   * в заголовку `X-Preview-Key`. Без секрету ендпоїнта немає (404).
+   */
+  PREVIEW_SESSION_KEY?: string;
+  /**
    * DSN із Sentry. Задається як Cloudflare Secret (`wrangler secret put` або
    * Dashboard). Без нього Sentry вимкнено — воркер працює як звичайно.
    * Див. `@wwwuabot/shared/observability/sentry`.
