@@ -28,8 +28,8 @@ const REGISTRY_ROWS: readonly ScreenRow[] = SCREENS.map((screen) => ({
   texts: {},
 }));
 
-/** Скільки порошинок живе на обкладинці: сім досить, щоб рух читався. */
-const MOTES = 7;
+/** Скільки зірок-спалахів живе на обкладинці: шість у різних фазах. */
+const STARS = 6;
 
 /**
  * Тихий режим: заради нього рух вимикається, а не зменшується. У jsdom
@@ -83,29 +83,35 @@ export function EntryPage(): ReactElement {
   return (
     <main className="wb-showcase" ref={page}>
       <section className="wb-showcase-hero" ref={hero}>
-        <img
-          className="wb-showcase-photo"
-          src="/media/home-hero.jpg"
-          alt=""
-          width={880}
-          height={1184}
-          // Обкладинка — перший екран: кадр просимо найпершим, а не після CSS.
-          fetchPriority="high"
-          decoding="async"
-        />
+        <span className="wb-showcase-frame">
+          <img
+            className="wb-showcase-photo"
+            src="/media/home-hero.jpg"
+            alt=""
+            width={880}
+            height={1184}
+            // Обкладинка — перший екран: кадр просимо найпершим, а не після CSS.
+            fetchPriority="high"
+            decoding="async"
+          />
+        </span>
+        <span className="wb-showcase-shade" aria-hidden="true" />
         <span className="wb-showcase-sheen" aria-hidden="true" />
-        <div className="wb-showcase-motes" aria-hidden="true">
-          {Array.from({ length: MOTES }, (_, index) => (
+        <div className="wb-showcase-stars" aria-hidden="true">
+          {Array.from({ length: STARS }, (_, index) => (
             <span key={index} />
           ))}
         </div>
         <div className="wb-showcase-brand">
           <h1 className="wb-showcase-title">ПАЛЯНИЦЯ</h1>
           <p className="wb-showcase-tagline">платформа для своїх</p>
-          <span className="wb-showcase-rule" aria-hidden="true" />
-          <button type="button" className="wb-showcase-cue" onClick={toGroups}>
-            <span>Розділи</span>
-            <Icon name="chevron-down" size={18} />
+          <button
+            type="button"
+            className="wb-showcase-cue"
+            aria-label="До розділів"
+            onClick={toGroups}
+          >
+            <Icon name="arrow-down" size={34} className="wb-showcase-cue__arrow" />
           </button>
         </div>
       </section>

@@ -137,12 +137,20 @@ export function afterDelay(run: () => void, ms: number): void {
 
 export function readChromeColors(): ChromeColors | undefined {
   const background = readChromeColor("--chrome-header-bg");
-  const bottom = readChromeColor("--chrome-bottom-bg");
-  if (!background || !bottom) return undefined;
+  const themeBottom = readChromeColor("--chrome-bottom-bg");
+  if (!background || !themeBottom) return undefined;
   const heroAttr =
     typeof document === "undefined" ? null : document.documentElement.getAttribute(CHROME_ATTR);
-  const hero = heroAttr === "hero" ? readChromeColor("--chrome-hero-header-bg") : undefined;
+  const onHero = heroAttr === "hero";
+  const hero = onHero ? readChromeColor("--chrome-hero-header-bg") : undefined;
+  // На обкладинці низ Mini App — колір нижнього краю того ж кадру: біла смуга
+  // під фото читалась як обрізана шапка.
+  const heroBottom = onHero ? readChromeColor("--chrome-hero-bottom-bg") : undefined;
   // Тон розділу — той самий, що в нашого хедера й верхівки графіки.
   const section = readChromeColor("--chrome-section-bg");
-  return { header: hero ?? section ?? background, background, bottom };
+  return {
+    header: hero ?? section ?? background,
+    background,
+    bottom: heroBottom ?? themeBottom,
+  };
 }

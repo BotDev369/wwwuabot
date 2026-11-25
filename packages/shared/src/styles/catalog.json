@@ -1,5 +1,5 @@
 {
-  "version": "4949ef1",
+  "version": "8764dce",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -204,7 +204,7 @@
     {
       "file": "showcase.css",
       "tokens": 6,
-      "classes": 17
+      "classes": 19
     },
     {
       "file": "subbar.css",
@@ -223,7 +223,7 @@
     },
     {
       "file": "tokens.css",
-      "tokens": 216,
+      "tokens": 217,
       "classes": 0
     },
     {
@@ -498,6 +498,14 @@
       "paletteDark": ""
     },
     {
+      "name": "--chrome-hero-bottom-bg",
+      "section": "Нативний хром Telegram",
+      "light": "#5e3430",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
       "name": "--chrome-hero-header-bg",
       "section": "Нативний хром Telegram",
       "light": "#a06239",
@@ -612,7 +620,7 @@
     {
       "name": "--display-size-hero",
       "section": "Typography",
-      "light": "2.25rem",
+      "light": "2.75rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -6623,18 +6631,20 @@
           "wb-showcase",
           "wb-showcase-brand",
           "wb-showcase-cue",
+          "wb-showcase-cue__arrow",
+          "wb-showcase-frame",
           "wb-showcase-group",
           "wb-showcase-groups",
           "wb-showcase-hero",
           "wb-showcase-list",
-          "wb-showcase-motes",
           "wb-showcase-photo",
           "wb-showcase-row",
           "wb-showcase-row-icon",
           "wb-showcase-row-label",
           "wb-showcase-row-more",
-          "wb-showcase-rule",
+          "wb-showcase-shade",
           "wb-showcase-sheen",
+          "wb-showcase-stars",
           "wb-showcase-tagline",
           "wb-showcase-title"
         ]

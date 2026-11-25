@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <!-- viewport-fit=cover — інакше env(safe-area-inset-*) у tokens.css = 0,
-         і контент залазить під виріз/індикатор додому на iPhone. -->
+         і контент залазить під виріз/індикатор дому на iPhone. -->
     <!-- interactive-widget=resizes-content: на Android клавіатура закривала
          смугу вводу, бо розмір сторінки не мінявся (мінявся лише видимий
          прямокутник). iOS і старші браузери цей ключ ігнорують — там клавіатуру
@@ -24,10 +24,162 @@
          магазину «ціна 250» ставала дзвінком. -->
     <meta name="format-detection" content="telephone=no" />
     <title>WWWUABot — Web Platform</title>
+    <!-- Критичний шар обкладинки: доки вантажиться бандл і відповідає
+         `/api/user/access`, екран уже показує фото й назву. Мірки — ті самі,
+         що в `showcase.css`; міняються разом із ним. React замінює цей вміст
+         своїм першим рендером. -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #5e3430;
+      }
+
+      body {
+        color: #ffffff;
+        font-family:
+          "Onest",
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+      }
+
+      .wb-showcase {
+        display: flex;
+        flex-direction: column;
+        min-height: 100dvh;
+        background: #3a2320;
+      }
+
+      .wb-showcase-hero {
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        height: 100dvh;
+        min-height: 420px;
+        overflow: hidden;
+        background: radial-gradient(80% 60% at 50% 30%, #8a5a2c, #4a2a2a);
+      }
+
+      .wb-showcase-frame {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+
+      @media (orientation: portrait) {
+        .wb-showcase-frame {
+          inset: 0 -4%;
+        }
+      }
+
+      .wb-showcase-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 50% 42%;
+      }
+
+      .wb-showcase-shade {
+        position: absolute;
+        inset: auto 0 0;
+        height: 52%;
+        pointer-events: none;
+        background: linear-gradient(
+          to top,
+          rgba(46, 24, 19, 0.72) 0%,
+          rgba(46, 24, 19, 0.46) 30%,
+          rgba(46, 24, 19, 0.14) 64%,
+          transparent 100%
+        );
+      }
+
+      .wb-showcase-brand {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        padding: 0 20px calc(32px + env(safe-area-inset-bottom));
+        text-align: center;
+      }
+
+      .wb-showcase-title {
+        margin: 0;
+        font-size: 44px;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        color: #ffffff;
+        text-shadow: 0 3px 18px rgba(51, 24, 8, 0.5);
+      }
+
+      .wb-showcase-tagline {
+        margin: 8px 0 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.94);
+        text-shadow: 0 2px 12px rgba(51, 24, 8, 0.5);
+      }
+
+      .wb-showcase-cue {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 44px;
+        margin-top: 12px;
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .wb-showcase-cue svg {
+        display: block;
+        width: 34px;
+        height: 34px;
+        filter: drop-shadow(0 2px 8px rgba(40, 20, 12, 0.45));
+      }
+    </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main class="wb-showcase">
+        <section class="wb-showcase-hero">
+          <span class="wb-showcase-frame">
+            <img
+              class="wb-showcase-photo"
+              src="/media/home-hero.jpg"
+              alt=""
+              width="880"
+              height="1184"
+              fetchpriority="high"
+              decoding="async"
+            />
+          </span>
+          <span class="wb-showcase-shade" aria-hidden="true"></span>
+          <div class="wb-showcase-brand">
+            <h1 class="wb-showcase-title">ПАЛЯНИЦЯ</h1>
+            <p class="wb-showcase-tagline">платформа для своїх</p>
+            <!-- Стрілка — малюнок до першого рендера: кнопкою вона стає
+                 разом із застосунком. -->
+            <span class="wb-showcase-cue" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 5v14" />
+                <path d="M19 12l-7 7-7-7" />
+              </svg>
+            </span>
+          </div>
+        </section>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

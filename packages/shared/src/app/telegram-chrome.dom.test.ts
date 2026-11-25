@@ -155,6 +155,22 @@ describe("initTelegramChrome", () => {
     expect(calls).toContain(`bottom:${BOTTOM}`);
   });
 
+  it("на обкладинці низ Mini App — колір нижнього краю кадру, а не смуга теми", () => {
+    mockTokens({
+      "--chrome-header-bg": HEADER,
+      "--chrome-bottom-bg": "#f0f0f4",
+      "--chrome-hero-header-bg": "#a06239",
+      "--chrome-hero-bottom-bg": "#5e3430",
+    });
+    document.documentElement.setAttribute("data-chrome", "hero");
+    const { calls } = install();
+
+    start();
+
+    // Біла смуга під фото читалась як обрізана шапка.
+    expect(calls).toContain("bottom:#5e3430");
+  });
+
   it("шапка екрана йде в тон розділу — тим самим, що й наш хедер і верхівка", () => {
     mockTokens({
       "--chrome-header-bg": HEADER,

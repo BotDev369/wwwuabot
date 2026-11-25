@@ -30,17 +30,56 @@
   background: var(--gradient-hero);
 }
 
-/* Фото не наїжджає: масштаб усього поля за секунди читався як тиск на очі.
-   Кадр лишається кадром, а живе обкладинка паралаксом — від прокрутки, а не
-   сама по собі: `--hero-shift` рахує сторінка. */
-.wb-showcase-photo {
+/* Кадр — рівно той, що у файлі: без наближення, паляниця того самого розміру,
+   що на погодженому фото. Запас по 4% з кожного боку (лише в портреті, де
+   `cover` ріже боки) дає кадрові коливатися — звідси й рух колосків. */
+.wb-showcase-frame {
   position: absolute;
   inset: 0;
+  overflow: hidden;
+}
+
+@media (orientation: portrait) {
+  .wb-showcase-frame {
+    inset: 0 -4%;
+    animation: wb-showcase-drift 26s var(--ease) infinite alternate;
+  }
+}
+
+@keyframes wb-showcase-drift {
+  from {
+    transform: translate3d(-1.4%, 0, 0);
+  }
+
+  to {
+    transform: translate3d(1.4%, 0, 0);
+  }
+}
+
+/* Живе сам кадр. Накладених копій немає: копія під маскою давала другу
+   паляницю й ламала форму. */
+.wb-showcase-photo {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: 50% 42%;
-  transform: translate3d(0, calc(var(--hero-shift, 0px) * 0.16), 0);
+}
+
+/* Під текстом — тихе затемнення нижньої частини кадру. Це світло в самому
+   кадрі, а не друга картинка: колоски під назвою не рябіють, і текст не
+   впирається ні в паляницю, ні в край екрана. */
+.wb-showcase-shade {
+  position: absolute;
+  inset: auto 0 0;
+  height: 52%;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(46, 24, 19, 0.72) 0%,
+    rgba(46, 24, 19, 0.46) 30%,
+    rgba(46, 24, 19, 0.14) 64%,
+    transparent 100%
+  );
 }
 
 /* Відблиск скла: одна світла смуга проходить полем і йде. Це те «життя», яке
@@ -70,97 +109,87 @@
   }
 }
 
-/* Порошинки: сім крапок, що повільно піднімаються. Їх видно лише боковим
-   зором — і саме тому обкладинка не здається нерухомим знімком. */
-.wb-showcase-motes {
+/* Зірки: не порошинки, що летять, а спалахи, які загораються й затихають на
+   місці. Порошинки на світлому кадрі не читались зовсім. */
+.wb-showcase-stars {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  transform: translate3d(0, calc(var(--hero-shift, 0px) * 0.32), 0);
+  transform: translate3d(0, calc(var(--hero-shift, 0px) * 0.3), 0);
 }
 
-.wb-showcase-motes span {
+.wb-showcase-stars span {
   position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.65);
+  width: 16px;
+  height: 16px;
+  background: #fffaf0;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
   opacity: 0;
-  animation: wb-showcase-mote 13s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(255, 240, 214, 0.85));
+  animation: wb-showcase-star 4.2s var(--ease) infinite;
 }
 
-.wb-showcase-motes span:nth-child(1) {
-  left: 12%;
-  top: 84%;
+.wb-showcase-stars span:nth-child(1) {
+  left: 18%;
+  top: 14%;
 }
 
-.wb-showcase-motes span:nth-child(2) {
-  left: 26%;
-  top: 68%;
-  width: 3px;
-  height: 3px;
-  animation-delay: -4s;
-  animation-duration: 16s;
+.wb-showcase-stars span:nth-child(2) {
+  left: 62%;
+  top: 9%;
+  transform: scale(0.7);
+  animation-delay: -1.4s;
+  animation-duration: 5.4s;
 }
 
-.wb-showcase-motes span:nth-child(3) {
-  left: 38%;
-  top: 92%;
-  animation-delay: -8s;
-  animation-duration: 18s;
+.wb-showcase-stars span:nth-child(3) {
+  left: 84%;
+  top: 26%;
+  width: 11px;
+  height: 11px;
+  animation-delay: -2.6s;
+  animation-duration: 3.6s;
 }
 
-.wb-showcase-motes span:nth-child(4) {
-  left: 55%;
-  top: 74%;
-  width: 5px;
-  height: 5px;
-  animation-delay: -2s;
-  animation-duration: 15s;
-}
-
-.wb-showcase-motes span:nth-child(5) {
-  left: 68%;
-  top: 88%;
-  width: 3px;
-  height: 3px;
-  animation-delay: -11s;
-  animation-duration: 17s;
-}
-
-.wb-showcase-motes span:nth-child(6) {
-  left: 81%;
+.wb-showcase-stars span:nth-child(4) {
+  left: 36%;
   top: 62%;
-  animation-delay: -6s;
-  animation-duration: 14s;
+  width: 10px;
+  height: 10px;
+  animation-delay: -0.7s;
+  animation-duration: 4.8s;
 }
 
-.wb-showcase-motes span:nth-child(7) {
-  left: 91%;
-  top: 80%;
-  width: 2px;
-  height: 2px;
-  animation-delay: -9s;
-  animation-duration: 19s;
+.wb-showcase-stars span:nth-child(5) {
+  left: 72%;
+  top: 72%;
+  animation-delay: -3.1s;
+  animation-duration: 4s;
 }
 
-@keyframes wb-showcase-mote {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) scale(0.8);
-  }
+.wb-showcase-stars span:nth-child(6) {
+  left: 8%;
+  top: 52%;
+  width: 12px;
+  height: 12px;
+  animation-delay: -2s;
+  animation-duration: 5.8s;
+}
 
-  18% {
-    opacity: 0.45;
-  }
-
-  70% {
-    opacity: 0.22;
-  }
-
+@keyframes wb-showcase-star {
+  0%,
   100% {
     opacity: 0;
-    transform: translate3d(8px, -32vh, 0) scale(1.15);
+    transform: scale(0.4) rotate(0deg);
+  }
+
+  45% {
+    opacity: 0.85;
+    transform: scale(1) rotate(14deg);
+  }
+
+  62% {
+    opacity: 0.5;
   }
 }
 
@@ -168,12 +197,14 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  padding: 0 var(--sp-5) var(--sp-6);
+  padding: 0 var(--sp-5) calc(var(--sp-8) + var(--safe-bottom));
   text-align: center;
   transform: translate3d(0, calc(var(--hero-shift, 0px) * -0.1), 0);
 }
 
-/* Тінь тримає читабельність на скляній графіці без затемнення всього низу. */
+/* Назва більша й жива: основа лишається білою, а веселка проходить самими
+   літерами — кольорова смуга їде по слову. Тінь — через `drop-shadow`:
+   `text-shadow` під прозорою заливкою не малюється. */
 .wb-showcase-title {
   margin: 0;
   font-family: var(--font-display);
@@ -182,8 +213,40 @@
   letter-spacing: -0.02em;
   line-height: 1;
   color: #ffffff;
-  text-shadow: 0 3px 18px rgba(51, 24, 8, 0.5);
-  animation: wb-showcase-rise 600ms var(--ease) both;
+  background-image: linear-gradient(
+    100deg,
+    #ffffff 0%,
+    #ffffff 26%,
+    #ffe08a 34%,
+    #ffab8f 40%,
+    #f9a8cb 46%,
+    #c3b5ff 52%,
+    #9fd0ff 58%,
+    #ffffff 70%,
+    #ffffff 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 280% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 18px rgba(51, 24, 8, 0.5));
+  animation:
+    wb-showcase-rise 600ms var(--ease) both,
+    wb-showcase-rainbow 9s 600ms linear infinite;
+}
+
+/* Смуга їде по літерах, але сама заливка завжди накриває слово цілком:
+   `background-position` лишається між 0% і 100% — за цими межами праві або
+   ліві літери ставали прозорими. */
+@keyframes wb-showcase-rainbow {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: 0% 0;
+  }
 }
 
 .wb-showcase-tagline {
@@ -195,53 +258,37 @@
   animation: wb-showcase-rise 600ms 150ms var(--ease) both;
 }
 
-/* Риска під підписом: тонка лінія, що прокреслюється після появи тексту.
-   Вона й тримає низ обкладинки, і показує, що під нею ще є сторінка. */
-.wb-showcase-rule {
-  display: block;
-  width: 40px;
-  height: 1px;
-  margin: var(--sp-4) auto 0;
-  background: rgba(255, 255, 255, 0.45);
-  transform-origin: 50% 50%;
-  animation: wb-showcase-rule 900ms 420ms var(--ease) both;
-}
-
-@keyframes wb-showcase-rule {
-  from {
-    opacity: 0;
-    transform: scaleX(0);
-  }
-
-  to {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-}
-
-/* Підказка скролу: обкладинка на весь екран не каже, що під нею є пункти.
-   Це кнопка, а не малюнок: дотик веде до списку, клавіатура теж. */
+/* Підказка скролу — без слова: стрілка вниз (древко й вістря), а не «галочка».
+   Обкладинка на весь екран не каже, що під нею пункти, а «Розділи» тут було
+   зайвим словом. */
 .wb-showcase-cue {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-1);
+  justify-content: center;
+  min-width: 64px;
   min-height: 44px;
-  margin-top: var(--sp-1);
-  padding: var(--sp-2) var(--sp-3);
+  margin-top: var(--sp-3);
+  padding: 0;
   border: 0;
   border-radius: var(--radius-full);
   background: none;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.92);
   font: inherit;
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   cursor: pointer;
 }
 
-.wb-showcase-cue svg {
+.wb-showcase-cue__arrow {
+  display: block;
+  width: 34px;
+  height: 34px;
+  filter: drop-shadow(0 2px 8px rgba(40, 20, 12, 0.45));
   animation: wb-showcase-cue 2.6s var(--ease) infinite;
+}
+
+.wb-showcase-cue__arrow svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .wb-showcase-cue:focus-visible {
@@ -253,11 +300,11 @@
   0%,
   60%,
   100% {
-    transform: none;
+    transform: translateY(0);
   }
 
   75% {
-    transform: translateY(3px);
+    transform: translateY(5px);
   }
 }
 
@@ -275,27 +322,31 @@
   }
 }
 
+/* Тихий режим: усе, що рухається саме по собі, стає статичним — обкладинка
+   лишається тією самою картинкою. Паралакс від прокрутки тут теж off. */
 @media (prefers-reduced-motion: reduce) {
   .wb-showcase-title,
   .wb-showcase-tagline {
     animation: none;
   }
 
-  /* Відблиск, порошинки, риска й шеврон — рух заради руху: без них обкладинка
-     лишається тією самою, просто спокійною. */
   .wb-showcase-sheen,
-  .wb-showcase-motes span,
-  .wb-showcase-rule,
-  .wb-showcase-cue svg {
+  .wb-showcase-stars span,
+  .wb-showcase-photo,
+  .wb-showcase-cue__arrow {
     animation: none;
   }
 
-  .wb-showcase-motes span {
-    opacity: 0.3;
+  .wb-showcase-stars span {
+    opacity: 0.25;
   }
 
-  .wb-showcase-photo,
-  .wb-showcase-motes,
+  .wb-showcase-frame {
+    animation: none;
+    transform: none;
+  }
+
+  .wb-showcase-stars,
   .wb-showcase-brand {
     transform: none;
   }
