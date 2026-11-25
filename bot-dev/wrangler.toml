@@ -31,6 +31,9 @@ CLOUDINARY_CLOUD_NAME = "ddoumoe5n"
 # Публічна адреса web-platform для автоматичної кнопки web_app.
 # Заповнюється перед деплоєм; без неї збережені кнопки працюють як раніше.
 WEB_PLATFORM_URL = "https://web-platform-dev.diskomate.workers.dev"
+# Адмінка: `/admin` показує власнику кнопку Mini App на цю адресу.
+# Панель відкривається лише всередині Telegram — це гейт її сторінки.
+WEB_ADMIN_URL = "https://web-admin-dev.diskomate.workers.dev"
 
 [observability]
 enabled = true

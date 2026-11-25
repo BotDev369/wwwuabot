@@ -40,6 +40,8 @@ export interface Env {
   CLOUDINARY_CLOUD_NAME: string;
   /** Публічна база Mini App; без неї бот не додає web_app-кнопок. */
   WEB_PLATFORM_URL?: string;
+  /** Адреса адмінки — нею власник відкриває панель із `/admin`. */
+  WEB_ADMIN_URL?: string;
   ADMIN_TELEGRAM_ID?: string;
   /**
    * Ключ, яким CI підписує звіт про деплой (`POST /reports`). Немає ключа —

@@ -60,6 +60,19 @@
 - Перевірка доступу — **чиста функція** в `packages/shared/src/security/access.ts`; що робити при
   провалі — виклик. Гейт стоїть у `api-dev/src/router.ts` перед маршрутизацією.
 
+## Вхід лише з Mini App
+
+Платформа й адмінка показують продукт **тільки** з підписаним `initData` від Telegram. Гейт
+спрацьовує в `index.html` до першого кадру й до бандла (`packages/shared/src/security/mini-app.ts`,
+тест — `src/entry-gate.dom.test.ts` кожної оболонки): у браузері замість продукту — екран-блок, без
+блимання обкладинки. Це не авторизація: гейт лише не показує інтерфейс тому, кого не
+ідентифікували, — дані все одно закриває підпис у `api-dev`.
+
+Винятки два: `localhost`/`127.0.0.1` (розробка) і ключ прев'ю платформи `?preview=<ключ>`
+(секрет `PREVIEW_SESSION_KEY` в `api-dev`, див. `web-platform-dev/README.md`). Адмінка має один
+вхід — кнопку бота `/admin`, яку бачить лише власник (`bot-dev/src/modules/admin/admin-panel.ts`).
+Тестові акаунти агента — `docs/TEST_ACCOUNTS.md`.
+
 ## Що гейт ловить, а що — ні
 
 Тести (`headers.test.ts`, `access.test.ts`, `session.test.ts`, `telegram.test.ts`) тримають заголовки,

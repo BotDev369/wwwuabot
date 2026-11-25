@@ -27,6 +27,7 @@ import { handleCartCallback } from "../../modules/search/cart.handler";
 import { handleSearch } from "../../modules/search/search.handler";
 import { handleWords } from "../../modules/search/words.handler";
 import { handleStart } from "../../modules/start/start.handler";
+import { handleAdminPanel } from "../../modules/admin/admin-panel";
 import { recordIncomingMessage } from "../../modules/history/record";
 
 export async function botRouter(ctx: AppContext): Promise<void> {
@@ -71,6 +72,14 @@ export async function botRouter(ctx: AppContext): Promise<void> {
 
     const [command, payload = ""] = text.split(" ");
     const name = command.split("@")[0];
+
+    // Панель — лише власнику: її сторінка відкривається тільки в Telegram.
+    if (name === "/admin") {
+      ctx.screenHandled = true;
+      if (await handleAdminPanel(ctx)) return;
+      await deleteIncomingMessage(ctx);
+      return;
+    }
 
     // Довідник слів — окремий екран, а не сценарій і не пошуковий запит.
     if (name === "/words") {
