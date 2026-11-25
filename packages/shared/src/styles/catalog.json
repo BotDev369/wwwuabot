@@ -1,5 +1,5 @@
 {
-  "version": "8764dce",
+  "version": "a7ab4b3",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -204,7 +204,7 @@
     {
       "file": "showcase.css",
       "tokens": 6,
-      "classes": 19
+      "classes": 20
     },
     {
       "file": "subbar.css",
@@ -620,7 +620,7 @@
     {
       "name": "--display-size-hero",
       "section": "Typography",
-      "light": "2.75rem",
+      "light": "clamp(3rem, 15vw, 4.4rem)",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -6633,6 +6633,8 @@
           "wb-showcase-cue",
           "wb-showcase-cue__arrow",
           "wb-showcase-frame",
+          "wb-showcase-glints",
+          "wb-showcase-glow",
           "wb-showcase-group",
           "wb-showcase-groups",
           "wb-showcase-hero",
@@ -6643,7 +6645,6 @@
           "wb-showcase-row-label",
           "wb-showcase-row-more",
           "wb-showcase-shade",
-          "wb-showcase-sheen",
           "wb-showcase-stars",
           "wb-showcase-tagline",
           "wb-showcase-title"

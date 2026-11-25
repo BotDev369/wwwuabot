@@ -215,7 +215,7 @@
      тихішим за картку з числом. */
   --display-size: 2.0625rem; /* 33px */
   /* Вхід — обкладинка: єдиний екран, де дисплей більший за 33px (макет 08). */
-  --display-size-hero: 2.75rem; /* 44px */
+  --display-size-hero: clamp(3rem, 15vw, 4.4rem); /* 48–70px: слово майже в цілу ширину */
   --display-weight: var(--weight-black);
   --display-tracking: -0.045em;
   --display-leading: 1;

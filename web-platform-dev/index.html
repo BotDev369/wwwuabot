@@ -61,38 +61,51 @@
         height: 100dvh;
         min-height: 420px;
         overflow: hidden;
-        background: radial-gradient(80% 60% at 50% 30%, #8a5a2c, #4a2a2a);
+        background: linear-gradient(
+          180deg,
+          #a06239 0%,
+          #a06239 12%,
+          #8b5735 36%,
+          #704132 68%,
+          #5e3430 90%,
+          #5e3430 100%
+        );
       }
 
       .wb-showcase-frame {
         position: absolute;
-        inset: 0;
-        overflow: hidden;
-      }
-
-      @media (orientation: portrait) {
-        .wb-showcase-frame {
-          inset: 0 -4%;
-        }
+        top: 50%;
+        left: 50%;
+        width: min(100%, calc(100dvh * 880 / 1184));
+        aspect-ratio: 880 / 1184;
+        transform: translate(-50%, -50%);
+        -webkit-mask-image: linear-gradient(
+          180deg,
+          transparent 0%,
+          #000 7%,
+          #000 93%,
+          transparent 100%
+        );
+        mask-image: linear-gradient(180deg, transparent 0%, #000 7%, #000 93%, transparent 100%);
       }
 
       .wb-showcase-photo {
+        display: block;
         width: 100%;
         height: 100%;
         object-fit: cover;
-        object-position: 50% 42%;
       }
 
       .wb-showcase-shade {
         position: absolute;
         inset: auto 0 0;
-        height: 52%;
+        height: 48%;
         pointer-events: none;
         background: linear-gradient(
           to top,
-          rgba(46, 24, 19, 0.72) 0%,
-          rgba(46, 24, 19, 0.46) 30%,
-          rgba(46, 24, 19, 0.14) 64%,
+          rgba(40, 20, 16, 0.76) 0%,
+          rgba(40, 20, 16, 0.48) 34%,
+          rgba(40, 20, 16, 0.16) 66%,
           transparent 100%
         );
       }
@@ -101,18 +114,20 @@
         position: relative;
         z-index: 1;
         width: 100%;
-        padding: 0 20px calc(32px + env(safe-area-inset-bottom));
+        padding: 0 16px calc(32px + env(safe-area-inset-bottom));
         text-align: center;
       }
 
       .wb-showcase-title {
         margin: 0;
-        font-size: 44px;
+        font-size: clamp(3rem, 15vw, 4.4rem);
         font-weight: 900;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.03em;
         line-height: 1;
         color: #ffffff;
-        text-shadow: 0 3px 18px rgba(51, 24, 8, 0.5);
+        text-shadow:
+          0 4px 26px rgba(38, 18, 10, 0.75),
+          0 1px 2px rgba(38, 18, 10, 0.55);
       }
 
       .wb-showcase-tagline {

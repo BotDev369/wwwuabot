@@ -28,8 +28,13 @@ const REGISTRY_ROWS: readonly ScreenRow[] = SCREENS.map((screen) => ({
   texts: {},
 }));
 
-/** Скільки зірок-спалахів живе на обкладинці: шість у різних фазах. */
-const STARS = 6;
+/**
+ * Скільки зірок-спалахів і відблисків у бульбашках живе на обкладинці. Вони
+ * стоять на тих самих місцях, що й намальовані у файлі, — тому це не нові
+ * знаки, а спалах наявних.
+ */
+const STARS = 8;
+const GLINTS = 7;
 
 /**
  * Тихий режим: заради нього рух вимикається, а не зменшується. У jsdom
@@ -94,14 +99,19 @@ export function EntryPage(): ReactElement {
             fetchPriority="high"
             decoding="async"
           />
+          <span className="wb-showcase-stars" aria-hidden="true">
+            {Array.from({ length: STARS }, (_, index) => (
+              <span key={index} />
+            ))}
+          </span>
+          <span className="wb-showcase-glints" aria-hidden="true">
+            {Array.from({ length: GLINTS }, (_, index) => (
+              <span key={index} />
+            ))}
+          </span>
         </span>
+        <span className="wb-showcase-glow" aria-hidden="true" />
         <span className="wb-showcase-shade" aria-hidden="true" />
-        <span className="wb-showcase-sheen" aria-hidden="true" />
-        <div className="wb-showcase-stars" aria-hidden="true">
-          {Array.from({ length: STARS }, (_, index) => (
-            <span key={index} />
-          ))}
-        </div>
         <div className="wb-showcase-brand">
           <h1 className="wb-showcase-title">ПАЛЯНИЦЯ</h1>
           <p className="wb-showcase-tagline">платформа для своїх</p>
