@@ -9,7 +9,7 @@ name: D1 (dev)
 # де цей токен є руками.
 #
 # Запуск: Actions → D1 (dev) → Run workflow, або
-#   gh workflow run "D1 (dev)" -f sql="SELECT id, slug FROM scenarios"
+#   gh workflow run "D1 (dev)" -f sql="SELECT id, slug FROM platform_pages"
 #   gh workflow run "D1 (dev)" -f file=scripts/migrations/<назва>.sql
 #
 # Дозволено **тільки** файли з `scripts/migrations/` (перевіряється нижче):

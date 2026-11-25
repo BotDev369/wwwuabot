@@ -2,8 +2,10 @@
 
 > Модульна Telegram-платформа: бот + Web Mini App + Page Builder.
 >
-> Контент живе в **одному** місці — таблиця `scenarios`: рядок = сторінка вебу
-> (`page_data`) разом із її поданням у боті (`caption_*`, `buttons`, `rich_*`).
+> Контент розділений за призначенням, а не зібраний в одну таблицю: сторінка
+> платформи — `platform_pages` (`slug` + `page_data`), екран платформи —
+> `platform_screens` (ключ, місце в меню, слова), екран бота — `bot_scenarios`
+> (`lookup`, `widget_html` / `rich_html`). Модель — [`docs/CONTENT_MODEL.md`](docs/CONTENT_MODEL.md).
 
 [![CI/CD](https://github.com/BotDev369/wwwuabot/actions/workflows/deploy.yml/badge.svg)](https://github.com/BotDev369/wwwuabot/actions/workflows/deploy.yml)
 [![TypeScript](https://img.shields.io/badge/typescript-0%20any-blue.svg)](packages/shared/)
