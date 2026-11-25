@@ -4,12 +4,12 @@
  * @module web-platform-dev/src/entry-gate.dom.test
  */
 
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { WEB_BLOCK_ATTR } from "@wwwuabot/shared/security/mini-app";
+import { entryGateScript } from "@wwwuabot/shared/security/entry-gate";
 
-const HTML = readFileSync(new URL("../index.html", import.meta.url), "utf8");
-const SCRIPT = /<script id="entry-gate">([\s\S]*?)<\/script>/.exec(HTML)?.[1] ?? "";
+// Скрипт спільний для обох оболонок; платформа вмикає лише ключ прев'ю.
+const SCRIPT = entryGateScript({ preview: true });
 const PUBLIC_HOST = "web-platform-dev.diskomate.workers.dev";
 
 function blocked(options: {

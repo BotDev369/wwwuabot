@@ -6,6 +6,8 @@ import path from "path";
 
 import { createHash } from "crypto";
 
+import { entryGatePlugin } from "@wwwuabot/shared/security/entry-gate-vite";
+
 /** Post-process HTML to:
  *  1. Remove crossorigin attrs (CDN doesn't send CORS headers)
  *  2. Inject build hash so browsers never serve stale HTML */
@@ -26,7 +28,14 @@ function fixHtml() {
 }
 
 export default defineConfig({
-  plugins: [cloudflare(), react(), tailwindcss(), fixHtml()],
+  plugins: [
+    // Гейт стоїть першим: його стилі мають потрапити в голову до першого кадру.
+    entryGatePlugin(),
+    cloudflare(),
+    react(),
+    tailwindcss(),
+    fixHtml(),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

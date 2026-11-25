@@ -7,8 +7,10 @@
  * @module packages/shared/src/security/mini-app
  */
 
-/** Атрибут `<html>`, який ставить гейт першого кадру: продукт не показуємо. */
-export const WEB_BLOCK_ATTR = "data-web-block";
+/** Атрибут гейта першого кадру; контракт живе в `entry-gate`, тут — для коду й тестів. */
+import { WEB_BLOCK_ATTR } from "./entry-gate";
+
+export { WEB_BLOCK_ATTR };
 
 /** Що потрібно знати про вікно, щоб ухвалити рішення. */
 export interface WebEntry {

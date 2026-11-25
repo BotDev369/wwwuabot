@@ -57,6 +57,8 @@
     "./security/telegram": "./src/security/telegram.ts",
     "./security/preview-session": "./src/security/preview-session.ts",
     "./security/mini-app": "./src/security/mini-app.ts",
+    "./security/entry-gate": "./src/security/entry-gate.ts",
+    "./security/entry-gate-vite": "./src/security/entry-gate-vite.ts",
     "./user/platform-username": "./src/user/platform-username.ts",
     "./user/public-profile": "./src/user/public-profile.ts",
     "./ads": "./src/ads/index.ts",

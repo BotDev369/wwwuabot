@@ -5,6 +5,7 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 import path from "path";
 
 import { telegramPreviewSession } from "./dev/telegram-session.ts";
+import { entryGatePlugin } from "@wwwuabot/shared/security/entry-gate-vite";
 
 import { execSync } from "child_process";
 
@@ -48,7 +49,15 @@ export default defineConfig({
   // `telegramPreviewSession()` стоїть першим: він реєструє свою адресу сесії
   // (`dev/telegram-session.ts`) у мідлварах раніше за плагін Cloudflare, який
   // інакше віддав би цей шлях воркеру.
-  plugins: [telegramPreviewSession(), cloudflare(), react(), tailwindcss(), fixHtml()],
+  plugins: [
+    // Гейт стоїть першим: його стилі мають потрапити в голову до першого кадру.
+    entryGatePlugin({ preview: true }),
+    telegramPreviewSession(),
+    cloudflare(),
+    react(),
+    tailwindcss(),
+    fixHtml(),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

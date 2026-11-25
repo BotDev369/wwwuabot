@@ -184,6 +184,27 @@ describe("botRouter", () => {
     expect(mocks.find).not.toHaveBeenCalled();
   });
 
+  it("/admin у групі не показує нічого — там кнопка Mini App не працює", async () => {
+    const sendMessage = vi.fn(async () => ({ message_id: 11 }));
+    await botRouter(
+      context({
+        message: { text: "/admin", message_id: 3 },
+        from: { id: 1 },
+        chat: { id: -100123, type: "supergroup" },
+        api: { sendMessage },
+        env: {
+          DB: {},
+          ADMIN_TELEGRAM_ID: "1",
+          WEB_ADMIN_URL: "https://admin.example",
+        },
+      }),
+    );
+
+    expect(sendMessage).not.toHaveBeenCalled();
+    expect(mocks.deleteIncoming).toHaveBeenCalled();
+    expect(mocks.find).not.toHaveBeenCalled();
+  });
+
   it("/words показує довідник слів, а не сценарій", async () => {
     await botRouter(context({ message: { text: "/words", message_id: 3 } }));
 

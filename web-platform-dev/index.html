@@ -145,95 +145,13 @@
         height: 34px;
         filter: drop-shadow(0 2px 8px rgba(40, 20, 12, 0.45));
       }
-
-      /* Блок «лише в Telegram». Ховаємо продукт ще до першого кадру: гейт у
-         тілі ставить `data-web-block`, а стилі вже тут — тож обкладинка не
-         встигає блимнути. Мірки ті самі, що в адмінці. */
-      html[data-web-block] #root {
-        display: none;
-      }
-
-      .wb-entry-block {
-        display: none;
-      }
-
-      html[data-web-block] body {
-        background: #f6f1e7;
-        color: #1b2430;
-      }
-
-      html[data-web-block] .wb-entry-block {
-        display: flex;
-        box-sizing: border-box;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        min-height: 100dvh;
-        padding: calc(28px + env(safe-area-inset-top)) 24px calc(28px + env(safe-area-inset-bottom));
-        text-align: center;
-        background: radial-gradient(120% 60% at 50% 0%, #fffdf8 0%, #f6f1e7 60%, #efe6d6 100%);
-      }
-
-      .wb-entry-block-mark {
-        font-size: 28px;
-        line-height: 1;
-        color: #a06239;
-      }
-
-      .wb-entry-block-kicker {
-        margin: 6px 0 0;
-        font-size: 11px;
-        letter-spacing: 2.4px;
-        text-transform: uppercase;
-        color: #9a8a68;
-      }
-
-      .wb-entry-block-title {
-        margin: 0;
-        font-size: clamp(26px, 8vw, 34px);
-        font-weight: 700;
-        line-height: 1.1;
-        color: #171d26;
-      }
-
-      .wb-entry-block-text {
-        margin: 2px 0 0;
-        max-width: 30ch;
-        font-size: 15px;
-        line-height: 1.5;
-        color: #5f6873;
-      }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
-    <!-- Гейт «лише Mini App» — до першого кадру й до бандла. Продукт малюємо
-         тільки з підписаним initData; у браузері показуємо блок. Логіка й
-         тести — packages/shared/src/security/mini-app.ts і
-         src/entry-gate.dom.test.ts; ключ прев'ю (`?preview=`) — дев-вхід. -->
-    <script id="entry-gate">
-      (function () {
-        var initData = "";
-        try {
-          var app = window.Telegram && window.Telegram.WebApp;
-          initData = (app && typeof app.initData === "string" && app.initData) || "";
-        } catch (e) {}
-        var preview = false;
-        try {
-          preview =
-            new URLSearchParams(location.search).has("preview") ||
-            !!sessionStorage.getItem("preview-session-key");
-        } catch (e) {}
-        var local =
-          location.hostname === "localhost" ||
-          location.hostname === "127.0.0.1" ||
-          location.hostname === "[::1]";
-        if (!initData && !preview && !local) {
-          document.documentElement.setAttribute("data-web-block", "");
-        }
-      })();
-    </script>
+    <!-- Гейт «лише Mini App» вставляє `entryGatePlugin()` з
+         `@wwwuabot/shared/security/entry-gate-vite`: стилі — в голову, скрипт —
+         першим у тіло. Нижче лишається тільки те, що бачить браузер. -->
     <div class="wb-entry-block" role="alert">
       <span class="wb-entry-block-mark" aria-hidden="true">✦</span>
       <p class="wb-entry-block-kicker">ПАЛЯНИЦЯ</p>

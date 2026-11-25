@@ -16,10 +16,13 @@ export function isPanelOwner(ctx: AppContext): boolean {
   return owner.length > 0 && String(ctx.from?.id ?? "") === owner;
 }
 
-/** Показати власнику кнопку входу; `false` — не власник або немає адреси. */
+/**
+ * Панель — лише приватна лістка: у групі кнопка Mini App не працює, тож
+ * команда там мовчить, як і для не власника.
+ */
 export async function handleAdminPanel(ctx: AppContext): Promise<boolean> {
   const url = ctx.env.WEB_ADMIN_URL?.trim();
-  if (!url || !ctx.chat?.id || !isPanelOwner(ctx)) return false;
+  if (!url || !ctx.chat?.id || ctx.chat.type !== "private" || !isPanelOwner(ctx)) return false;
 
   try {
     await ctx.api.sendMessage(ctx.chat.id, labels.message, {

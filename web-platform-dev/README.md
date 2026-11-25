@@ -48,9 +48,11 @@ Cloudflare Worker: Telegram Mini App для wwwuabot (React 19 + Vite 8 + Tailwi
 
 ## Прев'ю в браузері: сесія Telegram і e2e
 
-Поза Telegram `initData` порожній, і гейт стоїть у `index.html` до першого кадру
-(`packages/shared/src/security/mini-app.ts`): у браузері замість платформи — повний
-екран-блок «лише в Telegram», без блимання обкладинки й без запитів даних. Щоб прев'ю
+Поза Telegram `initData` порожній, і гейт спрацьовує до першого кадру:
+його спільне тіло — `packages/shared/src/security/entry-gate.ts`, а в сторінку його вставляє
+`entryGatePlugin()` (`vite.config.ts`, `entry-gate-vite.ts`), тож у `index.html` копії немає.
+У браузері замість платформи — повний екран-блок «лише в Telegram», без блимання обкладинки
+й без запитів даних. Щоб прев'ю
 справді показувало платформу, сервер розробки підписує **справжній** `initData`
 (`dev/telegram-session.ts`): той самий алгоритм, що й у Telegram, тож `api-dev`
 перевіряє його своєю звичайною перевіркою — жодних винятків у ній не з'являється.
