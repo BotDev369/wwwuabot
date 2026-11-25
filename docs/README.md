@@ -66,7 +66,6 @@
 | [`CI_TRIAGE.md`](./CI_TRIAGE.md) | **розбір падінь деплою**: `workflow_run`, класи «причина + лікування», хвіст логу, одна нитка в issues, перезапуск лише транзієнтних на `main` |
 | [`MONITORING.md`](./MONITORING.md) | health, логи, Sentry, UptimeRobot; зрізи показників проєкту (код, GitHub) на `/monitoring`; що робити при падінні |
 | [`../bot-dev/README.md`](../bot-dev/README.md) | бот як система: конвеєр апдейта, `ctx.screen`, рендер, черга нотифікацій, контакти |
-| [`HOME_PAGE_DATA.json`](./HOME_PAGE_DATA.json) | дані головної сторінки (вміст `page_data`) для міграції `2026-09-14-scenarios-03-home-page.sql` |
 
 ## Який документ відкрити під задачу
 
