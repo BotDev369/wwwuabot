@@ -20,7 +20,8 @@ Cloudflare Worker: адмін-панель wwwuabot (React 19 + Vite 8 + Page Bu
 
 Панель показується тільки з підписаним `initData`: гейт спрацьовує до першого кадру, його
 спільне тіло — `packages/shared/src/security/entry-gate.ts`, а в сторінку його вставляє
-`entryGatePlugin()` (`vite.config.ts`). У браузері замість панелі — екран-блок, без блимання.
+`entryGatePlugin()` (`vite.config.ts`); скрипт їде окремим `/entry-gate.js`, бо CSP забороняє
+інлайнові скрипти. У браузері замість панелі — екран-блок, без блимання.
 Зайти в панель можна з бота: власник надсилає `/admin` **у приватній лістці** й натискає кнопку
 Mini App (`bot-dev/src/modules/admin/admin-panel.ts`, адреса — `WEB_ADMIN_URL`); у групі команда
 мовчить. Локально на `localhost`/`127.0.0.1` гейт пропускає розробку — інакше панель не підняти

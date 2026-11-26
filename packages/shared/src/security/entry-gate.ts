@@ -1,8 +1,8 @@
 /**
  * Гейт першого кадру «лише Telegram Mini App»: один текст скрипта й один набір
- * стилів на обидві оболонки. У `index.html` їх немає — сторінка просить
- * `entryGatePlugin()` у `vite.config.ts`, і той вставляє скрипт першим у тіло, а
- * стилі в голову ще на етапі HTML. Так дві копії не розходяться.
+ * стилів на обидві оболонки. У `index.html` їх немає — `entryGatePlugin()`
+ * вставляє стилі в голову, а скрипт — першим у тіло. Скрипт їде окремим
+ * файлом: CSP оболонок (`script-src 'self'`) інлайновий гейт не виконує.
  *
  * @module packages/shared/src/security/entry-gate
  */
@@ -13,6 +13,12 @@
  * `mini-app` реекспортує його для коду й тестів.
  */
 export const WEB_BLOCK_ATTR = "data-web-block";
+
+/**
+ * Ім'я файла гейта в корені сайту. Його ж віддає дев-сервер і кладе в білд;
+ * `script-src 'self'` пропускає його без послаблення CSP.
+ */
+export const ENTRY_GATE_FILE = "entry-gate.js";
 
 /** Єдина відмінність оболонок: ключ прев'ю є лише в платформи. */
 export interface EntryGateOptions {

@@ -7,7 +7,7 @@
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { ENTRY_GATE_STYLES, entryGateScript } from "./entry-gate";
+import { ENTRY_GATE_FILE, ENTRY_GATE_STYLES, entryGateScript } from "./entry-gate";
 import { entryGatePlugin, entryGateTags } from "./entry-gate-vite";
 import { WEB_BLOCK_ATTR } from "./mini-app";
 
@@ -73,20 +73,66 @@ describe("спільні стилі гейта", () => {
 });
 
 describe("Vite-плагін гейта", () => {
-  it("ставить стилі в голову, а скрипт — першим у тіло", () => {
+  it("ставить стилі в голову, а посилання на скрипт — першим у тіло", () => {
     const tags = entryGateTags({ preview: true });
     expect(tags.map((tag) => [tag.tag, tag.injectTo])).toEqual([
       ["style", "head"],
       ["script", "body-prepend"],
     ]);
-    expect(tags[1].attrs).toEqual({ id: "entry-gate" });
-    expect(tags[1].children).toBe(PLATFORM);
+    expect(tags[0].children).toBe(ENTRY_GATE_STYLES);
+    // Інлайн CSP забороняє: `script-src 'self'` без `'unsafe-inline'`.
+    expect(tags[1].children).toBeUndefined();
+    expect(tags[1].attrs).toEqual({ id: "entry-gate", src: `/${ENTRY_GATE_FILE}` });
   });
 
   it("віддає ті самі теги з хука трансформації HTML", () => {
     const plugin = entryGatePlugin();
     expect(plugin.name).toBe("entry-gate");
     expect(plugin.transformIndexHtml()).toEqual(entryGateTags());
+  });
+
+  it("кладе скрипт окремим файлом у корінь білда", () => {
+    const files: { type: string; fileName: string; source: string }[] = [];
+    const emitFile = (file: { type: string; fileName: string; source: string }) => {
+      files.push(file);
+      return "ref";
+    };
+    entryGatePlugin({ preview: true }).generateBundle.call({ emitFile });
+
+    expect(files).toEqual([{ type: "asset", fileName: ENTRY_GATE_FILE, source: PLATFORM }]);
+  });
+
+  it("у деві віддає той самий файл, а не 404", () => {
+    type Handler = (
+      req: unknown,
+      res: { setHeader(name: string, value: string): void; end(body?: string): void },
+      next: () => void,
+    ) => void;
+    let handler: Handler | undefined;
+    let path: string | undefined;
+    const server = {
+      middlewares: {
+        use: (url: string, fn: Handler) => {
+          path = url;
+          handler = fn;
+        },
+      },
+    };
+    entryGatePlugin({ preview: true }).configureServer(server);
+
+    const sent: { headers: Record<string, string>; body?: string } = { headers: {} };
+    handler?.(
+      {},
+      {
+        setHeader: (name: string, value: string) => (sent.headers[name] = value),
+        end: (body?: string) => (sent.body = body),
+      },
+      () => {},
+    );
+
+    expect(path).toBe(`/${ENTRY_GATE_FILE}`);
+    expect(sent.headers["Content-Type"]).toContain("text/javascript");
+    expect(sent.body).toBe(PLATFORM);
   });
 });
 
