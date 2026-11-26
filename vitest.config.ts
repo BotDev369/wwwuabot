@@ -4,6 +4,20 @@ import { resolve } from "node:path";
 /** Оболонки, у яких `@/` → їхній власний `src` (так само, як у `vite.config.ts`). */
 const SHELL_PACKAGES = ["web-platform-dev", "web-admin-dev"];
 
+/** Те, що не є тестом у жодному проєкті. */
+const IGNORED = ["**/node_modules/**", "**/dist/**", "**/.wrangler/**"];
+
+/**
+ * jsdom у VM-контексті віддає справжнє вікно jsdom, а не підмішані на глобал
+ * Node: зникає `crypto.subtle`, а `window.location` справді `[LegacyUnforgeable]`
+ * і не переозначується. Ці файли лишаються в пулі `forks`, незміненими.
+ */
+const VM_INCOMPATIBLE = [
+  "web-platform-dev/dev/telegram-session.dom.test.ts",
+  "web-admin-dev/src/layout/shell.dom.test.tsx",
+  "packages/ui/src/blocks/my-dates-table/useMyDates.dom.test.ts",
+];
+
 export default {
   // Аліас оголошено в `tsconfig.app.json` і в `vite.config.ts` оболонки, але vitest
   // читає лише цей файл: без нього жоден тест оболонки не імпортує її модулів.
@@ -30,13 +44,10 @@ export default {
 
   test: {
     globals: true,
-    environment: "node",
-    include: ["**/*.test.ts", "**/*.spec.ts", "**/*.test.tsx"],
-    exclude: ["**/node_modules/**", "**/dist/**", "**/.wrangler/**"],
 
-    // Покриття вмикає окрема команда: `npm test` лишається швидким для циклу
-    // розробки, а в CI тести біжать один раз — із покриттям. `check-coverage.mjs`
-    // порівнює підсумок із мінімумом, який не можна знизити мовчки.
+    // Покриття рахується раз на весь прогін: це опція кореня, не проєкту.
+    // Поріг падає в CI; `check-coverage.mjs` порівнює підсумок із мінімумом,
+    // який не можна знизити мовчки.
     coverage: {
       provider: "v8",
       reporter: ["text-summary", "json-summary"],
@@ -51,5 +62,39 @@ export default {
       ],
       exclude: ["**/*.test.*", "**/*.dom.test.*", "**/*.spec.*", "**/types/**"],
     },
+
+    // Проєкти розділені за ціною середовища. `node` — як було. `dom` — jsdom,
+    // який коштує 200–500 мс на файл: у пулі `vmThreads` середовище створюється
+    // раз на воркер, а кожен файл дістає свіжий VM-контекст і вікно, тож
+    // спільного модульного кеша немає й тести не течуть одне в одного.
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "node",
+          environment: "node",
+          include: ["**/*.test.ts", "**/*.spec.ts", "**/*.test.tsx"],
+          exclude: [...IGNORED, "**/*.dom.test.*"],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "dom",
+          environment: "jsdom",
+          pool: "vmThreads",
+          include: ["**/*.dom.test.ts", "**/*.dom.test.tsx"],
+          exclude: [...IGNORED, ...VM_INCOMPATIBLE],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "dom-forks",
+          environment: "jsdom",
+          include: VM_INCOMPATIBLE,
+        },
+      },
+    ],
   },
 };
