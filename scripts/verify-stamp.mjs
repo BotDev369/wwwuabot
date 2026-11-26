@@ -74,7 +74,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (stamped()) process.exit(0);
     console.error(
       "✗ Пуш заблоковано: на цьому дереві не було зеленого `npm run verify`.\n" +
-        "  Запусти `npm run verify` (усі 19 кроків, як у CI) — і пуш відкриється.\n" +
+        "  Запусти `npm run verify` (усі 20 кроків, як у CI) — і пуш відкриється.\n" +
         "  Обхід навмисно не передбачений: саме через нього деплой падав.",
     );
     process.exit(1);
