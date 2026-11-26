@@ -59,6 +59,7 @@
     "push": "node scripts/push.mjs",
     "shots": "node scripts/shots.mjs",
     "check:inline": "node scripts/check-inline-styles.mjs",
+    "check:gate": "node scripts/check-entry-gate.mjs",
     "test:coverage": "vitest run --coverage",
     "check:coverage": "node scripts/check-coverage.mjs",
     "check:pages": "vitest run packages/shared/src/types/page-data.dump.test.ts",

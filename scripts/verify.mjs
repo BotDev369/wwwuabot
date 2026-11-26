@@ -41,6 +41,9 @@ const STEPS = [
   // Бюджет бандла читає `dist/`, тож обидві збірки стоять перед ним.
   { name: "build:web-platform", cmd: "npm run build --workspace web-platform-dev" },
   { name: "build:web-admin", cmd: "npm run build --workspace web-admin-dev" },
+  // Перший кадр у справжньому Chromium: інлайновий гейт CSP блокує, і це
+  // видно лише в браузері — тому крок стоїть після збірок, як і бюджет.
+  { name: "check:gate", cmd: "npm run check:gate" },
   { name: "check:bundle", cmd: "npm run check:bundle" },
   { name: "test", cmd: "npm test" },
 ];

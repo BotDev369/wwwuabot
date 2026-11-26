@@ -55,6 +55,11 @@ jobs:
       # `ci`, не `install`: збірка мусить бути відтворюваною з lockfile,
       # інакше патч транзитивної залежності тихо змінює прод.
       - run: npm ci
+      # Chromium для `check:gate`: гейт першого кадру перевіряється справжнім
+      # браузером під строгим CSP, а не текстом скрипта. `--with-deps` ставить
+      # і системні бібліотеки — без них браузер на раннері не стартує.
+      - name: Chromium for the first-frame gate
+        run: npx playwright install --with-deps chromium
       # Поріг піднято з `critical` до `high` 13.09.2026: після оновлення
       # `wrangler`/`miniflare` (sharp) і `vitest` у репозиторії **нуль**
       # уразливостей, а `high` — саме той рівень, який раніше проходив повз гейт.
@@ -127,6 +132,8 @@ jobs:
         run: |
           npm run build --workspace web-platform-dev
           npm run build --workspace web-admin-dev
+      - name: First-frame gate (strict CSP)
+        run: npm run check:gate
       - name: Bundle budget
         run: npm run check:bundle
       - name: Unit tests
