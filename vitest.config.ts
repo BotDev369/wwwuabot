@@ -73,6 +73,9 @@ export default {
         test: {
           name: "node",
           environment: "node",
+          // `threads` швидший за `forks` на третину кроку: ті самі тести й те саме
+          // покриття. Проєкт `dom` і далі на `vmThreads` (свіжий контекст на файл).
+          pool: "threads",
           include: ["**/*.test.ts", "**/*.spec.ts", "**/*.test.tsx"],
           exclude: [...IGNORED, "**/*.dom.test.*"],
         },
