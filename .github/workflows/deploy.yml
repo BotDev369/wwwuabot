@@ -130,6 +130,23 @@ jobs:
       # Chromium ставимо просто перед гейтом, а не після `npm ci`: півхвилини
       # завантаження браузера й системних бібліотек не мають оплачуватись,
       # коли lint чи тести з покриттям уже впали раніше.
+      #
+      # Кеш привʼязаний до версії `playwright`: ревізію браузера задає саме вона,
+      # тож після оновлення пакета ключ інший і застарілий Chromium у гейт не
+      # поїде. `install` із наявним браузером нічого не качає: лишається тільки
+      # apt-частина `--with-deps`, якої кеш не покриває. Провал кешу деплой не
+      # блокує — це оптимізація, а не гейт.
+      - name: Playwright version for the browser cache
+        id: playwright
+        run: |
+          version=$(node -e 'console.log(require("playwright/package.json").version)')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Cache Chromium for the first-frame gate
+        uses: actions/cache@v6
+        continue-on-error: true
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ steps.playwright.outputs.version }}
       - name: Chromium for the first-frame gate
         run: npx playwright install --with-deps chromium
       - name: First-frame gate (strict CSP)
