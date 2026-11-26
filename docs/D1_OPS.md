@@ -116,3 +116,24 @@ npx wrangler d1 execute DB --config api-dev/wrangler.toml --remote --yes \
 ```
 
 D1 тримає **Time Travel** на 30 днів, тож видалені дані можна відновити на момент до `DROP`.
+
+## Кеш Chromium у джобі checks
+
+Крок `Chromium for the first-frame gate` (`.github/workflows/deploy.yml`, `npx playwright install
+--with-deps chromium`) складається з двох частин: браузер із кеша `actions/cache` (ключ
+`playwright-chromium-<os>-<версія playwright>`, шлях ~/.cache/ms-playwright) і apt-частини
+`--with-deps`, якої кеш не покриває. Замір на одному коміті `32b36a7f` і одному ключі, секунди
+(GitHub округлює до цілого):
+
+| Прогін | Cache Chromium | Chromium | Post Cache |
+|---|---|---|---|
+| #1164, push, промах | 0 | 22 | 5 |
+| #1165, workflow_dispatch, влучання | 3 | 15 | 0 |
+
+Влучання знімає ~7 с із самого `install` і робить запис кеша непотрібним: 27 с проти 18 с на весь
+блок. Решта 15 с — це `apt-get update` і встановлення пакетів, яких немає в образі раннера
+(шрифти, `libgbm1`, `libasound2t64`), тож прибрати `--with-deps` не можна: гейт упав би на запуску.
+
+Числа — це замір, а не межа: після оновлення `playwright` чи образу раннера вони інші, і міряти їх
+треба знову тим самим способом — кроки `Cache Chromium` / `Chromium` / `Post Cache` у `jobs` API.
+Квота кешів репозиторію — 10 ГБ безкоштовно (більше — за оплату), комплект Chromium у ній 280 МБ.
