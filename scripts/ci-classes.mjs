@@ -16,8 +16,8 @@ export const CLASSES = [
   {
     id: "coverage",
     step: /^Coverage floor$/,
-    cause: "новий або змінений файл прийшов без тесту",
-    fix: "тест на нову поведінку; перед пушем — `npm run verify`",
+    cause: "юніт-тест упав або новий/змінений файл прийшов без тесту",
+    fix: "`npm test` локально; покриття — `npm run test:coverage && npm run check:coverage`",
   },
   {
     id: "comments",
@@ -103,12 +103,6 @@ export const CLASSES = [
     step: /^Bundle budget$/,
     cause: "бандл переріс бюджет",
     fix: "прибрати зайве з входу бандла; бюджет — `scripts/bundle-baseline.mjs`",
-  },
-  {
-    id: "tests",
-    step: /^Unit tests$/,
-    cause: "юніт-тест упав",
-    fix: "`npm test` локально",
   },
   {
     id: "setup",

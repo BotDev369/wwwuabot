@@ -35,7 +35,8 @@ const STEPS = [
   // Реєстр екранів: один список адрес, назв і батьків. Гейт ловить і розбіжність
   // registry.json із згенерованою міграцією — інакше база й код розійшлися б тихо.
   { name: "check:screens", cmd: "npm run check:screens" },
-  // Покриття — перед збірками: забутий тест нового файлу червоніє першим.
+  // Тести біжать один раз — із покриттям: той самий набір, що й `npm test`,
+  // а крок стоїть перед збірками, щоб забутий тест нового файлу червонів першим.
   { name: "test:coverage", cmd: "npm run test:coverage" },
   { name: "check:coverage", cmd: "npm run check:coverage" },
   // Бюджет бандла читає `dist/`, тож обидві збірки стоять перед ним.
@@ -45,7 +46,6 @@ const STEPS = [
   // видно лише в браузері — тому крок стоїть після збірок, як і бюджет.
   { name: "check:gate", cmd: "npm run check:gate" },
   { name: "check:bundle", cmd: "npm run check:bundle" },
-  { name: "test", cmd: "npm test" },
 ];
 
 const args = process.argv.slice(2);
