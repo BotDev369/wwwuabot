@@ -129,7 +129,7 @@ jobs:
           npm run build --workspace web-admin-dev
       # Chromium ставимо просто перед гейтом, а не після `npm ci`: півхвилини
       # завантаження браузера й системних бібліотек не мають оплачуватись,
-      # коли lint, тести чи покриття вже впали раніше.
+      # коли lint чи тести з покриттям уже впали раніше.
       - name: Chromium for the first-frame gate
         run: npx playwright install --with-deps chromium
       - name: First-frame gate (strict CSP)
