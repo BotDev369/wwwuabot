@@ -37,20 +37,26 @@ jobs:
   # Образ пінимо, а не `ubuntu-latest`: міграція `latest` на новий образ
   # міняє раннер під ногами, і джоба з усіма зеленими кроками впирається в
   # ліміт часу — тоді деплой зривається не через код, а через образ.
-  # **Три джоби, а не одна.** Усередині джоби кроки завжди послідовні, а
-  # раннерів у CI стільки, скільки джоб: 27.11.2026 єдина `checks` ішла 235 с
-  # (run 45927569204), хоч кожна група окремо — близько двох хвилин. Тому
-  # робота поділена за ресурсом, а не за темою:
+  # **Група гейтів — це джоба, і груп тепер пʼять.** Усередині джоби кроки
+  # завжди послідовні, а раннерів у CI стільки, скільки джоб: 27.11.2026 єдина
+  # `checks` ішла 235 с (run 45927569204). Тому робота поділена за ресурсом:
   #
-  #   checks-static  — аудит, лінт, типи, формат, девʼять статичних гейтів;
-  #   checks-tests   — тести з покриттям і підлога покриття;
+  #   checks-lint    — лінт і девʼять статичних гейтів;
+  #   checks-types   — аудит того, що їде на прод, і типи;
+  #   checks-format  — Prettier;
+  #   checks-tests   — тести шардами, покриття зводить `checks-coverage`;
   #   checks-browser — обидві збірки, Chromium, перший кадр під CSP, бюджет.
+  #
+  # Чому не «статика / тести / браузер», як було: у прогоні 45983379607 статика
+  # йшла 95 с, з них лінт 24, типи 26, формат 12 — три різні за ціною речі
+  # стояли в одній черзі на одному раннері. Тепер `max(...)` упирається в
+  # найдовший ресурс, а не в суму.
   #
   # Замок `checks` наприкінці збирає їх в одне імʼя, тож `deploy-*`,
   # `scripts/check-deploy.mjs` і звіт деплою про поділ не знають.
-  checks-static:
+  checks-lint:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v7
         with:
@@ -60,26 +66,7 @@ jobs:
       # Node і залежності — спільна дія: кеш `node_modules` за відбитком lockfile,
       # `npm ci` лише на промаху (чому саме так — `.github/actions/deps/action.yml`).
       - uses: ./.github/actions/deps
-      # Поріг піднято з `critical` до `high` 13.09.2026: після оновлення
-      # `wrangler`/`miniflare` (sharp) і `vitest` у репозиторії **нуль**
-      # уразливостей, а `high` — саме той рівень, який раніше проходив повз гейт.
-      # `moderate` лишається попередженням, бо виправити його часто нічим:
-      # це транзитивні залежності інструментів розробки.
-      # Гейт стоїть на тому, що **їде на прод**. Причина — не «менше перевірок»,
-      # а те, що повний аудит 18.11.2026 став незадовільнимим у принципі:
-      # `picomatch` (CVE-2026-112366, ReDoS, `high`) має «Patched versions: None»,
-      # тобто виправленого релізу не існує, а приходить він лише через
-      # інструменти розробки (vite, vitest, tinyglobby, eslint). Гейт, який
-      # неможливо зробити зеленим, блокує кожен деплой: саме так прод стояв на
-      # `2bd4e88a`, поки `checks` падав на аудиті й деплої не стартували.
-      # Тому: уразливість у тому, що віддається користувачу, — червоне;
-      # уразливість у dev-інструментах — видимий звіт, а не стоп.
-      - name: Security audit (high, shipped deps)
-        run: npm audit --omit=dev --audit-level=high
       - run: npm run lint
-      - run: npm run typecheck
-      - name: Format check
-        run: npx prettier --check .
       # «Клас без правила» не ламає ні збірку, ні тести — він просто нічого не
       # робить. Саме тому 44 класи `wb-block-*`, `.sidebar-theme-btn` і
       # `.site-preview` прожили місяці. Гейт ловить їх статично.
@@ -119,37 +106,102 @@ jobs:
       - name: Screen registry
         run: npm run check:screens
 
-  checks-tests:
+  # Типи й аудит разом: обидва — про те, що поїде на прод, і обидва короткі.
+  checks-types:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v7
         with:
-          # Гейт покриття порівнює свій код із комітом `NEW_CODE_SINCE`
-          # (`scripts/coverage-baseline.mjs`), тож історія потрібна цілком:
-          # на `fetch-depth: 1` він упав би з «коміт не знайдено» на кожному
-          # запуску, а не на справді непокритому коді.
           fetch-depth: 0
       - uses: ./.github/actions/deps
-      # Прогін із покриттям — найдовший крок гейта, і він не залежить ні від
-      # статичних гейтів, ні від збірок: тому в нього своя джоба. Раніше він
-      # стояв перед збірками, щоб забутий тест червонів раніше за бюджет
-      # бандла; тепер джоби біжать одночасно, і обидві причини видно в одному
-      # прогоні.
+      # Поріг піднято з `critical` до `high` 13.09.2026: після оновлення
+      # `wrangler`/`miniflare` (sharp) і `vitest` у репозиторії **нуль**
+      # уразливостей, а `high` — саме той рівень, який раніше проходив повз гейт.
+      # `moderate` лишається попередженням, бо виправити його часто нічим:
+      # це транзитивні залежності інструментів розробки.
+      # Гейт стоїть на тому, що **їде на прод**. Причина — не «менше перевірок»,
+      # а те, що повний аудит 18.11.2026 став незадовільнимим у принципі:
+      # `picomatch` (CVE-2026-112366, ReDoS, `high`) має «Patched versions: None»,
+      # тобто виправленого релізу не існує, а приходить він лише через
+      # інструменти розробки (vite, vitest, tinyglobby, eslint). Гейт, який
+      # неможливо зробити зеленим, блокує кожен деплой: саме так прод стояв на
+      # `2bd4e88a`, поки `checks` падав на аудиті й деплої не стартували.
+      # Тому: уразливість у тому, що віддається користувачу, — червоне;
+      # уразливість у dev-інструментах — видимий звіт, а не стоп.
+      - name: Security audit (high, shipped deps)
+        run: npm audit --omit=dev --audit-level=high
+      - run: npm run typecheck
+
+  # Prettier окремо: 12 с роботи, які в спільній джобі стояли в черзі за
+  # типами. Залежності беруться з того самого кешу, тож джоба коштує раннер,
+  # а не час.
+  checks-format:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/deps
+      - name: Format check
+        run: npx prettier --check .
+
+  # Тести — шардами: 66 с послідовної роботи (run 45983379607) діляться між
+  # раннерами, а покриття зводить `checks-coverage` в одному місці. Шарди
+  # тестів не бачать git-історії — вона потрібна лише підлозі покриття.
+  checks-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      # Червоний шард не скасовує зеленого: видно всі поломки за один прогін.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/deps
+      # `--coverage.reporter=json`: шард пише istanbul-файл, з якого
+      # `scripts/merge-coverage.mjs` зводить один звіт. Покриття рахується
+      # тут же, тож джоба злиття не платить за прогін тестів.
+      - name: Coverage floor (shard ${{ matrix.shard }} of 4)
+        run: npm run test:coverage -- --coverage.reporter=json --shard=${{ matrix.shard }}/4
+      - uses: actions/upload-artifact@v7
+        with:
+          name: coverage-shard-${{ matrix.shard }}
+          path: coverage/coverage-final.json
+          retention-days: 1
+
+  # Покриття зводиться там же, де його читає поріг — і без `deps`:
+  # `scripts/merge-coverage.mjs` на чистих `node:`-модулях, тож злиття
+  # коштує секунди, а не відновлення `node_modules`. `SHARD_COUNT` — захист
+  # від неповного звіту: чотири шарди мусять дати чотири файли. Якщо якийсь
+  # шард упав, джоба не запускається взагалі (default `if: success()`), і
+  # червоним стає замок `checks` — пройти повз покриття неможливо.
+  checks-coverage:
+    needs: [checks-tests]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Підлога порівнює код із комітом `NEW_CODE_SINCE`, тож історія
+          # потрібна ціла: на `fetch-depth: 1` вона б падала на кожному запуску.
+          fetch-depth: 0
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: coverage-shard-*
+          path: coverage
+      - name: Merge coverage from shards
+        env:
+          SHARD_COUNT: 4
+        run: node scripts/merge-coverage.mjs
       - name: Coverage floor
-        run: |
-          npm run test:coverage
-          npm run check:coverage
+        run: npm run check:coverage
   checks-browser:
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/deps
-      - name: Build shells (bundle budget needs dist)
-        run: |
-          npm run build --workspace web-platform-dev
-          npm run build --workspace web-admin-dev
       # Chromium ставимо просто перед гейтом, а не після `npm ci`: півхвилини
       # завантаження браузера й системних бібліотек не мають оплачуватись,
       # коли lint чи тести з покриттям уже впали раніше.
@@ -170,8 +222,21 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      - name: Chromium for the first-frame gate
-        run: npx playwright install --with-deps chromium
+      # Збірка й Chromium незалежні, тож ідуть одночасно: послідовно вони
+      # коштували 18 + 14 с (run 45983379607). Помилка встановлення не губиться —
+      # `wait` повертає код виходу, і крок падає з хвостом його логу.
+      - name: Build shells (Chromium ставиться паралельно)
+        run: |
+          npx playwright install --with-deps chromium > /tmp/chromium.log 2>&1 &
+          chromium=$!
+          npm run build --workspace web-platform-dev
+          npm run build --workspace web-admin-dev
+          if ! wait "$chromium"; then
+            echo "✗ Chromium не встановився:"
+            tail -30 /tmp/chromium.log
+            exit 1
+          fi
+          tail -2 /tmp/chromium.log
       - name: First-frame gate (strict CSP)
         run: npm run check:gate
       - name: Bundle budget
@@ -201,7 +266,7 @@ jobs:
   # `scripts/check-deploy.mjs` вимагає його успіху, `scripts/ci-triage.mjs`
   # знає його як джобу. Поділ на групи — справа гейтів, а не того, хто їх чекає.
   checks:
-    needs: [checks-static, checks-tests, checks-browser]
+    needs: [checks-lint, checks-types, checks-format, checks-tests, checks-coverage, checks-browser]
     # `always()`: без нього GitHub пропустив би джобу, коли група впала, і
     # «skipped» у списку виглядало б як «нічого не сталося» замість червоного.
     if: always()
@@ -210,12 +275,16 @@ jobs:
     steps:
       - name: All gate groups green
         env:
-          STATIC: ${{ needs['checks-static'].result }}
+          LINT: ${{ needs['checks-lint'].result }}
+          TYPES: ${{ needs['checks-types'].result }}
+          FORMAT: ${{ needs['checks-format'].result }}
           TESTS: ${{ needs['checks-tests'].result }}
+          COVERAGE: ${{ needs['checks-coverage'].result }}
           BROWSER: ${{ needs['checks-browser'].result }}
         run: |
           failed=0
-          for group in "static:$STATIC" "tests:$TESTS" "browser:$BROWSER"; do
+          groups="lint:$LINT types:$TYPES format:$FORMAT tests:$TESTS coverage:$COVERAGE browser:$BROWSER"
+          for group in $groups; do
             name=${group%%:*}
             result=${group#*:}
             if [ "$result" = "success" ]; then

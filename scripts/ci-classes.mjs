@@ -51,7 +51,7 @@ export const CLASSES = [
   },
   {
     id: "audit",
-    job: /^checks-static$/,
+    job: /^checks-types$/,
     step: /^Security audit \(high, shipped deps\)$/,
     cause: "`npm audit --omit=dev` знайшов уразливість `high` у тому, що їде на прод",
     fix: "оновити залежність; якщо фіксу немає — виняток із причиною в PR",
@@ -96,7 +96,7 @@ export const CLASSES = [
     id: "gate-group",
     job: /^checks$/,
     step: /^All gate groups green$/,
-    cause: "одна з трьох груп гейтів червона — дивись її джобу",
+    cause: "одна з груп гейтів червона — дивись її джобу (static, tests, browser)",
     fix: "`npm run verify -- --group=<static|tests|browser|report>` локально",
   },
   {

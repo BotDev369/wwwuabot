@@ -19,22 +19,20 @@ import { writeStamp } from "./verify-stamp.mjs";
 const WORKFLOW = ".github/workflows/deploy.yml";
 
 /** Гейт-джоби в тому порядку, у якому вони йдуть у робочому процесі. */
-const GATE_JOBS = ["checks-static", "checks-tests", "checks-browser"];
+const GATE_JOBS = [
+  "checks-lint",
+  "checks-types",
+  "checks-format",
+  "checks-tests",
+  "checks-coverage",
+  "checks-browser",
+];
 
 /**
  * Кроки гейта. `group` — джоба CI, у якій крок живе; `audit` позначено, щоб
  * `--no-audit` його знімав.
  */
 const STEPS = [
-  // Той аудит, що їде на прод, — гейт; аудит інструментів розробки — звіт
-  // (`soft`), як `continue-on-error` у CI: `picomatch` (CVE-2026-112366) не має
-  // жодного виправленого релізу, і повний аудит не буває зеленим у принципі.
-  {
-    group: "static",
-    name: "audit (shipped)",
-    cmd: "npm audit --omit=dev --audit-level=high",
-    audit: true,
-  },
   // Поза гейтом: у CI цей крок — окрема джоба `audit-report` без `needs`.
   // Він і так був `soft` (`continue-on-error`), а в гейт-джобі визначав `max(…)`.
   {
@@ -46,8 +44,6 @@ const STEPS = [
     offGate: true,
   },
   { group: "static", name: "lint", cmd: "npm run lint" },
-  { group: "static", name: "typecheck", cmd: "npm run typecheck" },
-  { group: "static", name: "prettier", cmd: "npx prettier --check ." },
   { group: "static", name: "check:css", cmd: "npm run check:css" },
   { group: "static", name: "check:inline", cmd: "npm run check:inline" },
   { group: "static", name: "check:style", cmd: "npm run check:style" },
@@ -59,7 +55,20 @@ const STEPS = [
   // Реєстр екранів: один список адрес, назв і батьків. Гейт ловить і розбіжність
   // registry.json із згенерованою міграцією — інакше база й код розійшлися б тихо.
   { group: "static", name: "check:screens", cmd: "npm run check:screens" },
-  // Тести біжать один раз — із покриттям: той самий набір, що й `npm test`.
+  // Аудит того, що їде на прод, і типи — джоба `checks-types`. Повний аудит
+  // гейтом бути не може: `picomatch` (CVE-2026-112366) не має виправленого
+  // релізу і приходить лише через інструменти розробки.
+  {
+    group: "static",
+    name: "audit (shipped)",
+    cmd: "npm audit --omit=dev --audit-level=high",
+    audit: true,
+  },
+  { group: "static", name: "typecheck", cmd: "npm run typecheck" },
+  // Формат — окрема джоба `checks-format`: у спільній він стояв за типами.
+  { group: "static", name: "prettier", cmd: "npx prettier --check ." },
+  // Тести біжать шардами (4 джоби), покриття зводить `checks-coverage`;
+  // локально — тим самим прогоном, що й `npm test`.
   { group: "tests", name: "test:coverage", cmd: "npm run test:coverage" },
   { group: "tests", name: "check:coverage", cmd: "npm run check:coverage" },
   // Бюджет бандла читає `dist/`, тож обидві збірки стоять перед ним.
