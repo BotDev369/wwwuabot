@@ -1,5 +1,5 @@
 /**
- * Живі оболонки після деплою: документ із живим бандлом, а не білий екран.
+ * Живі поверхні після деплою: оболонки й залежності воркера.
  *
  * `/health` доводить, що `api` відповідає, і нічого — про застосунок: збірка,
  * що не поїхала, дає білий екран при **зеленому** run. Правило й причини —
@@ -16,6 +16,9 @@ export const SHELLS = [
   { name: "платформа", url: "https://web-platform-dev.diskomate.workers.dev/", version: true },
   { name: "адмінка", url: "https://web-admin-dev.diskomate.workers.dev/", version: false },
 ];
+
+/** Глибокий health: D1 і KV — те, на чому тримається решта, і чого `/health` не бачить. */
+export const HEALTH_DEEP = "https://api-dev.diskomate.workers.dev/health/deep";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -108,4 +111,38 @@ export async function smokeShell(shell) {
 /** Усі оболонки одночасно: чотири запити на кожну — це секунди, не хвилини. */
 export async function smokeShells() {
   return Promise.all(SHELLS.map(smokeShell));
+}
+
+/**
+ * Залежності воркера: 503 мусить назвати, що саме лежить.
+ *
+ * Код без тіла («→ 503») не каже, чи це база, чи кеш — а різниця між ними і є
+ * вся робота після пушу.
+ */
+export async function smokeHealthDeep(url = HEALTH_DEEP) {
+  let res;
+  try {
+    res = await get(url, {});
+  } catch (error) {
+    return { name: "health/deep", problems: [`не отримано — ${reason(error)}`] };
+  }
+
+  const body = await res.json().catch(() => null);
+  const checks = body?.checks ?? {};
+  const down = Object.entries(checks)
+    .filter(([, alive]) => alive !== true)
+    .map(([dependency]) => dependency);
+
+  if (res.status !== 200)
+    return {
+      name: "health/deep",
+      problems: [`→ ${res.status}${down.length ? `, лежить: ${down.join(", ")}` : ""}`],
+    };
+  // Порожній `checks` — це не «все добре», а відповідь не від того ендпоїнта.
+  if (down.length > 0)
+    return { name: "health/deep", problems: [`200, але не живі: ${down.join(", ")}`] };
+  if (Object.keys(checks).length === 0)
+    return { name: "health/deep", problems: ["у відповіді немає жодної залежності (db, kv)"] };
+
+  return { name: "health/deep", problems: [] };
 }

@@ -10,7 +10,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { smokeShells } from "./lib/deploy-smoke.mjs";
+import { smokeHealthDeep, smokeShells } from "./lib/deploy-smoke.mjs";
 
 const API = "https://api.github.com";
 const WORKFLOW = "Deploy";
@@ -116,6 +116,16 @@ if (!skipHealth) {
       console.error("✗ Воркер відповідає не так, як має після деплою.");
       process.exit(1);
     }
+  }
+
+  // Деградація D1/KV: `/health` її не бачить — воркер живий, а база ні.
+  const deep = await smokeHealthDeep();
+  if (deep.problems.length === 0) {
+    console.log(`  ✓ ${deep.name}: D1 і KV живі`);
+  } else {
+    for (const problem of deep.problems) console.error(`  ✗ ${deep.name}: ${problem}`);
+    console.error("✗ Залежності воркера деградовані — деплой не підтверджуємо.");
+    process.exit(1);
   }
 
   // Оболонки: `/health` доводить, що `api` живий, і нічого — про те, що

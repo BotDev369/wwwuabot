@@ -8,7 +8,7 @@
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { smokeShell } from "./deploy-smoke.mjs";
+import { smokeHealthDeep, smokeShell } from "./deploy-smoke.mjs";
 
 /** CSP доброї оболонки: та сама форма, що в `dist/client/_headers`. */
 const CSP = "default-src 'self'; script-src 'self' https://telegram.org";
@@ -52,6 +52,24 @@ const server = createServer((request, response) => {
 
   // Мережа: сокет рветься на кожній спробі — повтор не рятує, трейсбеку бути не має.
   if (variant === "reset" && file === "") return request.socket.destroy();
+
+  // Глибокий health: код і тіло перевіряються разом, тому варіанти окремі.
+  if (variant === "deep") {
+    if (file === "reset") return request.socket.destroy();
+    if (file === "broken")
+      return send(
+        503,
+        "application/json",
+        JSON.stringify({ status: "degraded", checks: { db: false, kv: true } }),
+      );
+    if (file === "empty") return send(200, "application/json", JSON.stringify({ status: "ok" }));
+    if (file === "html") return send(200, "text/html; charset=utf-8", "<!doctype html><p>ok");
+    return send(
+      200,
+      "application/json",
+      JSON.stringify({ status: "ok", checks: { db: true, kv: true } }),
+    );
+  }
 
   // Документ за адресою з версією: так жива платформа веде на `?v=`.
   if (variant === "start") return send(302, "text/plain", "", { location: "/good/?v=1" });
@@ -215,5 +233,34 @@ describe("смоук деплою на фікстурах", () => {
     expect(shell.problems).toHaveLength(1);
     expect(shell.problems[0]).toMatch(/^\/asset-reset\/dropped\.js не отримано — \S/);
     expect(shell.problems[0]).not.toContain("\n");
+  });
+});
+
+describe("глибокий health на фікстурах", () => {
+  const deep = (path: string) => smokeHealthDeep(`${base}/deep/${path}`);
+
+  it("D1 і KV живі — 0 проблем", async () => {
+    expect((await deep("ok")).problems).toEqual([]);
+  });
+
+  it("503 називає залежність, а не лише код", async () => {
+    expect((await deep("broken")).problems).toEqual(["→ 503, лежить: db"]);
+  });
+
+  it("200 без checks — відповідь не від того ендпоїнта", async () => {
+    expect((await deep("empty")).problems).toEqual([
+      "у відповіді немає жодної залежності (db, kv)",
+    ]);
+  });
+
+  it("200 із HTML замість JSON — теж проблема", async () => {
+    expect((await deep("html")).problems).toEqual(["у відповіді немає жодної залежності (db, kv)"]);
+  });
+
+  it("мережа впала — рядок проблеми, а не трейсбек", async () => {
+    const result = await deep("reset");
+    expect(result.problems).toHaveLength(1);
+    expect(result.problems[0]).toMatch(/^не отримано — \S/);
+    expect(result.problems[0]).not.toContain("\n");
   });
 });
