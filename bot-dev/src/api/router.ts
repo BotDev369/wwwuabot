@@ -1,6 +1,7 @@
 import { handleTelegramWebhook } from "./controllers/telegram.controller";
 import { handleReportsRequest } from "./controllers/reports.controller";
 import { handleBotChannel } from "./controllers/bot-channel.controller";
+import { handleHealth } from "./controllers/health.controller";
 import { BOT_CHANNEL_PATH } from "@wwwuabot/shared/security/bot-channel";
 import type { Env } from "../shared/types/env";
 
@@ -16,6 +17,12 @@ export async function handleRequest(
   _ctx: ExecutionContext,
 ): Promise<Response> {
   const url = new URL(request.url);
+
+  // Liveness раніше за решту: без нього зламаний деплой бота не бачить ні
+  // монітор, ні `check:deploy` — лише людина, якій бот мовчить.
+  if (url.pathname === "/health" || url.pathname === "/health/") {
+    return handleHealth();
+  }
 
   if (request.method === "POST" && url.pathname === "/webhook") {
     return handleTelegramWebhook(request, env);

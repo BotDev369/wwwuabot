@@ -20,6 +20,9 @@ export const SHELLS = [
 /** Глибокий health: D1 і KV — те, на чому тримається решта, і чого `/health` не бачить. */
 export const HEALTH_DEEP = "https://api-dev.diskomate.workers.dev/health/deep";
 
+/** Liveness бота: мовчазний бот не видно ні з браузера, ні з `/health` api. */
+export const BOT_HEALTH = "https://bot-dev.diskomate.workers.dev/health";
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** GET із одним повтором на 5xx: мережева дрібниця не має робити деплой «не підтвердженим». */
@@ -111,6 +114,26 @@ export async function smokeShell(shell) {
 /** Усі оболонки одночасно: чотири запити на кожну — це секунди, не хвилини. */
 export async function smokeShells() {
   return Promise.all(SHELLS.map(smokeShell));
+}
+
+/**
+ * Liveness: 200 і `status: "ok"` у тілі.
+ *
+ * Код 200 без тіла не відрізнити від чужої сторінки — саме так виглядала б
+ * тиха поломка бота: воркер відповідає, а відповідає не те.
+ */
+export async function smokeHealth(url, name) {
+  let res;
+  try {
+    res = await get(url, {});
+  } catch (error) {
+    return { name, problems: [`не отримано — ${reason(error)}`] };
+  }
+  if (res.status !== 200) return { name, problems: [`→ ${res.status}`] };
+  const body = await res.json().catch(() => null);
+  if (body?.status !== "ok")
+    return { name, problems: [`200, але status «${body?.status ?? "немає"}», а не ok`] };
+  return { name, problems: [] };
 }
 
 /**

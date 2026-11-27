@@ -8,7 +8,7 @@
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { smokeHealthDeep, smokeShell } from "./deploy-smoke.mjs";
+import { smokeHealth, smokeHealthDeep, smokeShell } from "./deploy-smoke.mjs";
 
 /** CSP доброї оболонки: та сама форма, що в `dist/client/_headers`. */
 const CSP = "default-src 'self'; script-src 'self' https://telegram.org";
@@ -52,6 +52,16 @@ const server = createServer((request, response) => {
 
   // Мережа: сокет рветься на кожній спробі — повтор не рятує, трейсбеку бути не має.
   if (variant === "reset" && file === "") return request.socket.destroy();
+
+  // Liveness бота: 200 віддає й сторінка-заглушка, тому перевіряється тіло.
+  if (variant === "bot") {
+    if (file === "reset") return request.socket.destroy();
+    if (file === "down") return send(503, "application/json", JSON.stringify({ status: "down" }));
+    if (file === "bad")
+      return send(200, "application/json", JSON.stringify({ status: "degraded" }));
+    if (file === "html") return send(200, "text/html; charset=utf-8", "<!doctype html>ok");
+    return send(200, "application/json", JSON.stringify({ status: "ok", worker: "wwwuabot-bot" }));
+  }
 
   // Глибокий health: код і тіло перевіряються разом, тому варіанти окремі.
   if (variant === "deep") {
@@ -240,6 +250,32 @@ describe("смоук деплою на фікстурах", () => {
     expect(shell.problems).toHaveLength(1);
     expect(shell.problems[0]).toMatch(/^\/asset-reset\/dropped\.js не отримано — \S/);
     expect(shell.problems[0]).not.toContain("\n");
+  });
+});
+
+describe("liveness бота на фікстурах", () => {
+  const health = (path: string) => smokeHealth(`${base}/bot/${path}`, "бот");
+
+  it("200 і status ok — 0 проблем", async () => {
+    expect((await health("ok")).problems).toEqual([]);
+  });
+
+  it("503 — код у рядку", async () => {
+    expect((await health("down")).problems).toEqual(["→ 503"]);
+  });
+
+  it("200, але status не ok — тіло важливіше за код", async () => {
+    expect((await health("bad")).problems).toEqual(["200, але status «degraded», а не ok"]);
+  });
+
+  it("200 із HTML замість JSON — теж проблема", async () => {
+    expect((await health("html")).problems).toEqual(["200, але status «немає», а не ok"]);
+  });
+
+  it("мережа впала — рядок проблеми, а не трейсбек", async () => {
+    const result = await health("reset");
+    expect(result.problems).toHaveLength(1);
+    expect(result.problems[0]).toMatch(/^не отримано — \S/);
   });
 });
 

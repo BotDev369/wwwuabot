@@ -10,7 +10,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { smokeHealthDeep, smokeShells } from "./lib/deploy-smoke.mjs";
+import { BOT_HEALTH, smokeHealth, smokeHealthDeep, smokeShells } from "./lib/deploy-smoke.mjs";
 
 const API = "https://api.github.com";
 const WORKFLOW = "Deploy";
@@ -125,6 +125,16 @@ if (!skipHealth) {
   } else {
     for (const problem of deep.problems) console.error(`  ✗ ${deep.name}: ${problem}`);
     console.error("✗ Залежності воркера деградовані — деплой не підтверджуємо.");
+    process.exit(1);
+  }
+
+  // Бот: єдиний воркер, якого не видно з браузера — його зеленого run мало.
+  const bot = await smokeHealth(BOT_HEALTH, "бот");
+  if (bot.problems.length === 0) {
+    console.log(`  ✓ ${bot.name}: liveness відповідає`);
+  } else {
+    for (const problem of bot.problems) console.error(`  ✗ ${bot.name}: ${problem}`);
+    console.error("✗ Бот не відповідає — деплой не підтверджуємо.");
     process.exit(1);
   }
 

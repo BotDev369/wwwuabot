@@ -55,6 +55,18 @@ describe("bot http router", () => {
     expect(await response.text()).toBe("channel");
   });
 
+  it("answers /health without touching dependencies", async () => {
+    const response = await handleRequest(new Request("https://bot.test/health"), env, ctx);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toMatchObject({ status: "ok", worker: "wwwuabot-bot" });
+  });
+
+  it("answers /health/ with the trailing slash too", async () => {
+    const response = await handleRequest(new Request("https://bot.test/health/"), env, ctx);
+    expect(response.status).toBe(200);
+  });
+
   it("answers 404 for an unknown path", async () => {
     const response = await handleRequest(new Request("https://bot.test/nope"), env, ctx);
     expect(response.status).toBe(404);
