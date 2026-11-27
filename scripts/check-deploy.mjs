@@ -10,6 +10,7 @@
  */
 
 import { execFileSync } from "node:child_process";
+import { smokeShells } from "./lib/deploy-smoke.mjs";
 
 const API = "https://api.github.com";
 const WORKFLOW = "Deploy";
@@ -116,6 +117,26 @@ if (!skipHealth) {
       process.exit(1);
     }
   }
+
+  // Оболонки: `/health` доводить, що `api` живий, і нічого — про те, що
+  // платформа й адмінка віддають застосунок (`scripts/lib/deploy-smoke.mjs`).
+  const broken = [];
+  for (const shell of await smokeShells()) {
+    if (shell.problems.length === 0) {
+      console.log(
+        `  ✓ ${shell.name}: документ, CSP, ${shell.assets} асет(ів) зі своїми заголовками`,
+      );
+      continue;
+    }
+    for (const problem of shell.problems) console.error(`  ✗ ${shell.name}: ${problem}`);
+    broken.push(shell.name);
+  }
+  if (broken.length > 0) {
+    console.error(`✗ Після деплою не відкривається: ${broken.join(", ")}.`);
+    process.exit(1);
+  }
 }
 
-console.log(`✓ Деплой підтверджено: ${sha.slice(0, 7)} живе, гейти зелені, воркер відповідає.`);
+console.log(
+  `✓ Деплой підтверджено: ${sha.slice(0, 7)} живе, гейти зелені, воркер і обидві оболонки відповідають.`,
+);
