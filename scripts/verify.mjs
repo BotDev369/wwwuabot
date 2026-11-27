@@ -21,6 +21,7 @@ const WORKFLOW = ".github/workflows/deploy.yml";
 /** Гейт-джоби в тому порядку, у якому вони йдуть у робочому процесі. */
 const GATE_JOBS = [
   "checks-lint",
+  "checks-gates",
   "checks-types",
   "checks-format",
   "checks-tests",

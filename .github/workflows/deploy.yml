@@ -37,11 +37,12 @@ jobs:
   # Образ пінимо, а не `ubuntu-latest`: міграція `latest` на новий образ
   # міняє раннер під ногами, і джоба з усіма зеленими кроками впирається в
   # ліміт часу — тоді деплой зривається не через код, а через образ.
-  # **Група гейтів — це джоба, і груп тепер пʼять.** Усередині джоби кроки
+  # **Група гейтів — це джоба, і груп тепер шість.** Усередині джоби кроки
   # завжди послідовні, а раннерів у CI стільки, скільки джоб: 27.11.2026 єдина
   # `checks` ішла 235 с (run 45927569204). Тому робота поділена за ресурсом:
   #
-  #   checks-lint    — лінт і девʼять статичних гейтів;
+  #   checks-lint    — ESLint;
+  #   checks-gates   — девʼять статичних гейтів (CSS, планка, документи, схема…);
   #   checks-types   — аудит того, що їде на прод, і типи;
   #   checks-format  — Prettier;
   #   checks-tests   — тести шардами, покриття зводить `checks-coverage`;
@@ -67,6 +68,19 @@ jobs:
       # `npm ci` лише на промаху (чому саме так — `.github/actions/deps/action.yml`).
       - uses: ./.github/actions/deps
       - run: npm run lint
+
+  # Девʼять статичних гейтів окремо від лінта: у спільній джобі вони стояли
+  # в черзі за 24 с ESLint-а, хоч самі коштують секунди. Ні від лінта, ні від
+  # типів вони не залежать — це різні перевірки того самого дерева.
+  checks-gates:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Історія цілком — для гейтів, які звіряють стан із комітом минулого.
+          fetch-depth: 0
+      - uses: ./.github/actions/deps
       # «Клас без правила» не ламає ні збірку, ні тести — він просто нічого не
       # робить. Саме тому 44 класи `wb-block-*`, `.sidebar-theme-btn` і
       # `.site-preview` прожили місяці. Гейт ловить їх статично.
@@ -155,15 +169,15 @@ jobs:
       # Червоний шард не скасовує зеленого: видно всі поломки за один прогін.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6]
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/deps
       # `--coverage.reporter=json`: шард пише istanbul-файл, з якого
       # `scripts/merge-coverage.mjs` зводить один звіт. Покриття рахується
       # тут же, тож джоба злиття не платить за прогін тестів.
-      - name: Coverage floor (shard ${{ matrix.shard }} of 4)
-        run: npm run test:coverage -- --coverage.reporter=json --shard=${{ matrix.shard }}/4
+      - name: Coverage floor (shard ${{ matrix.shard }} of 6)
+        run: npm run test:coverage -- --coverage.reporter=json --shard=${{ matrix.shard }}/6
       - uses: actions/upload-artifact@v7
         with:
           name: coverage-shard-${{ matrix.shard }}
@@ -173,7 +187,7 @@ jobs:
   # Покриття зводиться там же, де його читає поріг — і без `deps`:
   # `scripts/merge-coverage.mjs` на чистих `node:`-модулях, тож злиття
   # коштує секунди, а не відновлення `node_modules`. `SHARD_COUNT` — захист
-  # від неповного звіту: чотири шарди мусять дати чотири файли. Якщо якийсь
+  # від неповного звіту: шість шардів мусять дати шість файлів. Якщо якийсь
   # шард упав, джоба не запускається взагалі (default `if: success()`), і
   # червоним стає замок `checks` — пройти повз покриття неможливо.
   checks-coverage:
@@ -192,7 +206,7 @@ jobs:
           path: coverage
       - name: Merge coverage from shards
         env:
-          SHARD_COUNT: 4
+          SHARD_COUNT: 6
         run: node scripts/merge-coverage.mjs
       - name: Coverage floor
         run: npm run check:coverage
@@ -266,7 +280,16 @@ jobs:
   # `scripts/check-deploy.mjs` вимагає його успіху, `scripts/ci-triage.mjs`
   # знає його як джобу. Поділ на групи — справа гейтів, а не того, хто їх чекає.
   checks:
-    needs: [checks-lint, checks-types, checks-format, checks-tests, checks-coverage, checks-browser]
+    needs:
+      [
+        checks-lint,
+        checks-gates,
+        checks-types,
+        checks-format,
+        checks-tests,
+        checks-coverage,
+        checks-browser,
+      ]
     # `always()`: без нього GitHub пропустив би джобу, коли група впала, і
     # «skipped» у списку виглядало б як «нічого не сталося» замість червоного.
     if: always()
@@ -276,6 +299,7 @@ jobs:
       - name: All gate groups green
         env:
           LINT: ${{ needs['checks-lint'].result }}
+          GATES: ${{ needs['checks-gates'].result }}
           TYPES: ${{ needs['checks-types'].result }}
           FORMAT: ${{ needs['checks-format'].result }}
           TESTS: ${{ needs['checks-tests'].result }}
@@ -283,7 +307,7 @@ jobs:
           BROWSER: ${{ needs['checks-browser'].result }}
         run: |
           failed=0
-          groups="lint:$LINT types:$TYPES format:$FORMAT tests:$TESTS coverage:$COVERAGE browser:$BROWSER"
+          groups="lint:$LINT gates:$GATES types:$TYPES format:$FORMAT tests:$TESTS coverage:$COVERAGE browser:$BROWSER"
           for group in $groups; do
             name=${group%%:*}
             result=${group#*:}
