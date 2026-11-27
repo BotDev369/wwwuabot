@@ -19,7 +19,7 @@ describe("loadReportTemplate", () => {
       rich_html: "<p>{{statusWord}}</p>",
       widget_data: '{"success":"ok"}',
     });
-    expect(await loadReportTemplate(env)).toEqual({
+    expect(await loadReportTemplate(env, 1)).toEqual({
       html: "<p>{{statusWord}}</p>",
       statusWords: { success: "ok" },
     });
@@ -27,17 +27,17 @@ describe("loadReportTemplate", () => {
 
   it("asks the database for the report lookup", async () => {
     scenarios.findByLookup.mockResolvedValue(null);
-    await loadReportTemplate(env);
-    expect(scenarios.findByLookup).toHaveBeenCalledWith("/report");
+    await loadReportTemplate(env, 1);
+    expect(scenarios.findByLookup).toHaveBeenCalledWith("/report", 1);
   });
 
   it("returns null when the row is gone", async () => {
     scenarios.findByLookup.mockResolvedValue({ rich_html: "   ", widget_data: null });
-    expect(await loadReportTemplate(env)).toBeNull();
+    expect(await loadReportTemplate(env, 1)).toBeNull();
   });
 
   it("ignores broken words instead of failing the report", async () => {
     scenarios.findByLookup.mockResolvedValue({ rich_html: "<p>x</p>", widget_data: "not json" });
-    expect(await loadReportTemplate(env)).toEqual({ html: "<p>x</p>", statusWords: {} });
+    expect(await loadReportTemplate(env, 1)).toEqual({ html: "<p>x</p>", statusWords: {} });
   });
 });

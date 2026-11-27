@@ -4,7 +4,7 @@
  * @module bot-dev/src/repositories/scenario.repository.test
  */
 
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { ScenarioRepository } from "./scenario.repository";
 
 function db(row: Record<string, unknown> | null) {
@@ -27,8 +27,6 @@ function db(row: Record<string, unknown> | null) {
   return { repo: new ScenarioRepository({ DB: database } as never), calls };
 }
 
-vi.mock("@wwwuabot/shared/database/tenants", () => ({ ensureDefaultTenant: async () => 1 }));
-
 describe("findByLookup", () => {
   it("шукає точно й віддає тип", async () => {
     const { repo, calls } = db({
@@ -42,7 +40,7 @@ describe("findByLookup", () => {
       notify_template: null,
     });
 
-    const found = await repo.findByLookup("/start");
+    const found = await repo.findByLookup("/start", 1);
     expect(found?.kind).toBe("widget");
     expect(found?.lookup).toBe("/start");
     expect(calls[0].args).toEqual([1, "/start"]);
@@ -59,10 +57,10 @@ describe("findByLookup", () => {
       notify_groups: null,
       notify_template: null,
     });
-    expect((await repo.findByLookup("x"))?.kind).toBe("widget");
+    expect((await repo.findByLookup("x", 1))?.kind).toBe("widget");
 
     const empty = db(null);
-    expect(await empty.repo.findByLookup("nope")).toBeNull();
+    expect(await empty.repo.findByLookup("nope", 1)).toBeNull();
   });
 });
 

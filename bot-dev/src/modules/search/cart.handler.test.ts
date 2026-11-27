@@ -78,6 +78,12 @@ beforeEach(() => {
   state.messageId = 55;
 });
 
+vi.mock("../../shared/tenant-context", () => ({
+  tenantForUser: async () => ({ id: 1, key: "main", name: "main" }),
+  defaultTenant: async () => ({ id: 1, key: "main", name: "main" }),
+  rememberTenant: async () => undefined,
+  pickTenant: async () => null,
+}));
 describe("parseCartData", () => {
   it("розбирає дію й номер товару", () => {
     expect(parseCartData("cart:add:12")).toEqual({ action: "add", productId: 12 });

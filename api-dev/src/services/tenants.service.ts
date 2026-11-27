@@ -8,10 +8,17 @@
  */
 
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
-import { ensureDefaultTenant } from "@wwwuabot/shared/database/tenants";
+import { ensureDefaultTenant, readTenantByKey } from "@wwwuabot/shared/database/tenants";
 import { tenantKeyFromStartParam } from "@wwwuabot/shared/tenants";
 
-export { ensureDefaultTenant };
+// Читання проєктів і членства — спільні з ботом: друга копія SQL розійшлася б
+// на першій правці (D27).
+export {
+  ensureDefaultTenant,
+  isTenantMember,
+  readTenantById,
+  readTenantByKey,
+} from "@wwwuabot/shared/database/tenants";
 
 /** Проєкт у тому вигляді, у якому його віддають назовні. */
 export interface Tenant {
@@ -32,22 +39,6 @@ export type CreateTenantResult =
 
 /** Найдовша назва проєкту — та сама межа, що в заголовку панелі. */
 const MAX_TENANT_NAME = 80;
-
-/** Проєкт за номером; `null` — такого немає. */
-export async function readTenantById(db: D1Database, id: number): Promise<Tenant | null> {
-  return db
-    .prepare("SELECT id, key, name, status FROM tenants WHERE id = ?")
-    .bind(id)
-    .first<Tenant>();
-}
-
-/** Проєкт за ключем; `null` — такого немає. */
-export async function readTenantByKey(db: D1Database, key: string): Promise<Tenant | null> {
-  return db
-    .prepare("SELECT id, key, name, status FROM tenants WHERE key = ?")
-    .bind(key)
-    .first<Tenant>();
-}
 
 /** Усі проєкти — старший першим, із кількістю членів. */
 export async function listTenants(db: D1Database): Promise<TenantWithMembers[]> {
@@ -76,19 +67,6 @@ export async function listUserTenants(db: D1Database, userId: number): Promise<T
     .bind(userId)
     .all<Tenant>();
   return result.results ?? [];
-}
-
-/** Чи є людина членом проєкту. */
-export async function isTenantMember(
-  db: D1Database,
-  tenantId: number,
-  userId: number,
-): Promise<boolean> {
-  const row = await db
-    .prepare("SELECT 1 AS present FROM tenant_members WHERE tenant_id = ? AND user_id = ?")
-    .bind(tenantId, userId)
-    .first<{ present: number }>();
-  return row !== null;
 }
 
 /**

@@ -67,11 +67,17 @@ beforeEach(() => {
   mocks.cart.mockResolvedValue(true);
 });
 
+vi.mock("../../shared/tenant-context", () => ({
+  tenantForUser: async () => ({ id: 1, key: "main", name: "main" }),
+  defaultTenant: async () => ({ id: 1, key: "main", name: "main" }),
+  rememberTenant: async () => undefined,
+  pickTenant: async () => null,
+}));
 describe("botRouter", () => {
   it("/start без payload відкриває `/start`", async () => {
     await botRouter(context({ message: { text: "/start", message_id: 3 } }));
 
-    expect(mocks.find).toHaveBeenCalledWith("/start");
+    expect(mocks.find).toHaveBeenCalledWith("/start", 1);
     expect(mocks.render).toHaveBeenCalledWith(expect.anything(), SCENARIO, undefined);
   });
 
@@ -79,7 +85,7 @@ describe("botRouter", () => {
     await botRouter(context({ message: { text: "/start about", message_id: 3 } }));
 
     // `about` — не окремий сценарій, а вид головного віджета.
-    expect(mocks.find).toHaveBeenCalledWith("/start");
+    expect(mocks.find).toHaveBeenCalledWith("/start", 1);
     expect(mocks.render).toHaveBeenCalledWith(expect.anything(), SCENARIO, "about");
   });
 
@@ -96,19 +102,19 @@ describe("botRouter", () => {
 
   it("callback_data виду теж веде в головний документ", async () => {
     await botRouter(context({ callbackQuery: { data: "about" } }));
-    expect(mocks.find).toHaveBeenCalledWith("/start");
+    expect(mocks.find).toHaveBeenCalledWith("/start", 1);
     expect(mocks.render).toHaveBeenCalledWith(expect.anything(), SCENARIO, "about");
   });
 
   it("довільний ключ лишається окремим сценарієм", async () => {
     await botRouter(context({ callbackQuery: { data: "secret" } }));
-    expect(mocks.find).toHaveBeenCalledWith("secret");
+    expect(mocks.find).toHaveBeenCalledWith("secret", 1);
     expect(mocks.render).toHaveBeenCalledWith(expect.anything(), SCENARIO, undefined);
   });
 
   it("текст шукається як є", async () => {
     await botRouter(context({ message: { text: "Сервіси", message_id: 3 } }));
-    expect(mocks.find).toHaveBeenCalledWith("Сервіси");
+    expect(mocks.find).toHaveBeenCalledWith("Сервіси", 1);
   });
 
   it("невідомий ключ зносить повідомлення", async () => {

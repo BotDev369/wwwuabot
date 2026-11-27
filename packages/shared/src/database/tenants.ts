@@ -7,6 +7,14 @@
 import { ensureTables } from "./ensure-tables";
 import { DEFAULT_TENANT_KEY } from "../tenants/index";
 
+/** Проєкт у тому вигляді, у якому його бачить бот і API. */
+export interface TenantRow {
+  id: number;
+  key: string;
+  name: string;
+  status: string;
+}
+
 /** Головний проєкт уже перевірили в цьому інстансі — окремо для кожної бази. */
 const defaults = new WeakMap<D1Database, Promise<number>>();
 
@@ -47,4 +55,33 @@ export function ensureDefaultTenant(db: D1Database): Promise<number> {
   task.catch(() => defaults.delete(db));
   defaults.set(db, task);
   return task;
+}
+
+/** Проєкт за ключем; `null` — такого немає. */
+export async function readTenantByKey(db: D1Database, key: string): Promise<TenantRow | null> {
+  return db
+    .prepare("SELECT id, key, name, status FROM tenants WHERE key = ?")
+    .bind(key)
+    .first<TenantRow>();
+}
+
+/** Проєкт за номером; `null` — такого немає. */
+export async function readTenantById(db: D1Database, id: number): Promise<TenantRow | null> {
+  return db
+    .prepare("SELECT id, key, name, status FROM tenants WHERE id = ?")
+    .bind(id)
+    .first<TenantRow>();
+}
+
+/** Чи є людина членом проєкту. Головний проєкт членства не потребує (D26). */
+export async function isTenantMember(
+  db: D1Database,
+  tenantId: number,
+  userId: number,
+): Promise<boolean> {
+  const row = await db
+    .prepare("SELECT 1 AS present FROM tenant_members WHERE tenant_id = ? AND user_id = ?")
+    .bind(tenantId, userId)
+    .first<{ present: number }>();
+  return Boolean(row);
 }

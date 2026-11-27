@@ -22,6 +22,7 @@ import { applyPlatformUrl } from "../shared/utils/widget-html";
 import { log } from "../shared/utils/debug";
 import type { Env } from "../shared/types/env";
 import type { BotScenario } from "../shared/types/scenario";
+import { tenantForUser } from "../shared/tenant-context";
 
 interface WidgetQuery {
   id: string;
@@ -47,12 +48,13 @@ export async function handleWidgetQuery(env: Env, query: WidgetQuery): Promise<v
 
   const repo = new ScenarioRepository(env);
   try {
+    const tenant = await tenantForUser(env, user.user_id);
     if (isAppView(data)) {
-      await openView(env, repo, user.user_id, chatId, data as AppView, query);
+      await openView(env, repo, tenant.id, user.user_id, chatId, data as AppView, query);
       return;
     }
 
-    const scenario = await repo.findByLookup(data);
+    const scenario = await repo.findByLookup(data, tenant.id);
     if (!scenario) return;
     await sendScreen(env, repo, user, chatId, scenario, scenario.widget_data);
   } catch {
@@ -64,12 +66,13 @@ export async function handleWidgetQuery(env: Env, query: WidgetQuery): Promise<v
 async function openView(
   env: Env,
   repo: ScenarioRepository,
+  tenantId: number,
   userId: number,
   chatId: number,
   view: AppView,
   query: WidgetQuery,
 ): Promise<void> {
-  const app = await repo.findByLookup(APP_LOOKUP);
+  const app = await repo.findByLookup(APP_LOOKUP, tenantId);
   if (!app?.widget_html) return;
 
   const chatData = appChatData(view);

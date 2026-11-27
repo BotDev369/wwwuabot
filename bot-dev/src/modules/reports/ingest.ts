@@ -15,6 +15,7 @@ import { verifyGitHubToken } from "./verify";
 import { renderReport } from "./render";
 import { ReportRepository } from "./repository";
 import { loadReportTemplate } from "./template";
+import { defaultTenant } from "../../shared/tenant-context";
 
 /** Межа тіла: звіт — це кілька кілобайт, а не канал для файлів. */
 export const MAX_BODY = 8192;
@@ -90,7 +91,8 @@ export async function acceptReport(request: Request, env: Env): Promise<Response
     return json({ error: "rate_limited" }, 429);
   }
 
-  const template = await loadReportTemplate(env);
+  // Звіт — службовий екран власника, не контент клієнта: його шаблон живе в головному проєкті.
+  const template = await loadReportTemplate(env, (await defaultTenant(env)).id);
   if (!template) {
     log("REPORTS", "template missing", { lookup: "/report" });
     return json({ error: "template_missing" }, 500);

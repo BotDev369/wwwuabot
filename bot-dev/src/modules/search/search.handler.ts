@@ -13,6 +13,7 @@ import { loadCartQuantities } from "./cart.repository";
 import { loadSearchIndex } from "./search.repository";
 import { searchScreenHtml } from "./search-screen";
 import { recordOutgoingMessage } from "../history/record";
+import { tenantForUser } from "../../shared/tenant-context";
 
 /**
  * Відповісти на текст пошуком; `false` — це не наш випадок (група, порожній
@@ -24,7 +25,10 @@ export async function handleSearch(ctx: AppContext, text: string): Promise<boole
   const query = text.trim();
   if (!query) return false;
 
-  const index = await loadSearchIndex(ctx.env);
+  const searchUserId = ctx.user?.user_id ?? ctx.from?.id;
+  if (typeof searchUserId !== "number") return false;
+  const tenant = await tenantForUser(ctx.env, searchUserId);
+  const index = await loadSearchIndex(ctx.env, tenant.id);
   if (!index) {
     log("SEARCH", "index missing", { query });
     return false;

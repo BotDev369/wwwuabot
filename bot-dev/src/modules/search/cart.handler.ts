@@ -17,6 +17,7 @@ import {
   type CartAction,
 } from "./cart.repository";
 import { loadSearchIndex } from "./search.repository";
+import { tenantForUser } from "../../shared/tenant-context";
 import { searchScreenHtml } from "./search-screen";
 
 export interface CartTap {
@@ -56,7 +57,8 @@ export async function handleCartCallback(ctx: AppContext): Promise<boolean> {
     return true;
   }
 
-  const index = await loadSearchIndex(ctx.env);
+  const tenant = await tenantForUser(ctx.env, userId);
+  const index = await loadSearchIndex(ctx.env, tenant.id);
   const entry = index?.entries.find((item) => item.kind === "product" && item.id === tap.productId);
   if (!index || !entry || !entry.shopSlug) {
     await toast(ctx, "Товар не знайдено");

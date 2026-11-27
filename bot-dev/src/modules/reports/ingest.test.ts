@@ -92,6 +92,12 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+vi.mock("../../shared/tenant-context", () => ({
+  tenantForUser: async () => ({ id: 1, key: "main", name: "main" }),
+  defaultTenant: async () => ({ id: 1, key: "main", name: "main" }),
+  rememberTenant: async () => undefined,
+  pickTenant: async () => null,
+}));
 describe("acceptReport", () => {
   it("answers 401 when nothing proves the caller", async () => {
     const response = await acceptReport(

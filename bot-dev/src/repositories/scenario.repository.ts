@@ -7,7 +7,6 @@
  * @module bot-dev/src/repositories/scenario.repository
  */
 
-import { ensureDefaultTenant } from "@wwwuabot/shared/database/tenants";
 import { DatabaseRepository } from "../core/database.repository";
 import type {
   BotScenario,
@@ -21,10 +20,12 @@ function kindOf(value: string): ScenarioKind {
 }
 
 export class ScenarioRepository extends DatabaseRepository {
-  async findByLookup(lookup: string): Promise<BotScenario | null> {
-    // Бот поки обслуговує головний проєкт: маршрутизація проєктів усередині
-    // бота — наступний крок (`docs/PLATFORM.md`), і доти його контент — `main`.
-    const tenantId = await ensureDefaultTenant(this.db);
+  /**
+   * Сценарій проєкту за ключем. `tenantId` — обов'язковий: сценарій без
+   * проєкту не має однозначної відповіді, і типова підстановка `main` тут
+   * повернула б ту саму тиху помилку, від якої цей шар і з'явився.
+   */
+  async findByLookup(lookup: string, tenantId: number): Promise<BotScenario | null> {
     const row = await this.db
       .prepare(
         `SELECT id, lookup, kind, widget_html, widget_data, rich_html,

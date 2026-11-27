@@ -27,6 +27,12 @@ import { handleCartCallback } from "../../modules/search/cart.handler";
 import { handleSearch } from "../../modules/search/search.handler";
 import { handleWords } from "../../modules/search/words.handler";
 import { handleStart } from "../../modules/start/start.handler";
+import { pickTenant, rememberTenant, tenantForUser } from "../../shared/tenant-context";
+
+/** `ctx.user` перевірено на вході, але `await` знімає звуження типів. */
+function userIdOf(ctx: AppContext): number | null {
+  return typeof ctx.user?.user_id === "number" ? ctx.user.user_id : null;
+}
 import { handleAdminPanel } from "../../modules/admin/admin-panel";
 import { recordIncomingMessage } from "../../modules/history/record";
 
@@ -97,6 +103,22 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     // сторінка або контакт, а не стартовий екран.
     if (!payload.trim() && (await handleStart(ctx))) return;
 
+    // `p_<key>` — це проєкт, а не сторінка: вибір запам'ятовується, а екран
+    // показуємо вже з нього. Невідомий чи чужий проєкт — відмова, а не тихий
+    // відкат на головний: інакше друкарська помилка в посиланні відкривала б
+    // чужий простір.
+    const chatUserId = userIdOf(ctx);
+    if (chatUserId === null) return;
+    const picked = await pickTenant(ctx.env, chatUserId, payload.trim());
+    if (picked) {
+      ctx.screenHandled = true;
+      if (!picked.ok) {
+        if (await showAccessDenied(ctx)) await deleteIncomingMessage(ctx);
+        return;
+      }
+      await rememberTenant(ctx.env, chatUserId, picked.tenant.id);
+    }
+
     const { inviteCode, pagePayload } = splitInviteCode(payload.trim());
     if (inviteCode) {
       const contacted = await applyContactPayload(ctx, inviteCode);
@@ -139,10 +161,13 @@ async function show(ctx: AppContext, lookup: string, dropIncoming = false): Prom
   }
 
   const repo = new ScenarioRepository(ctx.env);
+  const userId = userIdOf(ctx);
+  if (userId === null) return;
+  const tenant = await tenantForUser(ctx.env, userId);
   // `about` і `contacts` — це види головного віджета, а не окремі сценарії:
   // документ один, тож і шукаємо його, а вид віддаємо стартовим станом.
   const view: AppView | undefined = isAppView(lookup) ? lookup : undefined;
-  const scenario = await repo.findByLookup(view ? APP_LOOKUP : lookup);
+  const scenario = await repo.findByLookup(view ? APP_LOOKUP : lookup, tenant.id);
   if (!scenario) {
     log("ROUTER", "scenario not found", { lookup });
     await deleteIncomingMessage(ctx);

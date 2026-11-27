@@ -29,8 +29,11 @@ function parseWords(raw: string | null): Record<string, string> | null {
 }
 
 /** Шаблон або `null`: без рядка `/report` звіт не надсилається. */
-export async function loadReportTemplate(env: Env): Promise<ReportTemplate | null> {
-  const scenario = await new ScenarioRepository(env).findByLookup(REPORT_LOOKUP);
+export async function loadReportTemplate(
+  env: Env,
+  tenantId: number,
+): Promise<ReportTemplate | null> {
+  const scenario = await new ScenarioRepository(env).findByLookup(REPORT_LOOKUP, tenantId);
   const html = scenario?.rich_html?.trim();
   if (!html) return null;
   return { html, statusWords: parseWords(scenario?.widget_data ?? null) ?? {} };

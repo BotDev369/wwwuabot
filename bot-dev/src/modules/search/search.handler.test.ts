@@ -66,6 +66,12 @@ beforeEach(() => {
   state.cart = new Map();
 });
 
+vi.mock("../../shared/tenant-context", () => ({
+  tenantForUser: async () => ({ id: 1, key: "main", name: "main" }),
+  defaultTenant: async () => ({ id: 1, key: "main", name: "main" }),
+  rememberTenant: async () => undefined,
+  pickTenant: async () => null,
+}));
 describe("handleSearch", () => {
   it("приватний чат: rich із карткою, вхідне лишається", async () => {
     const context = ctx();

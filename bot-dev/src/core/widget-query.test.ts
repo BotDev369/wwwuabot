@@ -64,6 +64,12 @@ beforeEach(() => {
   vi.stubGlobal("fetch", async () => new Response("{}", { status: 200 }));
 });
 
+vi.mock("../shared/tenant-context", () => ({
+  tenantForUser: async () => ({ id: 1, key: "main", name: "main" }),
+  defaultTenant: async () => ({ id: 1, key: "main", name: "main" }),
+  rememberTenant: async () => undefined,
+  pickTenant: async () => null,
+}));
 describe("handleWidgetQuery", () => {
   it("перемикає вид наявного віджета без нових повідомлень", async () => {
     await handleWidgetQuery(env, {

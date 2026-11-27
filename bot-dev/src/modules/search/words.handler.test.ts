@@ -61,6 +61,12 @@ beforeEach(() => {
   state.recorded = [];
 });
 
+vi.mock("../../shared/tenant-context", () => ({
+  tenantForUser: async () => ({ id: 1, key: "main", name: "main" }),
+  defaultTenant: async () => ({ id: 1, key: "main", name: "main" }),
+  rememberTenant: async () => undefined,
+  pickTenant: async () => null,
+}));
 describe("handleWords", () => {
   it("приватний чат: одне rich-повідомлення зі словами", async () => {
     const context = ctx();

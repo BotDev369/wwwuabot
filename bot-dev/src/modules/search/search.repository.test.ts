@@ -20,23 +20,23 @@ function envWith(kv: unknown): Env {
 describe("loadSearchIndex", () => {
   it("читає індекс одним ключем", async () => {
     const get = vi.fn(async () => ({ builtAt: "now", entries: [] }));
-    expect(await loadSearchIndex(envWith({ get }))).toEqual({ builtAt: "now", entries: [] });
+    expect(await loadSearchIndex(envWith({ get }), 1)).toEqual({ builtAt: "now", entries: [] });
     expect(get).toHaveBeenCalledWith(searchIndexKey(1), "json");
   });
 
   it("без біндингу KV пошуку немає", async () => {
-    expect(await loadSearchIndex({} as Env)).toBeNull();
+    expect(await loadSearchIndex({} as Env, 1)).toBeNull();
   });
 
   it("порожній ключ і не-масив entries — це відсутній індекс", async () => {
-    expect(await loadSearchIndex(envWith({ get: async () => null }))).toBeNull();
-    expect(await loadSearchIndex(envWith({ get: async () => ({ entries: "x" }) }))).toBeNull();
+    expect(await loadSearchIndex(envWith({ get: async () => null }), 1)).toBeNull();
+    expect(await loadSearchIndex(envWith({ get: async () => ({ entries: "x" }) }), 1)).toBeNull();
   });
 
   it("збій KV не валить обробку апдейта", async () => {
     const get = async () => {
       throw new Error("kv down");
     };
-    expect(await loadSearchIndex(envWith({ get }))).toBeNull();
+    expect(await loadSearchIndex(envWith({ get }), 1)).toBeNull();
   });
 });

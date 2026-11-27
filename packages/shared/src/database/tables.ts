@@ -99,6 +99,7 @@ export const TABLES = {
       "Стан користувача Telegram: профіль, роль, тариф, блокування, ім'я на платформі, збережені дати.",
     create: `CREATE TABLE IF NOT EXISTS users (
         user_id INTEGER PRIMARY KEY,
+        tenant_id INTEGER DEFAULT 1,
         first_name TEXT,
         last_name TEXT,
         username TEXT,

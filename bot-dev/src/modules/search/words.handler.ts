@@ -11,13 +11,17 @@ import { sendRichMessage } from "../../shared/telegram/widgets";
 import { log } from "../../shared/utils/debug";
 import { recordOutgoingMessage } from "../history/record";
 import { loadSearchIndex } from "./search.repository";
+import { tenantForUser } from "../../shared/tenant-context";
 import { wordsScreenHtml } from "./words-screen";
 
 /** `false` — це не наш випадок (група, немає індексу або відмова Telegram). */
 export async function handleWords(ctx: AppContext): Promise<boolean> {
   if (ctx.chat?.type !== "private" || !ctx.chat.id) return false;
 
-  const index = await loadSearchIndex(ctx.env);
+  const userId = ctx.user?.user_id ?? ctx.from?.id;
+  if (typeof userId !== "number") return false;
+  const tenant = await tenantForUser(ctx.env, userId);
+  const index = await loadSearchIndex(ctx.env, tenant.id);
   if (!index) {
     log("WORDS", "index missing");
     return false;
