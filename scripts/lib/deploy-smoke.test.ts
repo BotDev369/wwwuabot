@@ -63,6 +63,13 @@ const server = createServer((request, response) => {
         JSON.stringify({ status: "degraded", checks: { db: false, kv: true } }),
       );
     if (file === "empty") return send(200, "application/json", JSON.stringify({ status: "ok" }));
+    // 200 при мертвій залежності: код каже «живо», тіло — ні.
+    if (file === "soft")
+      return send(
+        200,
+        "application/json",
+        JSON.stringify({ status: "ok", checks: { db: true, kv: false } }),
+      );
     if (file === "html") return send(200, "text/html; charset=utf-8", "<!doctype html><p>ok");
     return send(
       200,
@@ -245,6 +252,10 @@ describe("глибокий health на фікстурах", () => {
 
   it("503 називає залежність, а не лише код", async () => {
     expect((await deep("broken")).problems).toEqual(["→ 503, лежить: db"]);
+  });
+
+  it("200 із мертвою залежністю — тіло важливіше за код", async () => {
+    expect((await deep("soft")).problems).toEqual(["200, але не живі: kv"]);
   });
 
   it("200 без checks — відповідь не від того ендпоїнта", async () => {
