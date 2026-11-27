@@ -6,11 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit --incremental --tsBuildInfoFile node_modules/.tmp/typecheck-app.tsbuildinfo && tsc -p tsconfig.node.json --noEmit --incremental --tsBuildInfoFile node_modules/.tmp/typecheck-node.tsbuildinfo && tsc -p tsconfig.e2e.json --noEmit --incremental --tsBuildInfoFile node_modules/.tmp/typecheck-e2e.tsbuildinfo",
     "test:e2e": "playwright test",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
-    "lint": "eslint . --max-warnings=0",
+    "lint": "eslint . --max-warnings=0 --cache --cache-location node_modules/.cache/eslint.cache",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

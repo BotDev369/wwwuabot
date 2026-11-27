@@ -91,6 +91,6 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.tmp/typecheck.tsbuildinfo"
   }
 }

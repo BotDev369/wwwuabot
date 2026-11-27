@@ -34,7 +34,7 @@
     "vitest": "^5.0.0"
   },
   "scripts": {
-    "lint": "eslint . --max-warnings=0 && npm run lint --workspaces --if-present",
+    "lint": "eslint . --max-warnings=0 --cache --cache-location node_modules/.cache/eslint.cache && npm run lint --workspaces --if-present",
     "lint:fix": "eslint . --fix && npm run lint:fix --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "format": "prettier --write .",
@@ -67,6 +67,7 @@
     "audit:cloudflare": "node scripts/audit-cloudflare.mjs",
     "audit:spend": "node scripts/audit-spend.mjs",
     "audit:bricks": "node scripts/audit-bricks.mjs",
+    "check:fast": "node scripts/check-fast.mjs",
     "verify": "node scripts/verify.mjs",
     "clean:tmp": "node scripts/clean-tmp.mjs",
     "prepare": "node scripts/install-hooks.mjs",
