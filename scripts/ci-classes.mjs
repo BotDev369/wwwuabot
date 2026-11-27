@@ -51,7 +51,7 @@ export const CLASSES = [
   },
   {
     id: "audit",
-    job: /^checks-types$/,
+    job: /^checks-gates$/,
     step: /^Security audit \(high, shipped deps\)$/,
     cause: "`npm audit --omit=dev` знайшов уразливість `high` у тому, що їде на прод",
     fix: "оновити залежність; якщо фіксу немає — виняток із причиною в PR",

@@ -42,8 +42,9 @@ jobs:
   # `checks` ішла 235 с (run 45927569204). Тому робота поділена за ресурсом:
   #
   #   checks-lint    — ESLint;
-  #   checks-gates   — девʼять статичних гейтів (CSS, планка, документи, схема…);
-  #   checks-types   — аудит того, що їде на прод, і типи;
+  #   checks-gates   — девʼять статичних гейтів (CSS, планка, документи, схема…)
+  #                    і аудит того, що їде на прод;
+  #   checks-types   — типи;
   #   checks-format  — Prettier;
   #   checks-tests   — тести шардами, покриття зводить `checks-coverage`;
   #   checks-browser — обидві збірки, Chromium, перший кадр під CSP, бюджет.
@@ -69,7 +70,7 @@ jobs:
       - uses: ./.github/actions/deps
       - run: npm run lint
 
-  # Девʼять статичних гейтів окремо від лінта: у спільній джобі вони стояли
+  # Статичні гейти окремо від лінта: у спільній джобі вони стояли
   # в черзі за 24 с ESLint-а, хоч самі коштують секунди. Ні від лінта, ні від
   # типів вони не залежать — це різні перевірки того самого дерева.
   checks-gates:
@@ -119,8 +120,22 @@ jobs:
       # маршруту, `analysis` поза зайнятими адресами).
       - name: Screen registry
         run: npm run check:screens
+      # Аудит стоїть тут, а не в джобі типів: іде секунди (2–9 залежно від
+      # мережі до реєстру), а там був би зайвою ланкою перед 30 с tsc.
+      #
+      # Поріг піднято з `critical` до `high` 13.09.2026: після оновлення
+      # `wrangler`/`miniflare` (sharp) і `vitest` у репозиторії **нуль**
+      # уразливостей, а `high` — саме той рівень, який раніше проходив повз гейт.
+      # Гейт стоїть на тому, що **їде на прод**: `picomatch` (CVE-2026-112366,
+      # ReDoS, `high`) має «Patched versions: None» і приходить лише через
+      # інструменти розробки. Гейт, який неможливо зробити зеленим, блокує кожен
+      # деплой — саме так прод стояв на `2bd4e88a`. Тому: уразливість у тому, що
+      # віддається користувачу, — червоне; у dev-інструментах — видимий звіт.
+      - name: Security audit (high, shipped deps)
+        run: npm audit --omit=dev --audit-level=high
 
-  # Типи й аудит разом: обидва — про те, що поїде на прод, і обидва короткі.
+  # Типи: 30 с роботи після того, як `vitest` і `vite` дали свої типи через
+  # `node_modules` — швидше ніж разом з іншими кроками в одній черзі.
   checks-types:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
@@ -129,22 +144,6 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/deps
-      # Поріг піднято з `critical` до `high` 13.09.2026: після оновлення
-      # `wrangler`/`miniflare` (sharp) і `vitest` у репозиторії **нуль**
-      # уразливостей, а `high` — саме той рівень, який раніше проходив повз гейт.
-      # `moderate` лишається попередженням, бо виправити його часто нічим:
-      # це транзитивні залежності інструментів розробки.
-      # Гейт стоїть на тому, що **їде на прод**. Причина — не «менше перевірок»,
-      # а те, що повний аудит 18.11.2026 став незадовільнимим у принципі:
-      # `picomatch` (CVE-2026-112366, ReDoS, `high`) має «Patched versions: None»,
-      # тобто виправленого релізу не існує, а приходить він лише через
-      # інструменти розробки (vite, vitest, tinyglobby, eslint). Гейт, який
-      # неможливо зробити зеленим, блокує кожен деплой: саме так прод стояв на
-      # `2bd4e88a`, поки `checks` падав на аудиті й деплої не стартували.
-      # Тому: уразливість у тому, що віддається користувачу, — червоне;
-      # уразливість у dev-інструментах — видимий звіт, а не стоп.
-      - name: Security audit (high, shipped deps)
-        run: npm audit --omit=dev --audit-level=high
       - run: npm run typecheck
 
   # Prettier окремо: 12 с роботи, які в спільній джобі стояли в черзі за
@@ -236,12 +235,13 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      # Збірка й Chromium незалежні, тож ідуть одночасно: послідовно вони
-      # коштували 18 + 14 с (run 45983379607). Помилка встановлення не губиться —
-      # `wait` повертає код виходу, і крок падає з хвостом його логу.
+      # Збірка й Chromium незалежні, тож ідуть одночасно. `--with-deps` тягне apt
+      # на ~30 с (run 45989797846: крок 35 с), а бібліотеки на образі раннера вже
+      # є — тому ставимо браузер, а системні пакети лише якщо справжній запуск не
+      # вдався. Перевірка саме запуском: список пакетів про це не каже нічого.
       - name: Build shells (Chromium ставиться паралельно)
         run: |
-          npx playwright install --with-deps chromium > /tmp/chromium.log 2>&1 &
+          npx playwright install chromium > /tmp/chromium.log 2>&1 &
           chromium=$!
           npm run build --workspace web-platform-dev
           npm run build --workspace web-admin-dev
@@ -250,6 +250,8 @@ jobs:
             tail -30 /tmp/chromium.log
             exit 1
           fi
+          node -e "require('playwright').chromium.launch().then((b) => b.close())" \
+            > /tmp/launch.log 2>&1 || npx playwright install-deps chromium
           tail -2 /tmp/chromium.log
       - name: First-frame gate (strict CSP)
         run: npm run check:gate
