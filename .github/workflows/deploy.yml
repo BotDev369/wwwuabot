@@ -177,6 +177,24 @@ jobs:
       - name: Bundle budget
         run: npm run check:bundle
 
+  # Звітний аудит інструментів розробки. Без `needs` навмисно: джоба стартує
+  # разом із гейтом і не подовжує прогін, а `continue-on-error` робить її
+  # звітом, а не гейтом — деплої її не чекають (`needs` у них — лише `checks`).
+  # Біжить і на `pull_request`: там деплоїв немає, а звіт потрібен.
+  audit-report:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      # `--package-lock-only`: аудит читає lockfile, `node_modules` не потрібні —
+      # джоба не платить встановлення (саме воно й коштувало 34–51 с в аудиті).
+      - name: Security audit (dev tools)
+        continue-on-error: true
+        run: npm audit --package-lock-only --audit-level=high
+
   # Замок, а не робота: зелений рівно тоді, коли зелені всі три групи.
   #
   # Імʼя `checks` лишається тим самим навмисно: `deploy-*` чекають на нього,
@@ -288,14 +306,6 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-      # Аудит інструментів розробки переїхав сюди з гейта. Він `continue-on-error`,
-      # тобто нічого не завалював і до переносу — але стояв на критичному шляху й
-      # коштував до 42 с (мережа до реєстру), тобто сам визначав, коли звільнять
-      # деплой. Тут він так само видимий і нікого не тримає; без `node_modules`
-      # аудит читає `package-lock.json` (`--package-lock-only`).
-      - name: Security audit (dev tools)
-        continue-on-error: true
-        run: npm audit --package-lock-only --audit-level=high
       - name: Send report
         env:
           REPORT_URL: https://bot-dev.diskomate.workers.dev/reports

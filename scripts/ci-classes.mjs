@@ -97,7 +97,7 @@ export const CLASSES = [
     job: /^checks$/,
     step: /^All gate groups green$/,
     cause: "одна з трьох груп гейтів червона — дивись її джобу",
-    fix: "`npm run verify -- --group=<static|tests|browser>` локально",
+    fix: "`npm run verify -- --group=<static|tests|browser|report>` локально",
   },
   {
     id: "build",

@@ -35,8 +35,8 @@ const STEPS = [
     cmd: "npm audit --omit=dev --audit-level=high",
     audit: true,
   },
-  // Поза гейтом: у CI цей крок живе в джобі `report`. Він і так був `soft`
-  // (`continue-on-error`), але в гейт-джобі визначав `max(static, …)`.
+  // Поза гейтом: у CI цей крок — окрема джоба `audit-report` без `needs`.
+  // Він і так був `soft` (`continue-on-error`), а в гейт-джобі визначав `max(…)`.
   {
     group: "report",
     name: "audit (dev tools)",
