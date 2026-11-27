@@ -68,6 +68,7 @@
     "./search": "./src/search/index.ts",
     "./screens": "./src/screens/index.ts",
     "./shop": "./src/shop/index.ts",
+    "./tenants": "./src/tenants/index.ts",
     "./monitoring": "./src/monitoring/index.ts",
     "./spending": "./src/spending/index.ts",
     "./components/Icon": "./src/components/Icon.tsx",

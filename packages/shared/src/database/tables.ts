@@ -140,6 +140,50 @@ export const TABLES = {
       )`,
   },
 
+  // ── Спільне ядро: проєкти (орендарі) ───────────────────────────────────
+
+  /**
+   * Проєкт клієнта — рядок, а не набір воркерів (D25). `key` — адреса в deep
+   * link `?startapp=p_<key>`; префікс `p_` відділяє її від payload'ів бота.
+   * `UNIQUE` — у `CREATE TABLE`, бо імена індексів у SQLite глобальні.
+   * Головний проєкт (`main`) заводить `ensureDefaultTenant`; членства він не
+   * потребує (D26).
+   */
+  tenants: {
+    name: "tenants",
+    owner: "api-dev",
+    purpose:
+      "Tenant (project): deep-link key, display name and status. One row = one client inside the shared core.",
+    create: `CREATE TABLE IF NOT EXISTS tenants (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key TEXT NOT NULL UNIQUE,
+        name TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'active',
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+  },
+
+  /**
+   * Членство людини в проєкті: `(tenant_id, user_id)` — рівно одне на пару.
+   * `role` — `owner` або `member`; перелік спільний із ботом та оболонками
+   * (`@wwwuabot/shared/tenants`). Колонка в `users` не вміє кількох проєктів.
+   */
+  tenant_members: {
+    name: "tenant_members",
+    owner: "api-dev",
+    purpose:
+      "Membership of a person in a project: role `owner`/`member`. The default project needs no membership.",
+    create: `CREATE TABLE IF NOT EXISTS tenant_members (
+        tenant_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        role TEXT NOT NULL DEFAULT 'member',
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (tenant_id, user_id)
+      )`,
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_tenant_members_user ON tenant_members(user_id)"],
+  },
+
   // ── api-dev ────────────────────────────────────────────────────────────
 
   /**

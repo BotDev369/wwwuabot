@@ -70,6 +70,7 @@
 | `ANY` | `/api/user/shop/orders/status` | `handleUserShopOrders` |
 | `ANY` | `/api/user/shop/products` | `handleUserShopProducts` |
 | `GET` | `/api/user/shop/statuses` | `handleUserShopStatuses` |
+| `GET` | `/api/user/tenant` | `handleCurrentTenant` |
 | `ANY` | `/api/user/trackers` | `handleTrackers` |
 | `ANY` | `/api/user/trackers/entry` | `handleTrackerEntry` |
 | `ANY` | `/api/user/trackers/group` | `handleTrackerGroups` |
@@ -115,6 +116,8 @@
 | `ANY` | `/api/admin/spending/sync` | `handleSpendingSync` |
 | `ANY` | `/api/admin/spending/transactions` | `handleSpendingTransactions` |
 | `ANY` | `/api/admin/spending<…>` | `—` |
+| `GET` | `/api/admin/tenants` | `handleTenantsList` |
+| `POST` | `/api/admin/tenants` | `handleTenantCreate` |
 | `GET` | `/api/admin/users/<…>` | `handleUserMessages` |
 | `PATCH` | `/api/admin/users/<…>` | `handleEditUserMessage` |
 | `DELETE` | `/api/admin/users/<…>` | `handleDeleteUserMessage` |
@@ -127,8 +130,8 @@
 | `POST` | `/api/admin/users/update` | `handleUpdateUser` |
 | `POST` | `/api/bot/delete-webhook` | `handleDeleteWebhook` |
 | `GET` | `/api/bot/info` | `handleBotInfo` |
-| `POST` | `/api/bot/setup-webhook` | `handleBotSetupWebhook` |
-| `GET` | `/api/bot/webhook-info` | `handleBotWebhookInfo` |
+| `POST` | `/api/bot/setup-webhook` | `handleSetupWebhook` |
+| `GET` | `/api/bot/webhook-info` | `handleWebhookInfo` |
 
 ## Сесія адміна — ставить або знімає cookie
 
@@ -138,4 +141,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **109**.
+Усього шляхів: **112**.

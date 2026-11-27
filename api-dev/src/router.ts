@@ -18,12 +18,7 @@ import { handleSearchReindex } from "./controllers/search.controller";
 import { matchScreensRoute } from "./routes/screens";
 import { handleMyDates } from "./controllers/my-dates.controller";
 import { handleAnalysisSets } from "./controllers/analysis-sets.controller";
-import {
-  handleWebhookInfo as handleBotWebhookInfo,
-  handleSetupWebhook as handleBotSetupWebhook,
-  handleDeleteWebhook,
-  handleBotInfo,
-} from "./controllers/bot-settings.controller";
+import { matchBotSettingsRoute } from "./routes/bot-settings";
 import { handleBotUsername } from "./controllers/bot-username.controller";
 import { sessionSide } from "@wwwuabot/shared/security/session";
 import {
@@ -69,6 +64,7 @@ import {
 import { matchEventsRoute } from "./routes/events";
 import { matchSpendingRoute } from "./routes/spending";
 import { handleUserEvent } from "./controllers/user-event.controller";
+import { matchTenantsRoute } from "./routes/tenants";
 
 /**
  * Префікси шляхів, доступ до яких вимагає адмінської cookie-сесії.
@@ -131,19 +127,9 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     return handlePreviewSession(request, env);
   }
 
-  // ── Bot Settings API ─────────────────────────────────────────────
-  if (pathname === "/api/bot/webhook-info" && request.method === "GET") {
-    return handleBotWebhookInfo(request, env);
-  }
-  if (pathname === "/api/bot/setup-webhook" && request.method === "POST") {
-    return handleBotSetupWebhook(request, env);
-  }
-  if (pathname === "/api/bot/delete-webhook" && request.method === "POST") {
-    return handleDeleteWebhook(request, env);
-  }
-  if (pathname === "/api/bot/info" && request.method === "GET") {
-    return handleBotInfo(request, env);
-  }
+  // ── Налаштування бота (вебхук, ім'я) ────────────────────────────
+  const botSettings = matchBotSettingsRoute(request, env, pathname);
+  if (botSettings) return botSettings;
 
   // ── Ім'я бота для платформи ────────────────────────────────────
   // Не під `/api/bot/`: там адмін-гейт за cookie, а Mini App приходить із
@@ -151,6 +137,13 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   if (pathname === "/api/user/bot" && request.method === "GET") {
     return handleBotUsername(env);
   }
+
+  // ── Проєкти (орендарі) ──────────────────────────────────────────
+  // Один домен — один модуль (`routes/tenants.ts`): який проєкт зараз, які є
+  // й заведення нового. Ключ приходить із підписаного `initData`
+  // (`?startapp=p_<key>`), а членство перевіряє `shared/tenant.ts`.
+  const tenants = matchTenantsRoute(request, env, pathname);
+  if (tenants) return tenants;
 
   // MyDate — одним модулем (`routes/mydate.ts`), як трекери й переписка.
   const mydate = matchMyDateRoute(request, env, pathname);
