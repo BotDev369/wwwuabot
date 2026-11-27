@@ -19,6 +19,9 @@ import {
   type PlatformPageListItem,
   type PlatformPageRecord,
 } from "../../shared/api/scenarios-admin.api";
+import { ProjectSelect } from "../tenant/ProjectSelect";
+import { contentErrorMessage } from "../tenant/content-errors";
+import { useSelectedTenant } from "../tenant/selected-tenant.store";
 
 type Status = "loading" | "idle" | "error";
 
@@ -34,6 +37,7 @@ function searchTermsLabel(raw: string | null): string {
 }
 
 export function PlatformPagesPage() {
+  const tenantKey = useSelectedTenant((state) => state.key);
   const [items, setItems] = useState<PlatformPageListItem[]>([]);
   const [status, setStatus] = useState<Status>("loading");
   const [error, setError] = useState("");
@@ -46,16 +50,19 @@ export function PlatformPagesPage() {
 
   const load = useCallback(async () => {
     try {
-      setItems(await listPlatformPages());
+      setItems(await listPlatformPages(tenantKey));
       setStatus("idle");
     } catch (e) {
-      setError((e as Error).message);
+      setError(contentErrorMessage(e));
       setStatus("error");
     }
-  }, []);
+  }, [tenantKey]);
 
   useEffect(() => {
+    // Інший проєкт — інші сторінки: старі рядки не мають блимнути під новою назвою.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- асинхронне завантаження: setState усередині load()
+    setItems([]);
+    setStatus("loading");
     void load();
   }, [load]);
 
@@ -68,20 +75,20 @@ export function PlatformPagesPage() {
   }, [items, query]);
 
   async function open(id: number): Promise<void> {
-    const found = await readPlatformPage(id);
+    const found = await readPlatformPage(id, tenantKey);
     if (found) setRecord(found);
   }
 
   async function rebuild(): Promise<void> {
     setReindex({ busy: true, note: "" });
     try {
-      const result = await reindexSearch();
+      const result = await reindexSearch(tenantKey);
       setReindex({
         busy: false,
         note: `Готово: сторінок ${result.pages}, товарів ${result.products}`,
       });
     } catch (e) {
-      setReindex({ busy: false, note: (e as Error).message });
+      setReindex({ busy: false, note: contentErrorMessage(e) });
     }
   }
 
@@ -93,6 +100,7 @@ export function PlatformPagesPage() {
           {items.length > 0 && <span className="wb-count">{items.length}</span>}
         </div>
         <div className="wb-topbar-right">
+          <ProjectSelect />
           <input
             type="text"
             className="wb-input wb-search"

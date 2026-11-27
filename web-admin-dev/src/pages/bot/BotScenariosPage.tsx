@@ -17,6 +17,11 @@ import {
   type BotScenarioRecord,
   type ScenarioKind,
 } from "../../shared/api/scenarios-admin.api";
+import { NewScreenDialog } from "./NewScreenDialog";
+import { ProjectSelect } from "../tenant/ProjectSelect";
+import { contentErrorMessage } from "../tenant/content-errors";
+import labels from "../tenant/project-labels.json";
+import { useSelectedTenant } from "../tenant/selected-tenant.store";
 
 type Status = "loading" | "idle" | "error";
 
@@ -47,6 +52,7 @@ function draftOf(record: BotScenarioRecord): Draft {
 }
 
 export function BotScenariosPage() {
+  const tenantKey = useSelectedTenant((state) => state.key);
   const [items, setItems] = useState<BotScenarioListItem[]>([]);
   const [status, setStatus] = useState<Status>("loading");
   const [error, setError] = useState("");
@@ -54,19 +60,23 @@ export function BotScenariosPage() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [creating, setCreating] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      setItems(await listBotScenarios());
+      setItems(await listBotScenarios(tenantKey));
       setStatus("idle");
     } catch (e) {
-      setError((e as Error).message);
+      setError(contentErrorMessage(e));
       setStatus("error");
     }
-  }, []);
+  }, [tenantKey]);
 
   useEffect(() => {
+    // Інший проєкт — інший список: старі рядки не мають блимнути під новою назвою.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- асинхронне завантаження: setState усередині load()
+    setItems([]);
+    setStatus("loading");
     void load();
   }, [load]);
 
@@ -77,7 +87,7 @@ export function BotScenariosPage() {
   }, [items, query]);
 
   async function open(id: number): Promise<void> {
-    const record = await readBotScenario(id);
+    const record = await readBotScenario(id, tenantKey);
     if (record) {
       setSaveError("");
       setDraft(draftOf(record));
@@ -93,15 +103,19 @@ export function BotScenariosPage() {
     setSaving(true);
     setSaveError("");
     try {
-      await updateBotScenario(draft.id, {
-        kind: draft.kind,
-        widget_html: draft.widget_html,
-        widget_data: draft.widget_data,
-        rich_html: draft.rich_html,
-        notify_groups: draft.notify_groups,
-        notify_template: draft.notify_template,
-        is_active: draft.is_active ? 1 : 0,
-      });
+      await updateBotScenario(
+        draft.id,
+        {
+          kind: draft.kind,
+          widget_html: draft.widget_html,
+          widget_data: draft.widget_data,
+          rich_html: draft.rich_html,
+          notify_groups: draft.notify_groups,
+          notify_template: draft.notify_template,
+          is_active: draft.is_active ? 1 : 0,
+        },
+        tenantKey,
+      );
       setDraft(null);
       await load();
     } catch (e) {
@@ -119,6 +133,10 @@ export function BotScenariosPage() {
           {items.length > 0 && <span className="wb-count">{items.length}</span>}
         </div>
         <div className="wb-topbar-right">
+          <ProjectSelect />
+          <button className="wb-btn wb-btn-primary" onClick={() => setCreating(true)}>
+            {labels.create}
+          </button>
           <input
             type="text"
             className="wb-input wb-search"
@@ -189,6 +207,19 @@ export function BotScenariosPage() {
           </div>
         )}
       </div>
+
+      {creating && (
+        <NewScreenDialog
+          tenantKey={tenantKey}
+          onClose={() => setCreating(false)}
+          onCreated={(record) => {
+            setCreating(false);
+            void load();
+            setSaveError("");
+            setDraft(draftOf(record));
+          }}
+        />
+      )}
 
       {draft && (
         <div className="wb-modal-overlay" onClick={() => setDraft(null)}>
