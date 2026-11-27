@@ -84,7 +84,7 @@ const product = (over: Record<string, unknown> = {}) => ({
 describe("buildSearchIndex", () => {
   it("сторінка: фото зі шлюзу, підпис шаблону й слова з колонки", async () => {
     const { env, queries } = makeEnv([page()], []);
-    const index = await buildSearchIndex(env, "https://api.test/");
+    const index = await buildSearchIndex(env, 1, "https://api.test/");
 
     expect(index.entries[0]).toMatchObject({
       kind: "page",
@@ -108,7 +108,7 @@ describe("buildSearchIndex", () => {
       ],
       [],
     );
-    const index = await buildSearchIndex(env, "https://api.test");
+    const index = await buildSearchIndex(env, 1, "https://api.test");
     for (const entry of index.entries) {
       expect(entry.photo).toBe("https://api.test/api/shop/media/shop/defaults/page.webp");
     }
@@ -116,14 +116,14 @@ describe("buildSearchIndex", () => {
 
   it("биті або порожні слова сторінки рятує назва й адреса", async () => {
     const { env } = makeEnv([page({ search_terms: "[не json" })], []);
-    const index = await buildSearchIndex(env, "https://api.test");
+    const index = await buildSearchIndex(env, 1, "https://api.test");
     expect(index.entries[0].terms).toContain("GalyaShop");
     expect(index.entries[0].terms).toHaveLength(1);
   });
 
   it("товар: магазин, ціна, фото з shop_media і шлях товару", async () => {
     const { env } = makeEnv([], [product()], [{ id: 7, r2_key: "shop/382/x.jpg" }]);
-    const index = await buildSearchIndex(env, "https://api.test");
+    const index = await buildSearchIndex(env, 1, "https://api.test");
     expect(index.entries[0]).toMatchObject({
       kind: "product",
       id: 9,
@@ -137,7 +137,7 @@ describe("buildSearchIndex", () => {
 
   it("товар без фото отримує товарну заглушку; порожні слова — з назви", async () => {
     const { env } = makeEnv([], [product({ images: "[]", search_terms: "[]" })]);
-    const index = await buildSearchIndex(env, "https://api.test");
+    const index = await buildSearchIndex(env, 1, "https://api.test");
     expect(index.entries[0].photo).toBe(
       "https://api.test/api/shop/media/shop/defaults/product.webp",
     );
@@ -146,7 +146,7 @@ describe("buildSearchIndex", () => {
 
   it("товар без ключа файлу падає на заглушку, а не на бите посилання", async () => {
     const { env } = makeEnv([], [product()], []);
-    const index = await buildSearchIndex(env, "https://api.test");
+    const index = await buildSearchIndex(env, 1, "https://api.test");
     expect(index.entries[0].photo).toContain("product.webp");
   });
 });
@@ -187,12 +187,12 @@ describe("pageDescription", () => {
 describe("rebuildSearchIndex", () => {
   it("пише один ключ і рахує сторінки й товари", async () => {
     const { env, put } = makeEnv([page()], [product()], [{ id: 7, r2_key: "shop/382/x.jpg" }]);
-    const result = await rebuildSearchIndex(env, "https://api.test");
+    const result = await rebuildSearchIndex(env, 1, "https://api.test");
 
     expect(result).toMatchObject({ pages: 1, products: 1 });
     expect(put).toHaveBeenCalledTimes(1);
     const [key, json] = put.mock.calls[0] as unknown as [string, string];
-    expect(key).toBe("search:v2");
+    expect(key).toBe("search:v3:1");
     expect(JSON.parse(json).entries).toHaveLength(2);
   });
 });

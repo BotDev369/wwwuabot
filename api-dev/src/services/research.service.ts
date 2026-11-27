@@ -14,7 +14,9 @@ import type { Env } from "../shared/types";
  * `v2` — бо адреси блоків змінилися (`viruvannia-a1` → `viruvannia/<address>`):
  * каталог `v1` у KV містить старі адреси й веде на редиректи замість сторінок.
  */
-export const RESEARCH_CATALOG_KEY = "research:catalog:v2";
+export function researchCatalogKey(tenantId: number): string {
+  return `research:catalog:v3:${tenantId}`;
+}
 
 /** Префікс адрес блоків: лендінг — `viruvannia`, блок — `viruvannia/sto-vidsotkiv`. */
 const BLOCK_PREFIX = `${RESEARCH_LANDING_SLUG}/`;
@@ -51,16 +53,20 @@ function blockFromRow(row: BlockRow): ResearchBlock {
 }
 
 /** Каталог: із KV, а на промаху — із рядків `scenarios` (і назад у KV). */
-export async function readResearchCatalog(env: Env): Promise<ResearchCatalog | null> {
-  const cached = await env.CONTENT_KV.get<ResearchCatalog>(RESEARCH_CATALOG_KEY, "json");
+export async function readResearchCatalog(
+  env: Env,
+  tenantId: number,
+): Promise<ResearchCatalog | null> {
+  const key = researchCatalogKey(tenantId);
+  const cached = await env.CONTENT_KV.get<ResearchCatalog>(key, "json");
   if (cached && Array.isArray(cached.blocks) && cached.blocks.length > 0) return cached;
 
   const result = await env.DB.prepare(
     `SELECT slug, title FROM platform_pages
-      WHERE slug LIKE ? AND is_active = 1
+      WHERE tenant_id = ? AND slug LIKE ? AND is_active = 1
       ORDER BY id`,
   )
-    .bind(`${BLOCK_PREFIX}%`)
+    .bind(tenantId, `${BLOCK_PREFIX}%`)
     .all<BlockRow>();
 
   const rows = result.results ?? [];
@@ -73,6 +79,6 @@ export async function readResearchCatalog(env: Env): Promise<ResearchCatalog | n
     blocks: rows.map(blockFromRow),
   };
 
-  await env.CONTENT_KV.put(RESEARCH_CATALOG_KEY, JSON.stringify(catalog));
+  await env.CONTENT_KV.put(key, JSON.stringify(catalog));
   return catalog;
 }

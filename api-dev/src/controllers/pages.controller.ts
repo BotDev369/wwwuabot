@@ -17,6 +17,7 @@
 import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
 import { resolveUserId } from "../shared/identity";
+import { resolveTenant } from "../shared/tenant";
 import { PagesService } from "../services/pages.service";
 
 function json(body: unknown, status = 200): Response {
@@ -35,8 +36,14 @@ export async function handleUserPages(request: Request, env: Env): Promise<Respo
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
 
+  const tenant = await resolveTenant(request, env);
+  if (!tenant.ok) return tenant.response;
+
   try {
-    return json({ ok: true, pages: await new PagesService(env).listManaged(identity.userId) });
+    return json({
+      ok: true,
+      pages: await new PagesService(env, tenant.tenant.id).listManaged(identity.userId),
+    });
   } catch (e: unknown) {
     apiLog.error("Pages error", e);
     return json({ ok: false, error: "Не вдалося виконати дію" }, 500);

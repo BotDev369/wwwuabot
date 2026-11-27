@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { HOME_SLUG } from "@wwwuabot/shared/content";
 import { handleScenario } from "./scenarios.controller";
 import type { Env } from "../shared/types";
@@ -52,7 +52,7 @@ function fakeD1(
         // Стара адреса: `slug_aliases` віддає ціль, якщо alias відомий.
         first: async () => {
           if (/JOIN platform_pages/.test(sql)) {
-            const target = aliases[String(args[0])];
+            const target = aliases[String(args[args.length - 1])];
             return target === undefined ? null : { slug: target };
           }
           if (!/FROM platform_pages/i.test(sql)) return null;
@@ -105,6 +105,13 @@ async function bodyOf(response: Response): Promise<ScenarioResponse> {
 
 const call = (env: Env, slug: string) =>
   handleScenario(new Request(`https://api.example.com/api/scenario/${slug}`), env, slug);
+
+vi.mock("../shared/tenant", () => ({
+  resolveTenant: async () => ({
+    ok: true as const,
+    tenant: { id: 1, key: "main", name: "main", status: "active", source: "default" as const },
+  }),
+}));
 
 describe("GET /api/scenario/:slug", () => {
   it("віддає сторінку за canonical slug разом із метаданими", async () => {
@@ -174,6 +181,7 @@ describe("GET /api/scenario/:slug", () => {
     const scenarioReads = bound.filter((query) => /FROM platform_pages/i.test(query.sql));
     expect(scenarioReads).toHaveLength(1);
     expect(scenarioReads[0]?.args).toEqual([
+      1,
       "viruvannia/sto-vidsotkiv/nova",
       "viruvannia/sto-vidsotkiv",
       "viruvannia",

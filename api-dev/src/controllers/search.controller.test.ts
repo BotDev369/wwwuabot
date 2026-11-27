@@ -15,6 +15,13 @@ const { handleSearchReindex } = await import("./search.controller");
 const request = () => new Request("https://api.test/api/admin/search/reindex", { method: "POST" });
 const env = {} as Env;
 
+vi.mock("../shared/tenant", () => ({
+  resolveTenant: async () => ({
+    ok: true as const,
+    tenant: { id: 1, key: "main", name: "main", status: "active", source: "default" as const },
+  }),
+}));
+
 describe("handleSearchReindex", () => {
   it("перебудова віддає лічильники й час", async () => {
     state.fail = false;

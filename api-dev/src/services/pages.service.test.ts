@@ -93,7 +93,7 @@ function makeEnv(options: { rows?: PageRow[]; people?: number[] }): {
           }
           // `owner_id = ? OR admin_ids LIKE ?` — умова, а не просто форма запиту:
           // у тесті вона й мусить відсіяти чуже.
-          const [userId, like] = record.binds;
+          const [, userId, like] = record.binds;
           const needle = String(like).replace(/%/g, "");
           return {
             results: rows.filter(
@@ -120,7 +120,7 @@ describe("читання сценаріїв, які веде людина", () =
       ],
     });
 
-    const list = await new PagesService(env).listManaged(ADMIN);
+    const list = await new PagesService(env, 1).listManaged(ADMIN);
 
     expect(list.map((one) => one.slug)).toEqual(["olena"]);
     expect(statements.some((s) => /^SELECT/.test(s.sql.trimStart()))).toBe(true);
@@ -132,7 +132,7 @@ describe("читання сценаріїв, які веде людина", () =
       people: [OWNER],
     });
 
-    const [one] = await new PagesService(env).listManaged(OWNER);
+    const [one] = await new PagesService(env, 1).listManaged(OWNER);
 
     expect(one.staff).toEqual([{ id: OWNER, name: "#user100", role: "owner" }]);
     expect(one.role).toBe("owner");

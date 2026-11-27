@@ -5,7 +5,7 @@
  * @module api-dev/src/controllers/scenarios-admin.controller.test
  */
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   handleBotScenarioRead,
   handleBotScenarioUpdate,
@@ -37,8 +37,8 @@ function makeDb(options: {
         },
         all: async () => ({ results: [{ id: 1 }] }),
         first: async () => {
-          if (/FROM bot_scenarios WHERE id/.test(sql)) return options.botRow ?? null;
-          if (/FROM platform_pages WHERE id/.test(sql)) return options.pageRow ?? null;
+          if (/FROM bot_scenarios/.test(sql)) return options.botRow ?? null;
+          if (/FROM platform_pages/.test(sql)) return options.pageRow ?? null;
           return null;
         },
         run: async () => {
@@ -58,6 +58,13 @@ function post(body: unknown): Request {
     body: JSON.stringify(body),
   });
 }
+
+vi.mock("../shared/tenant", () => ({
+  resolveTenant: async () => ({
+    ok: true as const,
+    tenant: { id: 1, key: "main", name: "main", status: "active", source: "default" as const },
+  }),
+}));
 
 describe("сценарії бота", () => {
   it("список віддає ключ і тип", async () => {
@@ -138,7 +145,7 @@ describe("сторінки платформи", () => {
     const res = await handlePlatformPagesList(new Request("https://api.example.com"), env);
 
     expect(((await res.json()) as { items: unknown[] }).items).toHaveLength(1);
-    const list = calls.find((call) => call.sql.includes("FROM platform_pages ORDER"));
+    const list = calls.find((call) => /FROM platform_pages[\s\S]*ORDER/.test(call.sql));
     expect(list?.sql).not.toContain("page_data");
   });
 });

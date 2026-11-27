@@ -12,8 +12,13 @@ import { mediaUrl } from "@wwwuabot/shared/shop";
 import { searchTermsFrom, type SearchEntry, type SearchIndex } from "@wwwuabot/shared/search";
 import type { Env } from "../../shared/types";
 
-/** Один ключ на всю версію: стара форма не живе поруч із новою. */
-export const SEARCH_INDEX_KEY = "search:v2";
+/**
+ * Один ключ на проєкт: індекс сусіднього проєкту не має шансу потрапити у
+ * видачу. Версія в ключі — щоб стара форма не жила поруч із новою.
+ */
+export function searchIndexKey(tenantId: number): string {
+  return `search:v3:${tenantId}`;
+}
 
 /** Заглушки лежать у тому самому бакеті, під префіксом `shop/`. */
 const DEFAULT_PAGE_PHOTO = "shop/defaults/page.webp";
@@ -150,7 +155,11 @@ function absolute(base: string, path: string): string {
  * Зібрати індекс із бази. `base` — публічна адреса `api-dev`, з якої Telegram
  * тягне фото: у рядках лежить ключ R2, а не адреса.
  */
-export async function buildSearchIndex(env: Env, base: string): Promise<SearchIndex> {
+export async function buildSearchIndex(
+  env: Env,
+  tenantId: number,
+  base: string,
+): Promise<SearchIndex> {
   await ensureTables(env.DB, ["platform_pages", "shop_products"]);
 
   // Сторінки платформи мають is_public = NULL: вони публічні за походженням, а
@@ -158,14 +167,17 @@ export async function buildSearchIndex(env: Env, base: string): Promise<SearchIn
   const pagesResult = await env.DB.prepare(
     `SELECT p.slug, p.title, p.photo_url, p.template_key, p.search_terms, p.page_data
        FROM platform_pages p
-      WHERE p.is_active = 1
+      WHERE p.tenant_id = ?
+        AND p.is_active = 1
         AND (p.owner_id IS NULL OR COALESCE(p.is_public, 0) = 1)
         AND NOT EXISTS (
           SELECT 1 FROM users u
            WHERE CAST(u.user_id AS TEXT) = p.owner_id AND u.is_blocked = 1
         )
       ORDER BY p.id`,
-  ).all<PageRow>();
+  )
+    .bind(tenantId)
+    .all<PageRow>();
 
   const pages: SearchEntry[] = (pagesResult.results ?? []).map((row) => {
     const title = row.title ?? row.slug;
@@ -187,13 +199,16 @@ export async function buildSearchIndex(env: Env, base: string): Promise<SearchIn
             s.slug AS shop_slug, s.title AS shop_title
        FROM shop_products p
        JOIN platform_pages s ON s.id = p.shop_id
-      WHERE p.is_active = 1 AND s.is_active = 1 AND s.is_public = 1
+      WHERE s.tenant_id = ?
+        AND p.is_active = 1 AND s.is_active = 1 AND s.is_public = 1
         AND NOT EXISTS (
           SELECT 1 FROM users u
            WHERE CAST(u.user_id AS TEXT) = s.owner_id AND u.is_blocked = 1
         )
       ORDER BY p.id`,
-  ).all<ProductRow>();
+  )
+    .bind(tenantId)
+    .all<ProductRow>();
 
   const rows = productsResult.results ?? [];
   const ids = [...new Set(rows.flatMap((row) => imageIds(row.images)))];
@@ -233,10 +248,11 @@ export async function buildSearchIndex(env: Env, base: string): Promise<SearchIn
 /** Перебудувати й записати. Помилку бачить той, хто кличе: це не фонова дія. */
 export async function rebuildSearchIndex(
   env: Env,
+  tenantId: number,
   base: string,
 ): Promise<{ pages: number; products: number; builtAt: string }> {
-  const index = await buildSearchIndex(env, base);
-  await env.CONTENT_KV.put(SEARCH_INDEX_KEY, JSON.stringify(index));
+  const index = await buildSearchIndex(env, tenantId, base);
+  await env.CONTENT_KV.put(searchIndexKey(tenantId), JSON.stringify(index));
   return {
     pages: index.entries.filter((entry) => entry.kind === "page").length,
     products: index.entries.filter((entry) => entry.kind === "product").length,

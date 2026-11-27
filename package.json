@@ -46,6 +46,7 @@
     "check:screens": "node scripts/check-screens.mjs",
     "doc:screens": "node scripts/build-screens.mjs",
     "check:db": "node scripts/check-db.mjs",
+    "check:tenancy": "node scripts/check-tenancy.mjs",
     "doc:api": "node scripts/doc-api.mjs",
     "doc:style": "node scripts/build-style-catalog.mjs && node scripts/ui-inventory.mjs",
     "check:style": "node scripts/build-style-catalog.mjs --check && node scripts/ui-inventory.mjs --check",

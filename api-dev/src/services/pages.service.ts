@@ -67,7 +67,10 @@ function toPeer(row: UserRow): MessagePeer {
 }
 
 export class PagesService {
-  constructor(private env: Env) {}
+  constructor(
+    private env: Env,
+    private tenantId: number,
+  ) {}
 
   private async ensureSchema(): Promise<void> {
     await ensureTables(this.env.DB, ["platform_pages"]);
@@ -79,10 +82,10 @@ export class PagesService {
 
     const result = await this.env.DB.prepare(
       `SELECT ${PAGE_COLUMNS} FROM platform_pages
-        WHERE owner_id = ? OR admin_ids LIKE ?
+        WHERE tenant_id = ? AND (owner_id = ? OR admin_ids LIKE ?)
         ORDER BY updated_at DESC, id DESC LIMIT ?`,
     )
-      .bind(userId, `%${userId}%`, MANAGED_LIMIT)
+      .bind(this.tenantId, userId, `%${userId}%`, MANAGED_LIMIT)
       .all<PageRow>();
 
     const rows = (result.results ?? []).filter((row) =>

@@ -33,6 +33,13 @@ beforeEach(() => {
   service.listManaged.mockResolvedValue([{ id: 7, title: "Моя візитка" }]);
 });
 
+vi.mock("../shared/tenant", () => ({
+  resolveTenant: async () => ({
+    ok: true as const,
+    tenant: { id: 1, key: "main", name: "main", status: "active", source: "default" as const },
+  }),
+}));
+
 describe("GET /api/user/pages", () => {
   it("віддає сторінки людини", async () => {
     const res = await handleUserPages(request("GET", "/api/user/pages"), ENV);

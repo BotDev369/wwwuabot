@@ -167,9 +167,9 @@ describe("колонки виводяться з DDL", () => {
    */
   it("номер рядка — PRIMARY KEY; адреса сторінки й ключ бота — UNIQUE", () => {
     expect(TABLES.platform_pages.create).toMatch(/id INTEGER PRIMARY KEY AUTOINCREMENT/);
-    expect(TABLES.platform_pages.create).toMatch(/slug TEXT NOT NULL UNIQUE/);
+    expect(TABLES.platform_pages.create).toMatch(/UNIQUE \(tenant_id, slug\)/);
     expect(TABLES.bot_scenarios.create).toMatch(/id INTEGER PRIMARY KEY AUTOINCREMENT/);
-    expect(TABLES.bot_scenarios.create).toMatch(/lookup TEXT NOT NULL UNIQUE/);
+    expect(TABLES.bot_scenarios.create).toMatch(/UNIQUE \(tenant_id, lookup\)/);
   });
 });
 

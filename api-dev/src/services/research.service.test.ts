@@ -6,7 +6,7 @@
 
 import { describe, expect, it, vi } from "vitest";
 import type { Env } from "../shared/types";
-import { RESEARCH_CATALOG_KEY, readResearchCatalog } from "./research.service";
+import { researchCatalogKey, readResearchCatalog } from "./research.service";
 
 const CACHED = {
   title: "У що вірить людство",
@@ -53,7 +53,7 @@ describe("каталог дослідження", () => {
   it("віддає кеш і не питає базу", async () => {
     const { env, prepare } = envWith({ cached: CACHED });
 
-    await expect(readResearchCatalog(env)).resolves.toEqual(CACHED);
+    await expect(readResearchCatalog(env, 1)).resolves.toEqual(CACHED);
     expect(prepare).not.toHaveBeenCalled();
   });
 
@@ -65,7 +65,7 @@ describe("каталог дослідження", () => {
       ],
     });
 
-    const catalog = await readResearchCatalog(env);
+    const catalog = await readResearchCatalog(env, 1);
 
     expect(catalog?.blocks.map((block) => block.slug)).toEqual([
       "viruvannia/sto-vidsotkiv",
@@ -73,14 +73,14 @@ describe("каталог дослідження", () => {
     ]);
     expect(catalog?.blocks[0].id).toBe("sto-vidsotkiv");
     expect(catalog?.slug).toBe("viruvannia");
-    expect(bind).toHaveBeenCalledWith("viruvannia/%");
-    expect(put).toHaveBeenCalledWith(RESEARCH_CATALOG_KEY, expect.any(String));
+    expect(bind).toHaveBeenCalledWith(1, "viruvannia/%");
+    expect(put).toHaveBeenCalledWith(researchCatalogKey(1), expect.any(String));
   });
 
   it("порожня база — це null, а не порожній каталог", async () => {
     const { env, put } = envWith({ rows: [] });
 
-    await expect(readResearchCatalog(env)).resolves.toBeNull();
+    await expect(readResearchCatalog(env, 1)).resolves.toBeNull();
     expect(put).not.toHaveBeenCalled();
   });
 });

@@ -89,6 +89,7 @@ export function shopStaffIds(shop: ShopScope): number[] {
  */
 export async function listPublicShops(
   db: D1Database,
+  tenantId: number,
   limit = PUBLIC_SHOPS_LIMIT,
 ): Promise<PublicShop[]> {
   const result = await db
@@ -96,14 +97,15 @@ export async function listPublicShops(
       `SELECT s.id, s.slug, s.title
          FROM platform_pages s
          JOIN users u ON u.user_id = s.owner_id
-        WHERE s.owner_id IS NOT NULL
+        WHERE s.tenant_id = ?
+          AND s.owner_id IS NOT NULL
           AND s.template_key = 'shop'
           AND COALESCE(s.is_public, 0) = 1
           AND s.is_active = 1
           AND COALESCE(u.is_blocked, 0) = 0
         ORDER BY s.updated_at DESC, s.id DESC LIMIT ?`,
     )
-    .bind(limit)
+    .bind(tenantId, limit)
     .all<Record<string, unknown>>();
 
   return (result.results ?? []).map((row) => ({

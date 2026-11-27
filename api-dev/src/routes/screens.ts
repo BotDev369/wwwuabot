@@ -13,13 +13,17 @@ import { decodePathSegment } from "../shared/url";
 import { handleScreenTexts, handleScreens } from "../controllers/screens.controller";
 
 /** Обробити шлях екранів; `null` — це не він (роутер іде далі). */
-export function matchScreensRoute(env: Env, pathname: string): Response | Promise<Response> | null {
+export function matchScreensRoute(
+  request: Request,
+  env: Env,
+  pathname: string,
+): Response | Promise<Response> | null {
   const path = pathname.replace(/\/+$/, "");
-  if (path === "/api/screens") return handleScreens(env);
+  if (path === "/api/screens") return handleScreens(request, env);
   if (!pathname.startsWith("/api/screens/")) return null;
   const key = decodePathSegment(pathname.replace("/api/screens/", ""));
   if (key === null) return badRequest();
-  return handleScreenTexts(env, key);
+  return handleScreenTexts(request, env, key);
 }
 
 function badRequest(): Response {

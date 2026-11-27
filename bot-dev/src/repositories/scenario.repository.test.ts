@@ -4,7 +4,7 @@
  * @module bot-dev/src/repositories/scenario.repository.test
  */
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { ScenarioRepository } from "./scenario.repository";
 
 function db(row: Record<string, unknown> | null) {
@@ -27,6 +27,8 @@ function db(row: Record<string, unknown> | null) {
   return { repo: new ScenarioRepository({ DB: database } as never), calls };
 }
 
+vi.mock("@wwwuabot/shared/database/tenants", () => ({ ensureDefaultTenant: async () => 1 }));
+
 describe("findByLookup", () => {
   it("шукає точно й віддає тип", async () => {
     const { repo, calls } = db({
@@ -43,7 +45,7 @@ describe("findByLookup", () => {
     const found = await repo.findByLookup("/start");
     expect(found?.kind).toBe("widget");
     expect(found?.lookup).toBe("/start");
-    expect(calls[0].args).toEqual(["/start"]);
+    expect(calls[0].args).toEqual([1, "/start"]);
   });
 
   it("невідомий тип читається як widget, порожній рядок — null", async () => {

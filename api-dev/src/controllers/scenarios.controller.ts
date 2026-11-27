@@ -12,6 +12,7 @@ import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
 import { tryResolveUserId } from "../shared/identity";
 import { redirectTargetFor } from "../services/aliases.service";
+import { resolveTenant } from "../shared/tenant";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -94,6 +95,7 @@ function routeCandidates(slug: string): string[] {
  */
 async function visiblePages(
   db: D1Database,
+  tenantId: number,
   slugs: readonly string[],
   viewerId: number | null,
 ): Promise<ContentPage[]> {
@@ -101,9 +103,10 @@ async function visiblePages(
   const placeholders = slugs.map(() => "?").join(", ");
   const rows = await db
     .prepare(
-      `SELECT ${PAGE_COLUMNS} FROM platform_pages WHERE is_active = 1 AND slug IN (${placeholders})`,
+      `SELECT ${PAGE_COLUMNS} FROM platform_pages
+        WHERE tenant_id = ? AND is_active = 1 AND slug IN (${placeholders})`,
     )
-    .bind(...slugs)
+    .bind(tenantId, ...slugs)
     .all<GatedScenarioRow>();
   return ((rows.results ?? []) as GatedScenarioRow[])
     .filter((row) =>
@@ -118,8 +121,12 @@ async function visiblePages(
 }
 
 /** Головна сторінка, якщо вона є й видима цьому глядачу. */
-async function homePage(db: D1Database, viewerId: number | null): Promise<ContentPage | null> {
-  const pages = await visiblePages(db, [HOME_SLUG], viewerId);
+async function homePage(
+  db: D1Database,
+  tenantId: number,
+  viewerId: number | null,
+): Promise<ContentPage | null> {
+  const pages = await visiblePages(db, tenantId, [HOME_SLUG], viewerId);
   return pages[0] ?? null;
 }
 
@@ -131,17 +138,23 @@ async function homePage(db: D1Database, viewerId: number | null): Promise<Conten
  */
 async function movedPage(
   db: D1Database,
+  tenantId: number,
   slug: string,
   viewerId: number | null,
 ): Promise<ContentPage | null> {
-  const target = await redirectTargetFor(db, slug);
+  const target = await redirectTargetFor(db, tenantId, slug);
   if (target === null) return null;
-  const pages = await visiblePages(db, [normalizeSlug(target)], viewerId);
+  const pages = await visiblePages(db, tenantId, [normalizeSlug(target)], viewerId);
   return pages[0] ?? null;
 }
 
 // ── resolveScenario ─────────────────────────────────────────────────
-async function resolveScenario(db: D1Database, ref: string, viewerId: number | null) {
+async function resolveScenario(
+  db: D1Database,
+  tenantId: number,
+  ref: string,
+  viewerId: number | null,
+) {
   await ensureBase(db);
 
   const slug = normalizeSlug(ref);
@@ -150,7 +163,7 @@ async function resolveScenario(db: D1Database, ref: string, viewerId: number | n
   // сторінки (28 рядків, ≈148 КБ `page_data`) і кожен рядок розбирався в JSON,
   // щоб знайти один. Адреса унікальна (`slug UNIQUE`), тож пошук за нею — це
   // один рядок за індексом.
-  const pages = await visiblePages(db, routeCandidates(slug), viewerId);
+  const pages = await visiblePages(db, tenantId, routeCandidates(slug), viewerId);
   let page = resolveContentRoute(pages, slug)?.page ?? null;
 
   if (page === null && slug !== HOME_SLUG) {
@@ -158,7 +171,8 @@ async function resolveScenario(db: D1Database, ref: string, viewerId: number | n
     // кнопка, надіслана в чат до переїзду, показувала б фолбек замість статті.
     // А далі — фолбек на головну, і теж окремим запитом: глибока сторінка не
     // мусить тягнути `page_data` головної лише тому, що та існує.
-    page = (await movedPage(db, slug, viewerId)) ?? (await homePage(db, viewerId));
+    page =
+      (await movedPage(db, tenantId, slug, viewerId)) ?? (await homePage(db, tenantId, viewerId));
   }
 
   return {
@@ -180,8 +194,11 @@ async function resolveScenario(db: D1Database, ref: string, viewerId: number | n
 // ── GET /api/scenario/:slug ─────────────────────────────────────────
 export async function handleScenario(request: Request, env: Env, slug: string): Promise<Response> {
   try {
+    const tenant = await resolveTenant(request, env);
+    if (!tenant.ok) return tenant.response;
+
     const viewerId = await tryResolveUserId(request, env);
-    const { scenario, pageData } = await resolveScenario(env.DB, slug, viewerId);
+    const { scenario, pageData } = await resolveScenario(env.DB, tenant.tenant.id, slug, viewerId);
     return json({
       ok: true,
       scenario,

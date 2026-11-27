@@ -11,6 +11,7 @@ import { toWebPath } from "@wwwuabot/shared/content";
 import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
 import { redirectTargetFor } from "../services/aliases.service";
+import { resolveTenant } from "../shared/tenant";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -23,7 +24,10 @@ export async function handlePublicRedirect(request: Request, env: Env): Promise<
   const path = new URL(request.url).searchParams.get("path");
 
   try {
-    const slug = await redirectTargetFor(env.DB, path);
+    const tenant = await resolveTenant(request, env);
+    if (!tenant.ok) return tenant.response;
+
+    const slug = await redirectTargetFor(env.DB, tenant.tenant.id, path);
     return json({ ok: true, to: slug === null ? null : toWebPath(slug) });
   } catch (e: unknown) {
     apiLog.error("Public redirect error", e);

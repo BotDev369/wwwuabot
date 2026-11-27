@@ -19,7 +19,11 @@ export const ALIAS_LIMIT = 20;
  * Перевіряємо й те, що ціль жива (`is_active = 1`): інакше редирект вів би у
  * порожнечу, і людина бачила б не «сторінка переїхала», а битий шлях.
  */
-export async function redirectTargetFor(db: D1Database, path: unknown): Promise<string | null> {
+export async function redirectTargetFor(
+  db: D1Database,
+  tenantId: number,
+  path: unknown,
+): Promise<string | null> {
   const alias = normalizeSlug(typeof path === "string" ? path : "");
   if (alias === "") return null;
 
@@ -29,10 +33,10 @@ export async function redirectTargetFor(db: D1Database, path: unknown): Promise<
     .prepare(
       `SELECT a.slug AS slug FROM slug_aliases a
          JOIN platform_pages s ON s.slug = a.slug
-        WHERE a.alias = ? AND s.is_active = 1
+        WHERE a.tenant_id = ? AND a.alias = ? AND s.is_active = 1
         LIMIT 1`,
     )
-    .bind(alias)
+    .bind(tenantId, alias)
     .first<{ slug: string }>();
 
   const slug = normalizeSlug(row?.slug ?? "");
@@ -40,9 +44,17 @@ export async function redirectTargetFor(db: D1Database, path: unknown): Promise<
 }
 
 /** Рядки, що вели на стару адресу, тепер ведуть на нову: ланцюжків не лишається. */
-export async function moveAliases(db: D1Database, from: string, to: string): Promise<void> {
+export async function moveAliases(
+  db: D1Database,
+  tenantId: number,
+  from: string,
+  to: string,
+): Promise<void> {
   await ensureTables(db, ["slug_aliases"]);
-  await db.prepare("UPDATE slug_aliases SET slug = ? WHERE slug = ?").bind(to, from).run();
+  await db
+    .prepare("UPDATE slug_aliases SET slug = ? WHERE tenant_id = ? AND slug = ?")
+    .bind(to, tenantId, from)
+    .run();
 }
 
 /**
@@ -52,23 +64,28 @@ export async function moveAliases(db: D1Database, from: string, to: string): Pro
  * повернути її знову), і тоді правильна та адреса, яку сторінка має **зараз**.
  * Замість `moveAliases` тут не обійтись: переносить воно цілі, а не джерела.
  */
-export async function rememberAlias(db: D1Database, from: string, to: string): Promise<void> {
+export async function rememberAlias(
+  db: D1Database,
+  tenantId: number,
+  from: string,
+  to: string,
+): Promise<void> {
   const alias = normalizeSlug(from);
   const slug = normalizeSlug(to);
   if (alias === "" || alias === slug) return;
 
   await ensureTables(db, ["slug_aliases"]);
   await db
-    .prepare("INSERT OR REPLACE INTO slug_aliases (alias, slug) VALUES (?, ?)")
-    .bind(alias, slug)
+    .prepare("INSERT OR REPLACE INTO slug_aliases (tenant_id, alias, slug) VALUES (?, ?, ?)")
+    .bind(tenantId, alias, slug)
     .run();
 
   await db
     .prepare(
-      `DELETE FROM slug_aliases WHERE alias IN (
-         SELECT alias FROM slug_aliases ORDER BY created_at DESC LIMIT -1 OFFSET ?
+      `DELETE FROM slug_aliases WHERE tenant_id = ? AND alias IN (
+         SELECT alias FROM slug_aliases WHERE tenant_id = ? ORDER BY created_at DESC LIMIT -1 OFFSET ?
        )`,
     )
-    .bind(ALIAS_LIMIT)
+    .bind(tenantId, tenantId, ALIAS_LIMIT)
     .run();
 }

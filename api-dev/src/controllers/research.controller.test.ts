@@ -7,7 +7,7 @@
  * @module api-dev/src/controllers/research.controller.test
  */
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Env } from "../shared/types";
 import { handlePublicResearch } from "./research.controller";
 
@@ -54,6 +54,13 @@ function envWith(options: {
 }
 
 const request = new Request("https://api.example.com/api/public/research");
+
+vi.mock("../shared/tenant", () => ({
+  resolveTenant: async () => ({
+    ok: true as const,
+    tenant: { id: 1, key: "main", name: "main", status: "active", source: "default" as const },
+  }),
+}));
 
 describe("GET /api/public/research", () => {
   it("віддає каталог із кеша", async () => {

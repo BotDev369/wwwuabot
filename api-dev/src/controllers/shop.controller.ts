@@ -25,6 +25,7 @@ import type { Env } from "../shared/types";
 import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
 import { resolveUserId } from "../shared/identity";
+import { resolveTenant } from "../shared/tenant";
 import { ShopProductsService } from "../services/shop/products.service";
 import { listPublicShops } from "../services/shop/shops";
 import { rebuildSearchIndex } from "../services/search";
@@ -58,6 +59,9 @@ function shopIdOf(params: URLSearchParams): number | null {
 export async function handleUserShopProducts(request: Request, env: Env): Promise<Response> {
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
+
+  const tenant = await resolveTenant(request, env);
+  if (!tenant.ok) return tenant.response;
 
   const params = new URL(request.url).searchParams;
   const shopId = shopIdOf(params);
@@ -97,8 +101,8 @@ export async function handleUserShopProducts(request: Request, env: Env): Promis
 
       // Індекс переписується по факту зміни. Збій KV не робить збереження
       // товару помилковим: кнопка «Перебудувати пошук» лишається виходом.
-      await rebuildSearchIndex(env, new URL(request.url).origin).catch((error: unknown) =>
-        apiLog.error("search reindex after product save", error),
+      await rebuildSearchIndex(env, tenant.tenant.id, new URL(request.url).origin).catch(
+        (error: unknown) => apiLog.error("search reindex after product save", error),
       );
 
       return json({ ok: true, product: outcome.product, media: outcome.media });
@@ -110,8 +114,8 @@ export async function handleUserShopProducts(request: Request, env: Env): Promis
 
       const removed = await service.remove(shopId, identity.userId, id);
       if (!removed) return json({ ok: false, error: "Not found" }, 404);
-      await rebuildSearchIndex(env, new URL(request.url).origin).catch((error: unknown) =>
-        apiLog.error("search reindex after product delete", error),
+      await rebuildSearchIndex(env, tenant.tenant.id, new URL(request.url).origin).catch(
+        (error: unknown) => apiLog.error("search reindex after product delete", error),
       );
       return json({ ok: true, id });
     }
@@ -145,7 +149,10 @@ export async function handlePublicShops(request: Request, env: Env): Promise<Res
   }
 
   try {
-    return json({ ok: true, shops: await listPublicShops(env.DB) });
+    const tenant = await resolveTenant(request, env);
+    if (!tenant.ok) return tenant.response;
+
+    return json({ ok: true, shops: await listPublicShops(env.DB, tenant.tenant.id) });
   } catch (e: unknown) {
     apiLog.error("Shop list error", e);
     return json({ ok: false, error: "Не вдалося завантажити магазини" }, 500);

@@ -51,6 +51,9 @@ const STEPS = [
   { group: "static", name: "check:quality", cmd: "npm run check:quality" },
   { group: "static", name: "check:docs", cmd: "npm run check:docs" },
   { group: "static", name: "check:db", cmd: "npm run check:db" },
+  // Контент належить проєкту: прямий SQL до контентної таблиці без `tenant_id`
+  // не проходить — інакше забутий фільтр тихо віддає чужий контент (D27).
+  { group: "static", name: "check:tenancy", cmd: "npm run check:tenancy" },
   { group: "static", name: "check:comments", cmd: "npm run check:comments" },
   { group: "static", name: "check:texts", cmd: "npm run check:texts" },
   // Реєстр екранів: один список адрес, назв і батьків. Гейт ловить і розбіжність

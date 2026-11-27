@@ -156,7 +156,7 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     return handleScenario(request, env, slug);
   }
 
-  const screens = matchScreensRoute(env, pathname);
+  const screens = matchScreensRoute(request, env, pathname);
   if (screens) return screens;
 
   // ── My-Dates CRUD ───────────────────────────────────────────────

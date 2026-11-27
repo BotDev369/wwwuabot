@@ -6,15 +6,21 @@
  */
 
 import type { SearchIndex } from "@wwwuabot/shared/search";
+import { ensureDefaultTenant } from "@wwwuabot/shared/database/tenants";
 import type { Env } from "../../shared/types/env";
 
 /** Той самий ключ, що в `api-dev`: версія одна на обидва боки. */
-export const SEARCH_INDEX_KEY = "search:v2";
+export function searchIndexKey(tenantId: number): string {
+  return `search:v3:${tenantId}`;
+}
 
 export async function loadSearchIndex(env: Env): Promise<SearchIndex | null> {
   if (!env.CONTENT_KV) return null;
   try {
-    const index = await env.CONTENT_KV.get<SearchIndex>(SEARCH_INDEX_KEY, "json");
+    // Бот поки обслуговує головний проєкт: маршрутизація проєктів усередині
+    // бота — наступний крок, і доти його індекс — індекс `main`.
+    const tenantId = await ensureDefaultTenant(env.DB);
+    const index = await env.CONTENT_KV.get<SearchIndex>(searchIndexKey(tenantId), "json");
     return index && Array.isArray(index.entries) ? index : null;
   } catch {
     return null;

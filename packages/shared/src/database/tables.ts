@@ -256,7 +256,8 @@ export const TABLES = {
       "Сторінки платформи: адреса (`slug`), контент (`page_data`), шаблон, власник і видимість. Читають веб і бот; список того, що веде людина, віддає /api/user/pages. Запису з інтерфейсу немає — рядки заводять код і міграції.",
     create: `CREATE TABLE IF NOT EXISTS "platform_pages" (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        slug TEXT NOT NULL UNIQUE,
+        tenant_id INTEGER NOT NULL DEFAULT 1,
+        slug TEXT NOT NULL,
         title TEXT,
         photo_url TEXT,
         page_data TEXT DEFAULT NULL,
@@ -268,9 +269,13 @@ export const TABLES = {
         is_active INTEGER DEFAULT 1,
         search_terms TEXT NOT NULL DEFAULT '[]',
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE (tenant_id, slug)
       )`,
-    indexes: ["CREATE INDEX IF NOT EXISTS idx_platform_pages_owner ON platform_pages(owner_id)"],
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_platform_pages_owner ON platform_pages(owner_id)",
+      "CREATE INDEX IF NOT EXISTS idx_platform_pages_tenant ON platform_pages(tenant_id, id)",
+    ],
   },
 
   /**
@@ -301,7 +306,8 @@ export const TABLES = {
       "Екран платформи: ключ, назва, батько для хлібного шляху, місце в меню, слова (`page_data`) і пошукові терміни. Seed — `packages/shared/src/screens/registry.json`.",
     create: `CREATE TABLE IF NOT EXISTS "platform_screens" (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        key TEXT NOT NULL UNIQUE,
+        tenant_id INTEGER NOT NULL DEFAULT 1,
+        key TEXT NOT NULL,
         parent_key TEXT,
         title TEXT NOT NULL,
         icon TEXT,
@@ -311,10 +317,12 @@ export const TABLES = {
         page_data TEXT DEFAULT NULL,
         search_terms TEXT NOT NULL DEFAULT '[]',
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE (tenant_id, key)
       )`,
     indexes: [
       "CREATE INDEX IF NOT EXISTS idx_platform_screens_parent ON platform_screens(parent_key)",
+      "CREATE INDEX IF NOT EXISTS idx_platform_screens_tenant ON platform_screens(tenant_id, id)",
     ],
   },
 
@@ -341,7 +349,8 @@ export const TABLES = {
       "Сценарій бота за ключем lookup: віджет (HTML) або rich-повідомлення. З платформою не пов'язаний.",
     create: `CREATE TABLE IF NOT EXISTS "bot_scenarios" (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        lookup TEXT NOT NULL UNIQUE,
+        tenant_id INTEGER NOT NULL DEFAULT 1,
+        lookup TEXT NOT NULL,
         kind TEXT NOT NULL CHECK (kind IN ('widget', 'rich')),
         widget_html TEXT,
         widget_data TEXT,
@@ -351,6 +360,7 @@ export const TABLES = {
         is_active INTEGER NOT NULL DEFAULT 1,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE (tenant_id, lookup),
         CHECK (
           (kind = 'widget' AND widget_html IS NOT NULL AND length(trim(widget_html)) > 0)
           OR
@@ -443,9 +453,11 @@ export const TABLES = {
     purpose:
       "Старі адреси сторінок: `alias` → `slug`. Читає api-dev (редирект), пише він же при перейменуванні й міграціях.",
     create: `CREATE TABLE IF NOT EXISTS slug_aliases (
-        alias TEXT PRIMARY KEY,
+        tenant_id INTEGER NOT NULL DEFAULT 1,
+        alias TEXT NOT NULL,
         slug TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (tenant_id, alias)
       )`,
   },
 

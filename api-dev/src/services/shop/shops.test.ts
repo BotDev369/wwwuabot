@@ -78,14 +78,14 @@ describe("listPublicShops", () => {
   it("віддає рівно те, що потрібно рядку списку: номер, адресу й підпис", async () => {
     const db = listDb([{ id: 382, slug: "galyashop", title: "GalyaShop" }]);
 
-    expect(await listPublicShops(db.env.DB)).toEqual([
+    expect(await listPublicShops(db.env.DB, 1)).toEqual([
       { id: 382, slug: "galyashop", title: "GalyaShop" },
     ]);
   });
 
   it("відбір робить запит: лише магазини, відкриті, увімкнені й без блоку", async () => {
     const db = listDb([]);
-    await listPublicShops(db.env.DB);
+    await listPublicShops(db.env.DB, 1);
 
     const sql = db.sql();
     expect(sql).toMatch(/template_key = 'shop'/);
@@ -95,7 +95,7 @@ describe("listPublicShops", () => {
   });
 
   it("порожня база — порожній список, а не помилка", async () => {
-    expect(await listPublicShops(listDb([]).env.DB)).toEqual([]);
+    expect(await listPublicShops(listDb([]).env.DB, 1)).toEqual([]);
   });
 });
 

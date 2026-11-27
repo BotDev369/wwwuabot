@@ -9,7 +9,7 @@
  * @module api-dev/src/controllers/shop.controller.test
  */
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Env } from "../shared/types";
 import { INIT_DATA_HEADER } from "@wwwuabot/shared/security/telegram";
 import { handleUserShopProducts } from "./shop.controller";
@@ -111,6 +111,13 @@ function request(body: unknown, initData?: string): Request {
 }
 
 // ── Розбір тіла ───────────────────────────────────────────────────
+
+vi.mock("../shared/tenant", () => ({
+  resolveTenant: async () => ({
+    ok: true as const,
+    tenant: { id: 1, key: "main", name: "main", status: "active", source: "default" as const },
+  }),
+}));
 
 describe("⛔ тіло, з яким ми не працюємо", () => {
   it("без підписаного initData не пишемо нічого", async () => {

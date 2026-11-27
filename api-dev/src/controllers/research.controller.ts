@@ -9,6 +9,7 @@
 import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
 import { readResearchCatalog } from "../services/research.service";
+import { resolveTenant } from "../shared/tenant";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -18,9 +19,12 @@ function json(body: unknown, status = 200): Response {
 }
 
 /** `GET /api/public/research` — каталог або `null`, коли ще не засіяний. */
-export async function handlePublicResearch(_request: Request, env: Env): Promise<Response> {
+export async function handlePublicResearch(request: Request, env: Env): Promise<Response> {
   try {
-    return json({ ok: true, catalog: await readResearchCatalog(env) });
+    const tenant = await resolveTenant(request, env);
+    if (!tenant.ok) return tenant.response;
+
+    return json({ ok: true, catalog: await readResearchCatalog(env, tenant.tenant.id) });
   } catch (error) {
     apiLog.error("research catalog", error);
     return json({ ok: false, error: "Не вдалося прочитати каталог дослідження" }, 500);

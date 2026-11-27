@@ -14,6 +14,7 @@ import { isValidSlug } from "@wwwuabot/shared/content";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { readScreenTexts, type ScreenTexts } from "@wwwuabot/shared/screens";
 import { apiLog } from "../shared/logger";
+import { resolveTenant } from "../shared/tenant";
 import type { Env } from "../shared/types";
 
 function json(body: unknown, status = 200): Response {
@@ -57,8 +58,10 @@ function toScreen(row: ScreenDbRow): ScreenRow {
 }
 
 /** Усі активні екрани: одне дерево зі словами. */
-export async function handleScreens(env: Env): Promise<Response> {
+export async function handleScreens(request: Request, env: Env): Promise<Response> {
   try {
+    const tenant = await resolveTenant(request, env);
+    if (!tenant.ok) return tenant.response;
     // Схему тримає реєстр таблиць, а не міграція-дані: `ensureTables` — той самий
     // шлях, яким таблицю створює решта доменів. Рядки (назви, батьки) заводить
     // seed-міграція, тож порожня таблиця — це «екранів ще немає», а не збій.
@@ -66,9 +69,11 @@ export async function handleScreens(env: Env): Promise<Response> {
     const rows = await env.DB.prepare(
       `SELECT key, parent_key, title, icon, sort_order, in_menu, page_data
          FROM platform_screens
-        WHERE is_active = 1
+        WHERE tenant_id = ? AND is_active = 1
         ORDER BY sort_order, key`,
-    ).all<ScreenDbRow>();
+    )
+      .bind(tenant.tenant.id)
+      .all<ScreenDbRow>();
 
     return json({ ok: true, screens: (rows.results ?? []).map(toScreen) });
   } catch (e: unknown) {
@@ -83,30 +88,37 @@ export async function handleScreens(env: Env): Promise<Response> {
  * Фолбек на `platform_pages` — **перехідний**: екрани, чиї слова ще не
  * переїхали (7.2), лежать там, і сторінка не має втратити текст на переїзді.
  */
-export async function handleScreenTexts(env: Env, key: string): Promise<Response> {
+export async function handleScreenTexts(
+  request: Request,
+  env: Env,
+  key: string,
+): Promise<Response> {
   const slug = key.trim();
   if (!isValidSlug(slug) || slug.includes("/")) {
     return json({ ok: false, error: "Bad screen key" }, 400);
   }
 
   try {
+    const tenant = await resolveTenant(request, env);
+    if (!tenant.ok) return tenant.response;
+
     await ensureTables(env.DB, ["platform_screens"]);
     const row = await env.DB.prepare(
       `SELECT page_data FROM platform_screens
-        WHERE key = ? AND is_active = 1
+        WHERE tenant_id = ? AND key = ? AND is_active = 1
         LIMIT 1`,
     )
-      .bind(slug)
+      .bind(tenant.tenant.id, slug)
       .first<{ page_data: string | null }>();
 
     if (row) return json({ ok: true, key: slug, texts: readScreenTexts(row.page_data) });
 
     const legacy = await env.DB.prepare(
       `SELECT page_data FROM platform_pages
-        WHERE slug = ? AND is_active = 1 AND owner_id IS NULL
+        WHERE tenant_id = ? AND slug = ? AND is_active = 1 AND owner_id IS NULL
         LIMIT 1`,
     )
-      .bind(slug)
+      .bind(tenant.tenant.id, slug)
       .first<{ page_data: string | null }>();
 
     return json({ ok: true, key: slug, texts: readScreenTexts(legacy?.page_data ?? null) });

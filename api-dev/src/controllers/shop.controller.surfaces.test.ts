@@ -60,6 +60,13 @@ beforeEach(() => {
   h.shop.catalog.mockResolvedValue(DATA);
 });
 
+vi.mock("../shared/tenant", () => ({
+  resolveTenant: async () => ({
+    ok: true as const,
+    tenant: { id: 1, key: "main", name: "main", status: "active", source: "default" as const },
+  }),
+}));
+
 describe("власні товари", () => {
   it("без ідентичності нічого не віддає", async () => {
     h.authorized = false;

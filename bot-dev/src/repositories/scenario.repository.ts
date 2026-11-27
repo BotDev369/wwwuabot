@@ -7,6 +7,7 @@
  * @module bot-dev/src/repositories/scenario.repository
  */
 
+import { ensureDefaultTenant } from "@wwwuabot/shared/database/tenants";
 import { DatabaseRepository } from "../core/database.repository";
 import type {
   BotScenario,
@@ -21,14 +22,17 @@ function kindOf(value: string): ScenarioKind {
 
 export class ScenarioRepository extends DatabaseRepository {
   async findByLookup(lookup: string): Promise<BotScenario | null> {
+    // Бот поки обслуговує головний проєкт: маршрутизація проєктів усередині
+    // бота — наступний крок (`docs/PLATFORM.md`), і доти його контент — `main`.
+    const tenantId = await ensureDefaultTenant(this.db);
     const row = await this.db
       .prepare(
         `SELECT id, lookup, kind, widget_html, widget_data, rich_html,
                 notify_groups, notify_template
            FROM bot_scenarios
-          WHERE lookup = ? AND is_active = 1`,
+          WHERE tenant_id = ? AND lookup = ? AND is_active = 1`,
       )
-      .bind(lookup)
+      .bind(tenantId, lookup)
       .first<ScenarioRow>();
     if (!row) return null;
     return {

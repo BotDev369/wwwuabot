@@ -12,6 +12,7 @@ import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
+import { resolveTenant } from "../shared/tenant";
 
 const LIST_LIMIT = 300;
 const HTML_LIMIT = 32768;
@@ -81,22 +82,29 @@ function validScenario(fields: Record<string, string | number | null>): string |
   return null;
 }
 
-async function scenario(db: D1Database, id: number): Promise<Record<string, unknown> | null> {
+async function scenario(
+  db: D1Database,
+  tenantId: number,
+  id: number,
+): Promise<Record<string, unknown> | null> {
   return db
-    .prepare("SELECT * FROM bot_scenarios WHERE id = ?")
-    .bind(id)
+    .prepare("SELECT * FROM bot_scenarios WHERE tenant_id = ? AND id = ?")
+    .bind(tenantId, id)
     .first<Record<string, unknown>>();
 }
 
 /** `GET /api/admin/bot-scenarios` — усі сценарії без важкого HTML. */
-export async function handleBotScenariosList(_request: Request, env: Env): Promise<Response> {
+export async function handleBotScenariosList(request: Request, env: Env): Promise<Response> {
   try {
+    const tenant = await resolveTenant(request, env);
+    if (!tenant.ok) return tenant.response;
+
     await ensureTables(env.DB, ["bot_scenarios"]);
     const result = await env.DB.prepare(
       `SELECT id, lookup, kind, is_active, updated_at
-         FROM bot_scenarios ORDER BY lookup LIMIT ?`,
+         FROM bot_scenarios WHERE tenant_id = ? ORDER BY lookup LIMIT ?`,
     )
-      .bind(LIST_LIMIT)
+      .bind(tenant.tenant.id, LIST_LIMIT)
       .all();
     return json({ ok: true, items: result.results ?? [] });
   } catch (error: unknown) {
@@ -108,10 +116,13 @@ export async function handleBotScenariosList(_request: Request, env: Env): Promi
 /** `POST /api/admin/bot-scenarios/read` — один сценарій із HTML. */
 export async function handleBotScenarioRead(request: Request, env: Env): Promise<Response> {
   try {
+    const tenant = await resolveTenant(request, env);
+    if (!tenant.ok) return tenant.response;
+
     await ensureTables(env.DB, ["bot_scenarios"]);
     const id = readId(await readJsonObject(request));
     if (id === null) return json({ ok: false, error: "id required" }, 400);
-    const item = await scenario(env.DB, id);
+    const item = await scenario(env.DB, tenant.tenant.id, id);
     return item ? json({ ok: true, item }) : json({ ok: false, error: "Not found" }, 404);
   } catch (error: unknown) {
     apiLog.error("bot scenario read error", error);
@@ -122,6 +133,9 @@ export async function handleBotScenarioRead(request: Request, env: Env): Promise
 /** `POST /api/admin/bot-scenarios/update` — зберегти екран. */
 export async function handleBotScenarioUpdate(request: Request, env: Env): Promise<Response> {
   try {
+    const tenant = await resolveTenant(request, env);
+    if (!tenant.ok) return tenant.response;
+
     await ensureTables(env.DB, ["bot_scenarios"]);
     const body = await readJsonObject(request);
     const id = readId(body);
@@ -137,13 +151,13 @@ export async function handleBotScenarioUpdate(request: Request, env: Env): Promi
     const keys = Object.keys(fields);
     const result = await env.DB.prepare(
       `UPDATE bot_scenarios SET ${keys.map((key) => `${key} = ?`).join(", ")}, updated_at = ?
-        WHERE id = ?`,
+        WHERE tenant_id = ? AND id = ?`,
     )
-      .bind(...keys.map((key) => fields[key]), formatSqliteDatetime(), id)
+      .bind(...keys.map((key) => fields[key]), formatSqliteDatetime(), tenant.tenant.id, id)
       .run();
     if ((result.meta?.changes ?? 0) === 0) return json({ ok: false, error: "Not found" }, 404);
 
-    return json({ ok: true, item: await scenario(env.DB, id) });
+    return json({ ok: true, item: await scenario(env.DB, tenant.tenant.id, id) });
   } catch (error: unknown) {
     apiLog.error("bot scenario update error", error);
     return json({ ok: false, error: "Internal error" }, 500);
@@ -152,22 +166,29 @@ export async function handleBotScenarioUpdate(request: Request, env: Env): Promi
 
 /* ── Сторінки платформи: окрема таблиця, окремий екран, з ботом не пов'язані ── */
 
-async function pageItem(db: D1Database, id: number): Promise<Record<string, unknown> | null> {
+async function pageItem(
+  db: D1Database,
+  tenantId: number,
+  id: number,
+): Promise<Record<string, unknown> | null> {
   return db
-    .prepare("SELECT * FROM platform_pages WHERE id = ?")
-    .bind(id)
+    .prepare("SELECT * FROM platform_pages WHERE tenant_id = ? AND id = ?")
+    .bind(tenantId, id)
     .first<Record<string, unknown>>();
 }
 
 /** `GET /api/admin/platform-pages` — сторінки платформи без `page_data`. */
-export async function handlePlatformPagesList(_request: Request, env: Env): Promise<Response> {
+export async function handlePlatformPagesList(request: Request, env: Env): Promise<Response> {
   try {
+    const tenant = await resolveTenant(request, env);
+    if (!tenant.ok) return tenant.response;
+
     await ensureTables(env.DB, ["platform_pages"]);
     const result = await env.DB.prepare(
       `SELECT id, slug, title, template_key, is_public, owner_id, updated_at
-         FROM platform_pages ORDER BY id LIMIT ?`,
+         FROM platform_pages WHERE tenant_id = ? ORDER BY id LIMIT ?`,
     )
-      .bind(LIST_LIMIT)
+      .bind(tenant.tenant.id, LIST_LIMIT)
       .all();
     return json({ ok: true, items: result.results ?? [] });
   } catch (error: unknown) {
@@ -179,10 +200,13 @@ export async function handlePlatformPagesList(_request: Request, env: Env): Prom
 /** `POST /api/admin/platform-pages/read` — усі поля сторінки. */
 export async function handlePlatformPageRead(request: Request, env: Env): Promise<Response> {
   try {
+    const tenant = await resolveTenant(request, env);
+    if (!tenant.ok) return tenant.response;
+
     await ensureTables(env.DB, ["platform_pages"]);
     const id = readId(await readJsonObject(request));
     if (id === null) return json({ ok: false, error: "id required" }, 400);
-    const item = await pageItem(env.DB, id);
+    const item = await pageItem(env.DB, tenant.tenant.id, id);
     return item ? json({ ok: true, item }) : json({ ok: false, error: "Not found" }, 404);
   } catch (error: unknown) {
     apiLog.error("platform page read error", error);

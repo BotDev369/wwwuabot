@@ -111,6 +111,10 @@ jobs:
       # схемами й `users`, який не створював ніхто.
       - name: D1 schema
         run: npm run check:db
+      # Контент належить проєкту: запит до контентної таблиці без `tenant_id`
+      # не проходить (D27). Крок дзеркалить `verify.mjs`.
+      - name: Tenancy
+        run: npm run check:tenancy
       - name: Comments
         run: npm run check:comments
       - name: Screen texts

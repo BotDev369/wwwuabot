@@ -13,19 +13,20 @@ vi.mock("../controllers/screens.controller", () => handlers);
 const { matchScreensRoute } = await import("./screens");
 
 const ENV = {} as Env;
+const REQ = new Request("https://api.example.com/");
 
 describe("GET /api/screens/:key", () => {
   it("віддає ключ контролеру разом із оточенням", async () => {
     handlers.handleScreenTexts.mockReturnValue(new Response("texts"));
 
-    const response = await matchScreensRoute(ENV, "/api/screens/services");
+    const response = await matchScreensRoute(REQ, ENV, "/api/screens/services");
 
     expect(await (response as Response).text()).toBe("texts");
-    expect(handlers.handleScreenTexts).toHaveBeenCalledWith(ENV, "services");
+    expect(handlers.handleScreenTexts).toHaveBeenCalledWith(REQ, ENV, "services");
   });
 
   it("битий percent-encoding — 400, а не похід у сховище", async () => {
-    const response = await matchScreensRoute(ENV, "/api/screens/%E0%A4%A");
+    const response = await matchScreensRoute(REQ, ENV, "/api/screens/%E0%A4%A");
 
     expect((response as Response).status).toBe(400);
     expect(handlers.handleScreenTexts).not.toHaveBeenCalled();
@@ -34,22 +35,22 @@ describe("GET /api/screens/:key", () => {
   it("точний `/api/screens` — дерево, а не ключ `screens`", async () => {
     handlers.handleScreens.mockReturnValue(new Response("tree"));
 
-    const response = await matchScreensRoute(ENV, "/api/screens");
+    const response = await matchScreensRoute(REQ, ENV, "/api/screens");
 
     expect(await (response as Response).text()).toBe("tree");
     expect(handlers.handleScreenTexts).not.toHaveBeenCalled();
   });
 
   it("чужий шлях лишається не нашим — роутер іде далі", () => {
-    expect(matchScreensRoute(ENV, "/api/scenario/services")).toBeNull();
+    expect(matchScreensRoute(REQ, ENV, "/api/scenario/services")).toBeNull();
   });
 
   it("ключ доходить цілком — слеш відсіює контролер, а не префікс", () => {
     handlers.handleScreenTexts.mockReturnValue(new Response("bad", { status: 400 }));
 
-    const response = matchScreensRoute(ENV, "/api/screens/services/extra") as Response;
+    const response = matchScreensRoute(REQ, ENV, "/api/screens/services/extra") as Response;
 
     expect(response.status).toBe(400);
-    expect(handlers.handleScreenTexts).toHaveBeenCalledWith(ENV, "services/extra");
+    expect(handlers.handleScreenTexts).toHaveBeenCalledWith(REQ, ENV, "services/extra");
   });
 });

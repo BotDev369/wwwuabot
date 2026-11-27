@@ -1,6 +1,6 @@
 /** Тест `GET /api/public/redirect`: що відповідаємо на стару адресу й на збій бази. */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { handlePublicRedirect } from "./redirect.controller";
 import type { Env } from "../shared/types";
 
@@ -14,8 +14,8 @@ function fakeD1(fail = false): D1Database {
     prepare(sql: string) {
       let arg = "";
       const statement = {
-        bind: (value: unknown) => {
-          arg = String(value);
+        bind: (...values: unknown[]) => {
+          arg = String(values[values.length - 1]);
           return statement;
         },
         run: async () => ({ meta: { changes: 0 } }),
@@ -41,6 +41,13 @@ const call = (path: string | null, fail = false): Promise<Response> => {
 };
 
 const bodyOf = async (response: Response) => (await response.json()) as Record<string, unknown>;
+
+vi.mock("../shared/tenant", () => ({
+  resolveTenant: async () => ({
+    ok: true as const,
+    tenant: { id: 1, key: "main", name: "main", status: "active", source: "default" as const },
+  }),
+}));
 
 describe("GET /api/public/redirect", () => {
   it("стара адреса веде на поточну", async () => {

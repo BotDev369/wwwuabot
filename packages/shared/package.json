@@ -47,6 +47,7 @@
     "./database/auto-migrate": "./src/database/auto-migrate.ts",
     "./database/tables": "./src/database/tables.ts",
     "./database/ensure-tables": "./src/database/ensure-tables.ts",
+    "./database/tenants": "./src/database/tenants.ts",
     "./database/user-events": "./src/database/user-events.ts",
     "./database/bot-messages": "./src/database/bot-messages.ts",
     "./config/environment": "./src/config/environment.ts",

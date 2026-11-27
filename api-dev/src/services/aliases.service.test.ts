@@ -45,31 +45,31 @@ describe("redirectTargetFor", () => {
   it("нормалізує шлях і віддає поточну адресу", async () => {
     const { db, statements } = fakeDb({ slug: "viruvannia/sto-vidsotkiv" });
 
-    await expect(redirectTargetFor(db, "/viruvannia-a1/")).resolves.toBe(
+    await expect(redirectTargetFor(db, 1, "/viruvannia-a1/")).resolves.toBe(
       "viruvannia/sto-vidsotkiv",
     );
 
     const lookup = statements.find((item) => item.sql.includes("JOIN platform_pages"));
-    expect(lookup?.binds).toEqual(["viruvannia-a1"]);
+    expect(lookup?.binds).toEqual([1, "viruvannia-a1"]);
   });
 
   it("порожній шлях не питає базу", async () => {
     const { db, statements } = fakeDb({ slug: "x" });
 
-    await expect(redirectTargetFor(db, "  ")).resolves.toBeNull();
+    await expect(redirectTargetFor(db, 1, "  ")).resolves.toBeNull();
     expect(statements).toHaveLength(0);
   });
 
   it("alias на себе — не редирект (інакше був би цикл)", async () => {
     const { db } = fakeDb({ slug: "olena" });
 
-    await expect(redirectTargetFor(db, "/olena")).resolves.toBeNull();
+    await expect(redirectTargetFor(db, 1, "/olena")).resolves.toBeNull();
   });
 
   it("мертва ціль не веде нікуди", async () => {
     const { db } = fakeDb(null);
 
-    await expect(redirectTargetFor(db, "/stara")).resolves.toBeNull();
+    await expect(redirectTargetFor(db, 1, "/stara")).resolves.toBeNull();
   });
 });
 
@@ -77,18 +77,18 @@ describe("rememberAlias", () => {
   it("пише стару адресу й обрізає історію", async () => {
     const { db, statements } = fakeDb();
 
-    await rememberAlias(db, "/olena", "olena-k");
+    await rememberAlias(db, 1, "/olena", "olena-k");
 
     const insert = statements.find((item) => item.sql.startsWith("INSERT"));
     expect(insert?.sql).toContain("INSERT OR REPLACE INTO slug_aliases");
-    expect(insert?.binds).toEqual(["olena", "olena-k"]);
+    expect(insert?.binds).toEqual([1, "olena", "olena-k"]);
     expect(statements.some((item) => item.sql.includes("OFFSET"))).toBe(true);
   });
 
   it("та сама адреса — не alias", async () => {
     const { db, statements } = fakeDb();
 
-    await rememberAlias(db, "olena", "olena");
+    await rememberAlias(db, 1, "olena", "olena");
 
     expect(statements.some((item) => item.sql.startsWith("INSERT"))).toBe(false);
   });
@@ -98,10 +98,10 @@ describe("moveAliases", () => {
   it("переносить цілі, а не джерела", async () => {
     const { db, statements } = fakeDb();
 
-    await moveAliases(db, "stara", "nova");
+    await moveAliases(db, 1, "stara", "nova");
 
     const update = statements.find((item) => item.sql.startsWith("UPDATE"));
-    expect(update?.sql).toBe("UPDATE slug_aliases SET slug = ? WHERE slug = ?");
-    expect(update?.binds).toEqual(["nova", "stara"]);
+    expect(update?.sql).toBe("UPDATE slug_aliases SET slug = ? WHERE tenant_id = ? AND slug = ?");
+    expect(update?.binds).toEqual(["nova", 1, "stara"]);
   });
 });

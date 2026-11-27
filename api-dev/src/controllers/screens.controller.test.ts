@@ -14,12 +14,13 @@ interface Row {
 }
 
 function fakeD1(row: Row | null, log: string[] = []): D1Database {
+  let sql = "";
   const statement = {
     bind: (...args: unknown[]) => {
       log.push(String(args[0]));
       return statement;
     },
-    first: async () => row,
+    first: async () => (sql.includes("FROM tenants") ? { id: 1 } : row),
     // `ensureTables` питає `PRAGMA table_info` і створює таблицю: порожня
     // відповідь каже «ще немає», тож контролер іде тим самим шляхом, що й на
     // свіжій базі.
@@ -27,12 +28,15 @@ function fakeD1(row: Row | null, log: string[] = []): D1Database {
     run: async () => ({ success: true }),
   };
   return {
-    prepare: (sql: string) => {
+    prepare: (query: string) => {
+      sql = query;
       log.push(sql);
       return statement;
     },
   } as unknown as D1Database;
 }
+
+const REQ = new Request("https://api.example.com/api/screens/x");
 
 const envWith = (row: Row | null, log: string[] = []): Env =>
   ({ DB: fakeD1(row, log) }) as unknown as Env;
@@ -61,7 +65,11 @@ describe("handleScreenTexts", () => {
   it("віддає тексти рядка за ключем — без сторінки й метаданих", async () => {
     const env = envWith({ page_data: pageData({ "services.title": "Сервіси" }) });
 
-    const response = await handleScreenTexts(env, "services");
+    const response = await handleScreenTexts(
+      new Request("https://api.example.com/api/screens/x"),
+      env,
+      "services",
+    );
 
     expect(response.status).toBe(200);
     expect(await body(response)).toEqual({
@@ -72,14 +80,14 @@ describe("handleScreenTexts", () => {
   });
 
   it("рядка немає — порожні тексти, а не помилка", async () => {
-    const response = await handleScreenTexts(envWith(null), "services");
+    const response = await handleScreenTexts(REQ, envWith(null), "services");
 
     expect(response.status).toBe(200);
     expect(await body(response)).toEqual({ ok: true, key: "services", texts: {} });
   });
 
   it("бите page_data не ламає відповідь", async () => {
-    const response = await handleScreenTexts(envWith({ page_data: "{" }), "services");
+    const response = await handleScreenTexts(REQ, envWith({ page_data: "{" }), "services");
 
     expect(response.status).toBe(200);
     expect((await body(response)).texts).toEqual({});
@@ -87,7 +95,7 @@ describe("handleScreenTexts", () => {
 
   it("ключ зі слешем — 400, і до бази запит не йде", async () => {
     const log: string[] = [];
-    const response = await handleScreenTexts(envWith(null, log), "services/account");
+    const response = await handleScreenTexts(REQ, envWith(null, log), "services/account");
 
     expect(response.status).toBe(400);
     expect(log).toEqual([]);
@@ -100,7 +108,7 @@ describe("handleScreenTexts", () => {
       },
     } as unknown as D1Database;
 
-    const response = await handleScreenTexts({ DB: failing } as unknown as Env, "services");
+    const response = await handleScreenTexts(REQ, { DB: failing } as unknown as Env, "services");
 
     expect(response.status).toBe(500);
     expect(await body(response)).toEqual({ ok: false, error: "Internal error" });
