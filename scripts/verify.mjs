@@ -2,7 +2,8 @@
 /**
  * Гейт одною командою: склад і порядок — як у трьох гейт-джобах
  * `.github/workflows/deploy.yml` (`checks-static` → `checks-tests` →
- * `checks-browser`), зупинка на першому падінні, у кінці — крок для повтору.
+ * `checks-browser`) плюс звітні кроки джоби `report`, зупинка на першому
+ * падінні, у кінці — крок для повтору.
  * `--only=<частина>` жене частину кроків, `--group=<група>` — одну групу,
  * `--no-audit` — без `npm audit` (потрібен інтернет). Локально кроки завжди
  * послідовні: у CI групи біжать на різних раннерах, а тут ядер менше, ніж
@@ -34,12 +35,15 @@ const STEPS = [
     cmd: "npm audit --omit=dev --audit-level=high",
     audit: true,
   },
+  // Поза гейтом: у CI цей крок живе в джобі `report`. Він і так був `soft`
+  // (`continue-on-error`), але в гейт-джобі визначав `max(static, …)`.
   {
-    group: "static",
+    group: "report",
     name: "audit (dev tools)",
     cmd: "npm audit --audit-level=high",
     audit: true,
     soft: true,
+    offGate: true,
   },
   { group: "static", name: "lint", cmd: "npm run lint" },
   { group: "static", name: "typecheck", cmd: "npm run typecheck" },
@@ -105,7 +109,7 @@ function ciScripts() {
   return blocks.flatMap((block) => scriptsOf(block));
 }
 
-const mine = STEPS.flatMap((step) => scriptsOf(step.cmd));
+const mine = STEPS.filter((step) => !step.offGate).flatMap((step) => scriptsOf(step.cmd));
 const theirs = ciScripts();
 const drift =
   theirs === null ||

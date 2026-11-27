@@ -76,9 +76,6 @@ jobs:
       # уразливість у dev-інструментах — видимий звіт, а не стоп.
       - name: Security audit (high, shipped deps)
         run: npm audit --omit=dev --audit-level=high
-      - name: Security audit (dev tools)
-        run: npm audit --audit-level=high
-        continue-on-error: true
       - run: npm run lint
       - run: npm run typecheck
       - name: Format check
@@ -221,11 +218,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/deps
       - run: cd bot-dev && npx wrangler deploy --tag "$GITHUB_SHA"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -238,11 +231,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/deps
       - run: cd api-dev && npx wrangler deploy --tag "$GITHUB_SHA"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -255,11 +244,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/deps
       - run: cd web-platform-dev && npm run build
       - run: cd web-platform-dev && npx wrangler deploy --tag "$GITHUB_SHA"
         env:
@@ -273,11 +258,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/deps
       - run: cd web-admin-dev && npm run build
       - run: cd web-admin-dev && npx wrangler deploy --tag "$GITHUB_SHA"
         env:
@@ -307,6 +288,14 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
+      # Аудит інструментів розробки переїхав сюди з гейта. Він `continue-on-error`,
+      # тобто нічого не завалював і до переносу — але стояв на критичному шляху й
+      # коштував до 42 с (мережа до реєстру), тобто сам визначав, коли звільнять
+      # деплой. Тут він так само видимий і нікого не тримає; без `node_modules`
+      # аудит читає `package-lock.json` (`--package-lock-only`).
+      - name: Security audit (dev tools)
+        continue-on-error: true
+        run: npm audit --package-lock-only --audit-level=high
       - name: Send report
         env:
           REPORT_URL: https://bot-dev.diskomate.workers.dev/reports

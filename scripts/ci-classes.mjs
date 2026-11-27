@@ -51,7 +51,8 @@ export const CLASSES = [
   },
   {
     id: "audit",
-    step: /^Security audit/,
+    job: /^checks-static$/,
+    step: /^Security audit \(high, shipped deps\)$/,
     cause: "`npm audit --omit=dev` знайшов уразливість `high` у тому, що їде на прод",
     fix: "оновити залежність; якщо фіксу немає — виняток із причиною в PR",
   },
@@ -113,7 +114,7 @@ export const CLASSES = [
   },
   {
     id: "setup",
-    step: /^(Run npm ci|Set up job|Run actions\/checkout|Run actions\/setup-node)$/,
+    step: /^(Run npm ci|Run \.\/\.github\/actions\/deps|Set up job|Run actions\/checkout|Run actions\/setup-node)$/,
     cause: "підготовка джоби: lockfile, мережа або реєстр npm",
     fix: "повторити; якщо повторюється — `npm ci` локально й перевірити lockfile",
     transient: true,
