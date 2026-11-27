@@ -92,8 +92,15 @@ export const CLASSES = [
     fix: "`npm run typecheck`; тип — не привід для `any`",
   },
   {
-    id: "build",
+    id: "gate-group",
     job: /^checks$/,
+    step: /^All gate groups green$/,
+    cause: "одна з трьох груп гейтів червона — дивись її джобу",
+    fix: "`npm run verify -- --group=<static|tests|browser>` локально",
+  },
+  {
+    id: "build",
+    job: /^checks-browser$/,
     step: /^Build shells/,
     cause: "збірка оболонки не пройшла",
     fix: "`npm run build --workspace web-platform-dev` і `web-admin-dev` локально",

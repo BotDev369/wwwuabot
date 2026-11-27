@@ -147,7 +147,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 - **Логування:** `bot-dev/` — модуль `modules/logging/` (Queue); `api-dev/` — `apiLog` з префіксом `[api]`. Не використовувати `console.log` у продакшн-коді.
 - **Дата/час у D1:** `formatSqliteDatetime()` з `packages/shared/src/utils/datetime.ts`.
 - **Коментар лишається тільки там, де код не показує намір** (інваріант, пастка, адреса документа); переказ коду, історія й розгорнуте пояснення — у `docs/` (стандарт і приклади — `docs/COMMENTS.md`). Мова вільна, в межах файлу не міксуй. Стережить `npm run check:comments`.
-- **CI/CD:** GitHub Actions. Уся черга гейтів — у джобі `checks` перед деплоєм: збій блокує всі воркери, `pull_request` жене лише гейти, `GITHUB_TOKEN` має `contents: read`, деплої в черзі (`concurrency`). Пуш у `main` деплоїть **усі** воркери без фільтра шляхів, кожен тегується `$GITHUB_SHA`. Команди й те, що ловить кожен гейт, — `docs/QUALITY_GATE.md`.
+- **CI/CD:** GitHub Actions. Уся черга гейтів — у гейт-джобах перед деплоєм, замок — `checks`: збій блокує всі воркери, `pull_request` жене лише гейти, `GITHUB_TOKEN` має `contents: read`, деплої в черзі (`concurrency`). Пуш у `main` деплоїть **усі** воркери без фільтра шляхів, кожен тегується `$GITHUB_SHA`. Команди й те, що ловить кожен гейт, — `docs/QUALITY_GATE.md`.
 
 ---
 

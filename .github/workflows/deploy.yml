@@ -37,16 +37,25 @@ jobs:
   # Образ пінимо, а не `ubuntu-latest`: міграція `latest` на новий образ
   # міняє раннер під ногами, і джоба з усіма зеленими кроками впирається в
   # ліміт часу — тоді деплой зривається не через код, а через образ.
-  checks:
+  # **Три джоби, а не одна.** Усередині джоби кроки завжди послідовні, а
+  # раннерів у CI стільки, скільки джоб: 27.11.2026 єдина `checks` ішла 235 с
+  # (run 45927569204), хоч кожна група окремо — близько двох хвилин. Тому
+  # робота поділена за ресурсом, а не за темою:
+  #
+  #   checks-static  — аудит, лінт, типи, формат, девʼять статичних гейтів;
+  #   checks-tests   — тести з покриттям і підлога покриття;
+  #   checks-browser — обидві збірки, Chromium, перший кадр під CSP, бюджет.
+  #
+  # Замок `checks` наприкінці збирає їх в одне імʼя, тож `deploy-*`,
+  # `scripts/check-deploy.mjs` і звіт деплою про поділ не знають.
+  checks-static:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v7
         with:
-          # Гейт покриття порівнює свій код із комітом `NEW_CODE_SINCE`
-          # (`scripts/coverage-baseline.mjs`), тож історія потрібна цілком:
-          # на `fetch-depth: 1` він упав би з «коміт не знайдено» на кожному
-          # запуску, а не на справді непокритому коді.
+          # Історія цілком — для гейтів, які звіряють стан із комітом у минулому:
+          # `fetch-depth: 1` робив би їх червоними не через код.
           fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
@@ -116,13 +125,42 @@ jobs:
       # маршруту, `analysis` поза зайнятими адресами).
       - name: Screen registry
         run: npm run check:screens
-      # Покриття - перед збірками: пропущений тест нового файлу - найчастіша
-      # причина червоного прогону, і дізнатися про неї за дві хвилини дешевше,
-      # ніж за сім після обох збірок і бюджету бандла.
+
+  checks-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Гейт покриття порівнює свій код із комітом `NEW_CODE_SINCE`
+          # (`scripts/coverage-baseline.mjs`), тож історія потрібна цілком:
+          # на `fetch-depth: 1` він упав би з «коміт не знайдено» на кожному
+          # запуску, а не на справді непокритому коді.
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Прогін із покриттям — найдовший крок гейта, і він не залежить ні від
+      # статичних гейтів, ні від збірок: тому в нього своя джоба. Раніше він
+      # стояв перед збірками, щоб забутий тест червонів раніше за бюджет
+      # бандла; тепер джоби біжать одночасно, і обидві причини видно в одному
+      # прогоні.
       - name: Coverage floor
         run: |
           npm run test:coverage
           npm run check:coverage
+  checks-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
       - name: Build shells (bundle budget needs dist)
         run: |
           npm run build --workspace web-platform-dev
@@ -153,6 +191,38 @@ jobs:
         run: npm run check:gate
       - name: Bundle budget
         run: npm run check:bundle
+
+  # Замок, а не робота: зелений рівно тоді, коли зелені всі три групи.
+  #
+  # Імʼя `checks` лишається тим самим навмисно: `deploy-*` чекають на нього,
+  # `scripts/check-deploy.mjs` вимагає його успіху, `scripts/ci-triage.mjs`
+  # знає його як джобу. Поділ на групи — справа гейтів, а не того, хто їх чекає.
+  checks:
+    needs: [checks-static, checks-tests, checks-browser]
+    # `always()`: без нього GitHub пропустив би джобу, коли група впала, і
+    # «skipped» у списку виглядало б як «нічого не сталося» замість червоного.
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: All gate groups green
+        env:
+          STATIC: ${{ needs['checks-static'].result }}
+          TESTS: ${{ needs['checks-tests'].result }}
+          BROWSER: ${{ needs['checks-browser'].result }}
+        run: |
+          failed=0
+          for group in "static:$STATIC" "tests:$TESTS" "browser:$BROWSER"; do
+            name=${group%%:*}
+            result=${group#*:}
+            if [ "$result" = "success" ]; then
+              echo "✓ $name — $result"
+            else
+              echo "✗ $name — $result"
+              failed=1
+            fi
+          done
+          exit $failed
 
   # Тег — `$GITHUB_SHA`: без нього `wrangler deployments status` показує лише
   # час, і «що зараз живе на воркері» доводиться вгадувати.
