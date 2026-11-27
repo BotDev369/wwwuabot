@@ -42,7 +42,9 @@ export async function smokeShell(shell) {
   const scriptSrc = csp.split(";").find((part) => part.trim().startsWith("script-src")) ?? "";
   const cache = page.headers.get("cache-control") ?? "";
 
-  if (page.status !== 200) problems.push(`документ → ${page.status}`);
+  // Не 200 — далі перевіряти нічого: порожнє тіло дало б пʼять скарг на одну причину.
+  if (page.status !== 200)
+    return { name: shell.name, problems: [`документ → ${page.status}`], assets: 0 };
   if (!type.includes("text/html"))
     problems.push(`документ типу «${type || "без типу"}», а не text/html`);
   if (!csp) problems.push("немає Content-Security-Policy — політика не доїхала з `_headers`");
