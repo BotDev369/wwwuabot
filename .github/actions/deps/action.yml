@@ -1,0 +1,53 @@
+name: Node і залежності
+description: >
+  Node 22 і встановлені залежності для гейт-джоб. Кеш node_modules прив'язаний до
+  відбитку `package-lock.json`: інший lockfile — інший ключ, тож застарілі
+  залежності в гейт не потрапляють.
+
+# Чому кеш, а не лише `npm ci`.
+# `npm ci` у гейт-джобі коштував 35–40 с, і це найбільша стала частина кожної
+# групи: самі перевірки коротші. Розпакування кеша пише ті самі файли, але без
+# резолву й лінкування, тож виграш є — його міряють числа в `deploy.yml`.
+#
+# `ci`, не `install`: збірка мусить бути відтворюваною з lockfile, інакше патч
+# транзитивної залежності тихо змінює прод. `--no-audit --no-fund` лише
+# прибирають звіт, а не змінюють дерево; аудит — окремий крок гейта.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v7
+      with:
+        node-version: 22
+        cache: npm
+
+    - id: modules
+      uses: actions/cache@v6
+      with:
+        path: |
+          node_modules
+          bot-dev/node_modules
+          api-dev/node_modules
+          web-platform-dev/node_modules
+          web-admin-dev/node_modules
+          packages/shared/node_modules
+          packages/ui/node_modules
+        key: modules-${{ runner.os }}-${{ runner.arch }}-22-${{ hashFiles('package-lock.json') }}
+
+    # Кеш може прийти з дірою (перерваний save, заповнений диск). Без цих
+    # бінарників кроки падають незрозуміло, а «зелено» на такому кеші — гірше
+    # за повільний прогін. Тому перевірка не валить джобу, а вмикає `npm ci`.
+    - id: guard
+      if: steps.modules.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        for bin in vitest vite eslint prettier tsc wrangler; do
+          if [ ! -x "node_modules/.bin/$bin" ]; then
+            echo "кеш без node_modules/.bin/$bin — перевстановлюю"
+            exit 1
+          fi
+        done
+      continue-on-error: true
+
+    - if: steps.modules.outputs.cache-hit != 'true' || steps.guard.outcome == 'failure'
+      shell: bash
+      run: npm ci --no-audit --no-fund

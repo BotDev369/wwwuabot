@@ -57,13 +57,9 @@ jobs:
           # Історія цілком — для гейтів, які звіряють стан із комітом у минулому:
           # `fetch-depth: 1` робив би їх червоними не через код.
           fetch-depth: 0
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-      # `ci`, не `install`: збірка мусить бути відтворюваною з lockfile,
-      # інакше патч транзитивної залежності тихо змінює прод.
-      - run: npm ci
+      # Node і залежності — спільна дія: кеш `node_modules` за відбитком lockfile,
+      # `npm ci` лише на промаху (чому саме так — `.github/actions/deps/action.yml`).
+      - uses: ./.github/actions/deps
       # Поріг піднято з `critical` до `high` 13.09.2026: після оновлення
       # `wrangler`/`miniflare` (sharp) і `vitest` у репозиторії **нуль**
       # уразливостей, а `high` — саме той рівень, який раніше проходив повз гейт.
@@ -137,11 +133,7 @@ jobs:
           # на `fetch-depth: 1` він упав би з «коміт не знайдено» на кожному
           # запуску, а не на справді непокритому коді.
           fetch-depth: 0
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/deps
       # Прогін із покриттям — найдовший крок гейта, і він не залежить ні від
       # статичних гейтів, ні від збірок: тому в нього своя джоба. Раніше він
       # стояв перед збірками, щоб забутий тест червонів раніше за бюджет
@@ -156,11 +148,7 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/deps
       - name: Build shells (bundle budget needs dist)
         run: |
           npm run build --workspace web-platform-dev
