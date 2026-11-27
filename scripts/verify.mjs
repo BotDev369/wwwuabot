@@ -25,9 +25,8 @@ const GATE_JOBS = [
   "checks-types",
   "checks-format",
   "checks-tests",
+  "checks-coverage",
   "checks-browser",
-  // Замок теж у списку: саме в ньому тепер зводиться покриття й біжить підлога.
-  "checks",
 ];
 
 /**
@@ -69,9 +68,10 @@ const STEPS = [
   { group: "static", name: "typecheck", cmd: "npm run typecheck" },
   // Формат — окрема джоба `checks-format`: у спільній він стояв за типами.
   { group: "static", name: "prettier", cmd: "npx prettier --check ." },
-  // Тести біжать шардами (6 джоб), а злиття й підлога стоять у замку `checks`:
-  // локально — той самий прогін цілком, потім та сама підлога.
+  // Тести біжать шардами (4 джоби), покриття зводить `checks-coverage`;
+  // локально — тим самим прогоном, що й `npm test`.
   { group: "tests", name: "test:coverage", cmd: "npm run test:coverage" },
+  { group: "tests", name: "check:coverage", cmd: "npm run check:coverage" },
   // Бюджет бандла читає `dist/`, тож обидві збірки стоять перед ним.
   {
     group: "browser",
@@ -87,9 +87,6 @@ const STEPS = [
   // видно лише в браузері — тому крок стоїть після збірок, як і бюджет.
   { group: "browser", name: "check:gate", cmd: "npm run check:gate" },
   { group: "browser", name: "check:bundle", cmd: "npm run check:bundle" },
-  // Підлога покриття — останньою, як у CI: вона читає звіт, який лишив
-  // `test:coverage`, і нічого не залежить від збірок.
-  { group: "tests", name: "check:coverage", cmd: "npm run check:coverage" },
 ];
 
 const args = process.argv.slice(2);

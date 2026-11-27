@@ -183,6 +183,32 @@ jobs:
           path: coverage/coverage-final.json
           retention-days: 1
 
+  # Покриття зводиться там же, де його читає поріг — і без `deps`:
+  # `scripts/merge-coverage.mjs` на чистих `node:`-модулях, тож злиття
+  # коштує секунди, а не відновлення `node_modules`. `SHARD_COUNT` — захист
+  # від неповного звіту: шість шардів мусять дати шість файлів. Якщо якийсь
+  # шард упав, джоба не запускається взагалі (default `if: success()`), і
+  # червоним стає замок `checks` — пройти повз покриття неможливо.
+  checks-coverage:
+    needs: [checks-tests]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Підлога порівнює код із комітом `NEW_CODE_SINCE`, тож історія
+          # потрібна ціла: на `fetch-depth: 1` вона б падала на кожному запуску.
+          fetch-depth: 0
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: coverage-shard-*
+          path: coverage
+      - name: Merge coverage from shards
+        env:
+          SHARD_COUNT: 6
+        run: node scripts/merge-coverage.mjs
+      - name: Coverage floor
+        run: npm run check:coverage
   checks-browser:
     runs-on: ubuntu-24.04
     timeout-minutes: 12
@@ -256,51 +282,34 @@ jobs:
   # `scripts/check-deploy.mjs` вимагає його успіху, `scripts/ci-triage.mjs`
   # знає його як джобу. Поділ на групи — справа гейтів, а не того, хто їх чекає.
   checks:
-    needs: [checks-lint, checks-gates, checks-types, checks-format, checks-tests, checks-browser]
+    needs:
+      [
+        checks-lint,
+        checks-gates,
+        checks-types,
+        checks-format,
+        checks-tests,
+        checks-coverage,
+        checks-browser,
+      ]
     # `always()`: без нього GitHub пропустив би джобу, коли група впала, і
     # «skipped» у списку виглядало б як «нічого не сталося» замість червоного.
     if: always()
     runs-on: ubuntu-24.04
-    timeout-minutes: 6
+    timeout-minutes: 3
     steps:
-      # Покриття зводиться тут же, у замку, а не окремою джобою: окрема
-      # коштувала ще один запуск раннера (~8 с на шляху), бо стартувати вона
-      # могла лише після найдовшого шарда. `deps` не потрібен:
-      # `scripts/merge-coverage.mjs` і підлога — чисті `node:`-модули.
-      - uses: actions/checkout@v7
-        if: needs['checks-tests'].result == 'success'
-        with:
-          # Підлога порівнює код із комітом `NEW_CODE_SINCE`, тож історія
-          # потрібна ціла: на `fetch-depth: 1` вона б падала на кожному запуску.
-          fetch-depth: 0
-      - uses: actions/download-artifact@v8
-        if: needs['checks-tests'].result == 'success'
-        with:
-          pattern: coverage-shard-*
-          path: coverage
-      # `SHARD_COUNT` — захист від неповного звіту: шість шардів мусять дати
-      # шість файлів. Зелений шард поруч із червоним не врятує: злиття не
-      # запуститься, а замок назве червону групу.
-      - name: Merge coverage from shards
-        if: needs['checks-tests'].result == 'success'
-        env:
-          SHARD_COUNT: 6
-        run: node scripts/merge-coverage.mjs
-      - name: Coverage floor
-        if: needs['checks-tests'].result == 'success'
-        run: npm run check:coverage
       - name: All gate groups green
-        if: always()
         env:
           LINT: ${{ needs['checks-lint'].result }}
           GATES: ${{ needs['checks-gates'].result }}
           TYPES: ${{ needs['checks-types'].result }}
           FORMAT: ${{ needs['checks-format'].result }}
           TESTS: ${{ needs['checks-tests'].result }}
+          COVERAGE: ${{ needs['checks-coverage'].result }}
           BROWSER: ${{ needs['checks-browser'].result }}
         run: |
           failed=0
-          groups="lint:$LINT gates:$GATES types:$TYPES format:$FORMAT tests:$TESTS browser:$BROWSER"
+          groups="lint:$LINT gates:$GATES types:$TYPES format:$FORMAT tests:$TESTS coverage:$COVERAGE browser:$BROWSER"
           for group in $groups; do
             name=${group%%:*}
             result=${group#*:}
