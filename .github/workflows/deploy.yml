@@ -196,9 +196,20 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # Підлога порівнює код із комітом `NEW_CODE_SINCE`, тож історія
-          # потрібна ціла: на `fetch-depth: 1` вона б падала на кожному запуску.
-          fetch-depth: 0
+          # Історія ціла не потрібна: підлозі потрібен один коміт-база, його
+          # дотягує наступний крок. Повний чек-аут коштував 1–6 с на хвості.
+          fetch-depth: 1
+      # `git diff` потрібні лише два дерева, не прямий зв'язок: тому вистачає
+      # `--depth=1` від самого коміта. Якщо сервер такий коміт не віддає —
+      # фолбек `--unshallow`, тобто ціна як раніше, але не падіння.
+      - name: Baseline commit for the floor
+        run: |
+          since=$(node --input-type=module -e "import('./scripts/coverage-baseline.mjs').then((m) => console.log(m.NEW_CODE_SINCE))")
+          git fetch --depth=1 origin "$since" > /dev/null 2>&1 || true
+          git cat-file -e "$since^{commit}" 2> /dev/null || git fetch --unshallow
+          # Якщо коміта так і немає, скажемо це прямо, а не через дивну
+          # помилку підлоги «коміт не знайдено» нижче.
+          git cat-file -e "$since^{commit}" || { echo "✗ Немає базового коміта $since"; exit 1; }
       - uses: actions/download-artifact@v8
         with:
           pattern: coverage-shard-*
