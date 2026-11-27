@@ -32,10 +32,25 @@ async function get(url, init) {
   }
 }
 
+/** Коротка причина збою мережі: справжня помилка `fetch` лежить у `cause`. */
+function reason(error) {
+  const cause = error?.cause ?? error;
+  const first = Array.isArray(cause?.errors) ? cause.errors[0] : cause;
+  const text = first?.message || cause?.message || String(first ?? cause);
+  return String(text).split("\n")[0].trim() || "невідома причина";
+}
+
 /** Одна оболонка: `problems` порожній — вона відкривається. */
 export async function smokeShell(shell) {
   const problems = [];
-  const page = await get(shell.url, { redirect: "follow" });
+  let page;
+  try {
+    page = await get(shell.url, { redirect: "follow" });
+  } catch (error) {
+    // `check:deploy` друкує проблему як «✗ платформа: …»: збій мережі мусить бути
+    // рядком, а не трейсбеком, інакше причина тоне в стеку.
+    return { name: shell.name, problems: [`документ не отримано — ${reason(error)}`], assets: 0 };
+  }
   const html = await page.text();
   const type = page.headers.get("content-type") ?? "";
   const csp = page.headers.get("content-security-policy") ?? "";
@@ -71,7 +86,13 @@ export async function smokeShell(shell) {
 
   for (const asset of assets.slice(0, 3)) {
     const path = new URL(asset).pathname;
-    const res = await get(asset, {});
+    let res;
+    try {
+      res = await get(asset, {});
+    } catch (error) {
+      problems.push(`${path} не отримано — ${reason(error)}`);
+      continue;
+    }
     const kind = path.endsWith(".css") ? "text/css" : "javascript";
     const assetType = res.headers.get("content-type") ?? "";
     const size = (await res.arrayBuffer()).byteLength;

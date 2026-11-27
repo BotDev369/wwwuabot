@@ -20,6 +20,7 @@ const ASSETS: Record<string, string> = {
   "asset-404": "gone",
   "asset-empty": "empty",
   "asset-type": "wrong",
+  "asset-reset": "dropped",
 };
 
 /** Сторінка з `#root` і своїми файлами; `root: false` — поломка «немає #root». */
@@ -49,6 +50,9 @@ const server = createServer((request, response) => {
       headers,
     );
 
+  // Мережа: сокет рветься на кожній спробі — повтор не рятує, трейсбеку бути не має.
+  if (variant === "reset" && file === "") return request.socket.destroy();
+
   // Документ за адресою з версією: так жива платформа веде на `?v=`.
   if (variant === "start") return send(302, "text/plain", "", { location: "/good/?v=1" });
 
@@ -64,6 +68,7 @@ const server = createServer((request, response) => {
   if (file.endsWith(".js") || file.endsWith(".css")) {
     const type = file.endsWith(".css") ? CSS : JS;
     if (file === "gone.js") return send(404, JS, "");
+    if (file === "dropped.js") return request.socket.destroy();
     if (file === "empty.js") return send(200, type, "");
     if (file === "wrong.js") return send(200, "text/plain", "console.log(1)");
     return send(200, type, file.endsWith(".css") ? ".root{display:block}" : "console.log(1)");
@@ -195,5 +200,20 @@ describe("смоук деплою на фікстурах", () => {
 
   it("503 обидва рази — проблема є", async () => {
     expect((await check("/retry-always/")).problems).toEqual(["документ → 503"]);
+  });
+
+  it("мережа впала на документі — рядок проблеми, а не трейсбек", async () => {
+    const shell = await check("/reset/");
+    expect(shell.problems).toHaveLength(1);
+    expect(shell.problems[0]).toMatch(/^документ не отримано — \S/);
+    expect(shell.problems[0]).not.toContain("\n");
+    expect(shell.assets).toBe(0);
+  });
+
+  it("мережа впала на асеті — рядок проблеми, а не трейсбек", async () => {
+    const shell = await check("/asset-reset/");
+    expect(shell.problems).toHaveLength(1);
+    expect(shell.problems[0]).toMatch(/^\/asset-reset\/dropped\.js не отримано — \S/);
+    expect(shell.problems[0]).not.toContain("\n");
   });
 });
