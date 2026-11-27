@@ -54,16 +54,32 @@ export async function tenantForUser(env: Env, userId: number): Promise<BotTenant
 
   const tenant = await readTenantById(env.DB, row.tenant_id);
   if (!tenant || tenant.status !== "active") return fallback;
-  if (!(await isTenantMember(env.DB, tenant.id, userId))) return fallback;
+  if (!isPlatformOwner(env, userId) && !(await isTenantMember(env.DB, tenant.id, userId))) {
+    return fallback;
+  }
   return brief(tenant);
 }
 
-/** Запам'ятати вибір людини; `main` теж запам'ятовується — це спосіб повернутись. */
+/**
+ * Запам'ятати вибір людини; `main` теж запам'ятовується — це спосіб повернутись.
+ *
+ * Рядка `users` може ще не бути (перший же апдейт із посиланням): тоді вибір і
+ * є створенням рядка. `UPDATE` без рядка тихо втратив би вибір.
+ */
 export async function rememberTenant(env: Env, userId: number, tenantId: number): Promise<void> {
   await ensureTables(env.DB, ["users"]);
-  await env.DB.prepare("UPDATE users SET tenant_id = ? WHERE user_id = ?")
-    .bind(tenantId, userId)
+  await env.DB.prepare(
+    `INSERT INTO users (user_id, tenant_id, created_at) VALUES (?, ?, datetime('now'))
+     ON CONFLICT(user_id) DO UPDATE SET tenant_id = excluded.tenant_id`,
+  )
+    .bind(userId, tenantId)
     .run();
+}
+
+/** Власник платформи входить у будь-який проєкт: панель і бот — його. */
+export function isPlatformOwner(env: Env, userId: number): boolean {
+  const ownerId = Number(env.ADMIN_TELEGRAM_ID);
+  return Number.isInteger(ownerId) && ownerId > 0 && ownerId === userId;
 }
 
 /**
@@ -82,6 +98,8 @@ export async function pickTenant(
 
   const tenant = await readTenantByKey(env.DB, key);
   if (!tenant || tenant.status !== "active") return { ok: false, reason: "unknown" };
-  if (!(await isTenantMember(env.DB, tenant.id, userId))) return { ok: false, reason: "forbidden" };
+  if (!isPlatformOwner(env, userId) && !(await isTenantMember(env.DB, tenant.id, userId))) {
+    return { ok: false, reason: "forbidden" };
+  }
   return { ok: true, tenant: brief(tenant) };
 }

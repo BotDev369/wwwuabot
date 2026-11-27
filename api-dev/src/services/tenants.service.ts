@@ -81,8 +81,9 @@ export async function createTenant(
   db: D1Database,
   rawKey: string,
   rawName: string,
+  ownerId?: number,
 ): Promise<CreateTenantResult> {
-  await ensureTables(db, ["tenants"]);
+  await ensureTables(db, ["tenants", "tenant_members"]);
 
   const key = tenantKeyFromStartParam(`p_${rawKey.trim().toLowerCase()}`);
   if (!key) return { ok: false, reason: "invalid-key" };
@@ -94,5 +95,15 @@ export async function createTenant(
 
   const tenant = await readTenantByKey(db, key);
   if (!tenant) throw new Error(`D1: tenant "${key}" was not created.`);
+
+  // Без власника новий проєкт ніхто не відкриє в боті: членства немає ні в кого.
+  if (ownerId !== undefined) {
+    await db
+      .prepare(
+        `INSERT OR IGNORE INTO tenant_members (tenant_id, user_id, role) VALUES (?, ?, 'owner')`,
+      )
+      .bind(tenant.id, ownerId)
+      .run();
+  }
   return { ok: true, tenant };
 }

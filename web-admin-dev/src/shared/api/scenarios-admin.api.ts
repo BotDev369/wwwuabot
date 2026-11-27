@@ -44,6 +44,11 @@ export interface PlatformPageRecord extends PlatformPageListItem {
   is_active: number | null;
 }
 
+/** `?tenant=<key>` — чий проєкт; без нього адмін-шлях читає головний. */
+function withTenant(path: string, tenant?: string): string {
+  return tenant ? `${path}?tenant=${encodeURIComponent(tenant)}` : path;
+}
+
 /** Що повертає ручна перебудова пошуку. */
 export interface SearchReindexResult {
   pages: number;
@@ -51,16 +56,19 @@ export interface SearchReindexResult {
   builtAt: string;
 }
 
-export async function listBotScenarios(): Promise<BotScenarioListItem[]> {
+export async function listBotScenarios(tenant?: string): Promise<BotScenarioListItem[]> {
   const res = await apiFetch<{ ok: boolean; items: BotScenarioListItem[] }>(
-    "/api/admin/bot-scenarios",
+    withTenant("/api/admin/bot-scenarios", tenant),
   );
   return res.items;
 }
 
-export async function readBotScenario(id: number): Promise<BotScenarioRecord | null> {
+export async function readBotScenario(
+  id: number,
+  tenant?: string,
+): Promise<BotScenarioRecord | null> {
   const res = await apiFetch<{ ok: boolean; item: BotScenarioRecord | null }>(
-    "/api/admin/bot-scenarios/read",
+    withTenant("/api/admin/bot-scenarios/read", tenant),
     { method: "POST", body: JSON.stringify({ id }) },
   );
   return res.item;
@@ -69,30 +77,47 @@ export async function readBotScenario(id: number): Promise<BotScenarioRecord | n
 export async function updateBotScenario(
   id: number,
   fields: Partial<BotScenarioRecord>,
+  tenant?: string,
 ): Promise<void> {
-  await apiFetch("/api/admin/bot-scenarios/update", {
+  await apiFetch(withTenant("/api/admin/bot-scenarios/update", tenant), {
     method: "POST",
     body: JSON.stringify({ id, ...fields }),
   });
 }
 
-export async function listPlatformPages(): Promise<PlatformPageListItem[]> {
+export async function createBotScenario(
+  lookup: string,
+  fields: Partial<BotScenarioRecord>,
+  tenant?: string,
+): Promise<BotScenarioRecord> {
+  const res = await apiFetch<{ ok: boolean; item: BotScenarioRecord }>(
+    withTenant("/api/admin/bot-scenarios/create", tenant),
+    { method: "POST", body: JSON.stringify({ lookup, ...fields }) },
+  );
+  return res.item;
+}
+
+export async function listPlatformPages(tenant?: string): Promise<PlatformPageListItem[]> {
   const res = await apiFetch<{ ok: boolean; items: PlatformPageListItem[] }>(
-    "/api/admin/platform-pages",
+    withTenant("/api/admin/platform-pages", tenant),
   );
   return res.items;
 }
 
-export async function reindexSearch(): Promise<SearchReindexResult> {
-  const res = await apiFetch<{ ok: boolean } & SearchReindexResult>("/api/admin/search/reindex", {
-    method: "POST",
-  });
+export async function reindexSearch(tenant?: string): Promise<SearchReindexResult> {
+  const res = await apiFetch<{ ok: boolean } & SearchReindexResult>(
+    withTenant("/api/admin/search/reindex", tenant),
+    { method: "POST" },
+  );
   return res;
 }
 
-export async function readPlatformPage(id: number): Promise<PlatformPageRecord | null> {
+export async function readPlatformPage(
+  id: number,
+  tenant?: string,
+): Promise<PlatformPageRecord | null> {
   const res = await apiFetch<{ ok: boolean; item: PlatformPageRecord | null }>(
-    "/api/admin/platform-pages/read",
+    withTenant("/api/admin/platform-pages/read", tenant),
     { method: "POST", body: JSON.stringify({ id }) },
   );
   return res.item;

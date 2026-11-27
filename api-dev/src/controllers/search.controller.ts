@@ -8,7 +8,7 @@
 import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
 import { rebuildSearchIndex } from "../services/search";
-import { resolveTenant } from "../shared/tenant";
+import { resolveAdminTenant } from "../shared/admin-tenant";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -20,7 +20,7 @@ function json(body: unknown, status = 200): Response {
 /** `POST /api/admin/search/reindex` — перебудувати індекс і сказати, що в ньому. */
 export async function handleSearchReindex(request: Request, env: Env): Promise<Response> {
   try {
-    const tenant = await resolveTenant(request, env);
+    const tenant = await resolveAdminTenant(request, env);
     if (!tenant.ok) return tenant.response;
 
     const result = await rebuildSearchIndex(env, tenant.tenant.id, new URL(request.url).origin);

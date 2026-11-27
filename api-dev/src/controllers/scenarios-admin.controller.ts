@@ -12,7 +12,7 @@ import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
-import { resolveTenant } from "../shared/tenant";
+import { resolveAdminTenant } from "../shared/admin-tenant";
 
 const LIST_LIMIT = 300;
 const HTML_LIMIT = 32768;
@@ -93,10 +93,67 @@ async function scenario(
     .first<Record<string, unknown>>();
 }
 
+/**
+ * `POST /api/admin/bot-scenarios/create` — завести екран у проєкті.
+ *
+ * `lookup` — ключ, за яким бот знайде екран (`/start`, `about`, текст кнопки),
+ * тому він не змінюється після створення: інша адреса — інший екран. Повтор
+ * того самого ключа в тому самому проєкті — `409`, а не другий рядок.
+ */
+export async function handleBotScenarioCreate(request: Request, env: Env): Promise<Response> {
+  try {
+    const tenant = await resolveAdminTenant(request, env);
+    if (!tenant.ok) return tenant.response;
+
+    await ensureTables(env.DB, ["bot_scenarios"]);
+    const body = await readJsonObject(request);
+    const lookup = String(body.lookup ?? "").trim();
+    if (!lookup) return json({ ok: false, error: "lookup required" }, 400);
+    if (lookup.length > 128) return json({ ok: false, error: "lookup too long" }, 400);
+
+    const fields = pickFields(body);
+    const problem = validScenario(fields);
+    if (problem) return json({ ok: false, error: problem }, 400);
+
+    const result = await env.DB.prepare(
+      `INSERT OR IGNORE INTO bot_scenarios
+         (tenant_id, lookup, kind, widget_html, widget_data, rich_html,
+          notify_groups, notify_template, is_active, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+      .bind(
+        tenant.tenant.id,
+        lookup,
+        fields.kind,
+        fields.widget_html ?? null,
+        fields.widget_data ?? null,
+        fields.rich_html ?? null,
+        fields.notify_groups ?? null,
+        fields.notify_template ?? null,
+        "is_active" in fields ? fields.is_active : 1,
+        formatSqliteDatetime(),
+      )
+      .run();
+    if ((result.meta?.changes ?? 0) === 0) {
+      return json({ ok: false, error: "lookup_taken" }, 409);
+    }
+
+    const item = await env.DB.prepare(
+      "SELECT * FROM bot_scenarios WHERE tenant_id = ? AND lookup = ?",
+    )
+      .bind(tenant.tenant.id, lookup)
+      .first<Record<string, unknown>>();
+    return json({ ok: true, item }, 201);
+  } catch (error: unknown) {
+    apiLog.error("bot scenario create error", error);
+    return json({ ok: false, error: "Internal error" }, 500);
+  }
+}
+
 /** `GET /api/admin/bot-scenarios` — усі сценарії без важкого HTML. */
 export async function handleBotScenariosList(request: Request, env: Env): Promise<Response> {
   try {
-    const tenant = await resolveTenant(request, env);
+    const tenant = await resolveAdminTenant(request, env);
     if (!tenant.ok) return tenant.response;
 
     await ensureTables(env.DB, ["bot_scenarios"]);
@@ -116,7 +173,7 @@ export async function handleBotScenariosList(request: Request, env: Env): Promis
 /** `POST /api/admin/bot-scenarios/read` — один сценарій із HTML. */
 export async function handleBotScenarioRead(request: Request, env: Env): Promise<Response> {
   try {
-    const tenant = await resolveTenant(request, env);
+    const tenant = await resolveAdminTenant(request, env);
     if (!tenant.ok) return tenant.response;
 
     await ensureTables(env.DB, ["bot_scenarios"]);
@@ -133,7 +190,7 @@ export async function handleBotScenarioRead(request: Request, env: Env): Promise
 /** `POST /api/admin/bot-scenarios/update` — зберегти екран. */
 export async function handleBotScenarioUpdate(request: Request, env: Env): Promise<Response> {
   try {
-    const tenant = await resolveTenant(request, env);
+    const tenant = await resolveAdminTenant(request, env);
     if (!tenant.ok) return tenant.response;
 
     await ensureTables(env.DB, ["bot_scenarios"]);
@@ -180,7 +237,7 @@ async function pageItem(
 /** `GET /api/admin/platform-pages` — сторінки платформи без `page_data`. */
 export async function handlePlatformPagesList(request: Request, env: Env): Promise<Response> {
   try {
-    const tenant = await resolveTenant(request, env);
+    const tenant = await resolveAdminTenant(request, env);
     if (!tenant.ok) return tenant.response;
 
     await ensureTables(env.DB, ["platform_pages"]);
@@ -200,7 +257,7 @@ export async function handlePlatformPagesList(request: Request, env: Env): Promi
 /** `POST /api/admin/platform-pages/read` — усі поля сторінки. */
 export async function handlePlatformPageRead(request: Request, env: Env): Promise<Response> {
   try {
-    const tenant = await resolveTenant(request, env);
+    const tenant = await resolveAdminTenant(request, env);
     if (!tenant.ok) return tenant.response;
 
     await ensureTables(env.DB, ["platform_pages"]);

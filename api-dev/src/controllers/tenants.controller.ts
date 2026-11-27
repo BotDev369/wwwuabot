@@ -17,6 +17,7 @@ import { createTenant, listTenants } from "../services/tenants.service";
 const createTenantBody = z.object({
   key: z.string(),
   name: z.string().optional(),
+  owner_id: z.number().int().positive().optional(),
 });
 
 function json(data: unknown, status = 200): Response {
@@ -45,7 +46,12 @@ export async function handleTenantCreate(request: Request, env: Env): Promise<Re
   const parsed = await readBody(request, createTenantBody);
   if (!parsed.ok) return parsed.response;
 
-  const result = await createTenant(env.DB, parsed.body.key, parsed.body.name ?? "");
+  const result = await createTenant(
+    env.DB,
+    parsed.body.key,
+    parsed.body.name ?? "",
+    parsed.body.owner_id,
+  );
   if (!result.ok) {
     return result.reason === "invalid-key"
       ? json({ error: "invalid_tenant_key" }, 400)

@@ -10,6 +10,7 @@ import { handleScenario } from "./controllers/scenarios.controller";
 import {
   handleBotScenariosList,
   handleBotScenarioRead,
+  handleBotScenarioCreate,
   handleBotScenarioUpdate,
   handlePlatformPagesList,
   handlePlatformPageRead,
@@ -217,6 +218,9 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/api/admin/bot-scenarios/read" && request.method === "POST") {
     return handleBotScenarioRead(request, env);
+  }
+  if (pathname === "/api/admin/bot-scenarios/create" && request.method === "POST") {
+    return handleBotScenarioCreate(request, env);
   }
   if (pathname === "/api/admin/bot-scenarios/update" && request.method === "POST") {
     return handleBotScenarioUpdate(request, env);

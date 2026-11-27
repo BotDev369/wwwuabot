@@ -59,10 +59,10 @@ function post(body: unknown): Request {
   });
 }
 
-vi.mock("../shared/tenant", () => ({
-  resolveTenant: async () => ({
+vi.mock("../shared/admin-tenant", () => ({
+  resolveAdminTenant: async () => ({
     ok: true as const,
-    tenant: { id: 1, key: "main", name: "main", status: "active", source: "default" as const },
+    tenant: { id: 1, key: "main", name: "main", status: "active" },
   }),
 }));
 

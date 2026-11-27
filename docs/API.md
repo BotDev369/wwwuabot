@@ -89,6 +89,7 @@
 | `DELETE` | `/api/admin/access-requests` | `handleAccessRequestDelete` |
 | `POST` | `/api/admin/access-requests/update` | `handleAccessRequestUpdate` |
 | `GET` | `/api/admin/bot-scenarios` | `handleBotScenariosList` |
+| `POST` | `/api/admin/bot-scenarios/create` | `handleBotScenarioCreate` |
 | `POST` | `/api/admin/bot-scenarios/read` | `handleBotScenarioRead` |
 | `POST` | `/api/admin/bot-scenarios/update` | `handleBotScenarioUpdate` |
 | `ANY` | `/api/admin/desk/entry` | `—` |
@@ -141,4 +142,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **112**.
+Усього шляхів: **113**.

@@ -117,6 +117,9 @@ export async function botRouter(ctx: AppContext): Promise<void> {
         return;
       }
       await rememberTenant(ctx.env, chatUserId, picked.tenant.id);
+      // `p_<key>` — це не адреса сторінки: показуємо стартовий екран проєкту.
+      await show(ctx, "/start", true);
+      return;
     }
 
     const { inviteCode, pagePayload } = splitInviteCode(payload.trim());
