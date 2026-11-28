@@ -76,6 +76,17 @@ describe("BotScenariosPage", () => {
     expect(screen.getByText(/Нічого не знайдено/)).toBeTruthy();
   });
 
+  it("пошук переживає перемонтування екрана", async () => {
+    const first = render(<BotScenariosPage />);
+    await screen.findByText("/start");
+    fireEvent.change(screen.getByPlaceholderText(/Пошук/), { target: { value: "/start" } });
+    first.unmount();
+
+    render(<BotScenariosPage />);
+    expect((screen.getByPlaceholderText(/Пошук/) as HTMLInputElement).value).toBe("/start");
+    expect(await screen.findByText("/start")).toBeTruthy();
+  });
+
   it("картка відкривається, зберігає поля й закривається", async () => {
     render(<BotScenariosPage />);
     await screen.findByText("/start");

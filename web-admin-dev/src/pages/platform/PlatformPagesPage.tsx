@@ -22,6 +22,7 @@ import {
 import { ProjectSelect } from "../tenant/ProjectSelect";
 import { contentErrorMessage } from "../tenant/content-errors";
 import { useSelectedTenant } from "../tenant/selected-tenant.store";
+import { useListMemory } from "../../shared/storage/list-memory";
 
 type Status = "loading" | "idle" | "error";
 
@@ -41,7 +42,11 @@ export function PlatformPagesPage() {
   const [items, setItems] = useState<PlatformPageListItem[]>([]);
   const [status, setStatus] = useState<Status>("loading");
   const [error, setError] = useState("");
-  const [query, setQuery] = useState("");
+  // Пошук за адресою — частина вигляду: повертаєшся на екран і бачиш ту саму вибірку.
+  const [view, setView] = useListMemory("platform-pages", (raw) => ({
+    query: typeof raw?.query === "string" ? raw.query : "",
+  }));
+  const query = view.query;
   const [record, setRecord] = useState<PlatformPageRecord | null>(null);
   const [reindex, setReindex] = useState<{ busy: boolean; note: string }>({
     busy: false,
@@ -106,7 +111,7 @@ export function PlatformPagesPage() {
             className="wb-input wb-search"
             placeholder="Пошук за адресою або назвою…"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => setView({ query: e.target.value })}
           />
           <button
             className="wb-btn wb-btn-secondary"

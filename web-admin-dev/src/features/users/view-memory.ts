@@ -1,13 +1,16 @@
 /**
- * Пам'ять пошуку й сортування в «Користувачах»: вибір повертається після
- * перезавантаження, а сміття в сховищі дає типові значення.
+ * Пам'ять вигляду «Користувачів»: пошук і порядок рядків (D31).
+ *
+ * Механізм спільний з іншими списками (`shared/storage/list-memory`), а перелік
+ * полів сортування — тут: це правило цього екрана, а не сховища.
  *
  * @module web-admin-dev/src/features/users/view-memory
  */
 
 import type { SortDir, SortField } from "./store";
+import { readListMemory, writeListMemory } from "../../shared/storage/list-memory";
 
-const STORAGE_KEY = "wb.admin.users.view";
+const SCREEN = "users";
 
 const SORT_FIELDS: readonly SortField[] = [
   "user_id",
@@ -40,27 +43,14 @@ function pickDir(value: unknown): SortDir {
 
 /** Збережене; битий JSON, чужі поля й приватний режим дають типовий вигляд. */
 export function readViewMemory(): ViewMemory {
-  let raw: unknown;
-  try {
-    raw = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null");
-  } catch {
-    return defaultView();
-  }
-  if (!raw || typeof raw !== "object") return defaultView();
-
-  const stored = raw as Record<string, unknown>;
-  return {
-    search: typeof stored.search === "string" ? stored.search : "",
-    sortField: pickField(stored.sortField),
-    sortDir: pickDir(stored.sortDir),
-  };
+  return readListMemory(SCREEN, (raw) => ({
+    search: typeof raw?.search === "string" ? raw.search : "",
+    sortField: pickField(raw?.sortField),
+    sortDir: pickDir(raw?.sortDir),
+  }));
 }
 
 /** Записати вибір; недоступне сховище лишає його тільки до перезавантаження. */
 export function writeViewMemory(memory: ViewMemory): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(memory));
-  } catch {
-    // Сховище недоступне — вибір діє до перезавантаження, і це краще за падіння.
-  }
+  writeListMemory(SCREEN, memory);
 }

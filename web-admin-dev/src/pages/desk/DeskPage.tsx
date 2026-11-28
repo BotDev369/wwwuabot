@@ -12,6 +12,7 @@ import { useDialog } from "@wwwuabot/ui/dialog";
 import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
 import { PageTopbar } from "../../layout/PageTopbar";
 import { GlobalScopeBadge } from "../tenant/GlobalScopeBadge";
+import { useListMemory } from "../../shared/storage/list-memory";
 import {
   addDeskEntry,
   deleteDeskEntry,
@@ -49,8 +50,12 @@ function messageOf(error: unknown): string {
 export function DeskPage() {
   const dialog = useDialog();
   const [items, setItems] = useState<DeskThreadView[]>([]);
-  const [queue, setQueue] = useState("all");
-  const [archived, setArchived] = useState("hide");
+  // Черга й архів — частина вигляду: стіл відкривається там, де його лишили.
+  const [view, setView] = useListMemory("desk", (raw) => ({
+    queue: typeof raw?.queue === "string" ? raw.queue : "all",
+    archived: typeof raw?.archived === "string" ? raw.archived : "hide",
+  }));
+  const { queue, archived } = view;
   const [openId, setOpenId] = useState<number | null>(null);
   const [item, setItem] = useState<DeskRoomView | null>(null);
   const [busy, setBusy] = useState(false);
@@ -279,7 +284,7 @@ export function DeskPage() {
             className="wb-input"
             aria-label={labels.queueFilter}
             value={queue}
-            onChange={(event) => setQueue(event.target.value)}
+            onChange={(event) => setView({ queue: event.target.value })}
           >
             <option value="all">{`${labels.queueLabel}: ${labels.queueAll}`}</option>
             <option value="serhii">{TURNS.serhii}</option>
@@ -289,7 +294,7 @@ export function DeskPage() {
             className="wb-input"
             aria-label={labels.archiveFilter}
             value={archived}
-            onChange={(event) => setArchived(event.target.value)}
+            onChange={(event) => setView({ archived: event.target.value })}
           >
             <option value="hide">{`${labels.archiveLabel}: ${labels.archiveActive}`}</option>
             <option value="only">{`${labels.archiveLabel}: ${labels.archiveOnly}`}</option>

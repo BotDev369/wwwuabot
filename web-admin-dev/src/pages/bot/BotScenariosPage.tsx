@@ -22,6 +22,7 @@ import { ProjectSelect } from "../tenant/ProjectSelect";
 import { contentErrorMessage } from "../tenant/content-errors";
 import labels from "../tenant/project-labels.json";
 import { useSelectedTenant } from "../tenant/selected-tenant.store";
+import { useListMemory } from "../../shared/storage/list-memory";
 
 type Status = "loading" | "idle" | "error";
 
@@ -56,7 +57,11 @@ export function BotScenariosPage() {
   const [items, setItems] = useState<BotScenarioListItem[]>([]);
   const [status, setStatus] = useState<Status>("loading");
   const [error, setError] = useState("");
-  const [query, setQuery] = useState("");
+  // Пошук за ключем — частина вигляду: повертаєшся на екран і бачиш ту саму вибірку.
+  const [view, setView] = useListMemory("bot-scenarios", (raw) => ({
+    query: typeof raw?.query === "string" ? raw.query : "",
+  }));
+  const query = view.query;
   const [draft, setDraft] = useState<Draft | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -142,7 +147,7 @@ export function BotScenariosPage() {
             className="wb-input wb-search"
             placeholder="Пошук за ключем…"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => setView({ query: e.target.value })}
           />
         </div>
       </PageTopbar>

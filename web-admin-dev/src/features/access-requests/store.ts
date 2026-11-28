@@ -18,6 +18,7 @@ import {
   updateAccessRequest,
   deleteAccessRequest,
 } from "../../shared/api/access-requests.api";
+import { readListMemory, writeListMemory } from "../../shared/storage/list-memory";
 
 export type AccessRequestsStatus = "idle" | "loading" | "error";
 
@@ -38,7 +39,7 @@ export const useAccessRequests = create<AccessRequestsStore>((set) => ({
   items: [],
   status: "idle",
   errorMsg: null,
-  search: "",
+  search: readListMemory("messages", (raw) => (typeof raw?.search === "string" ? raw.search : "")),
 
   load: async () => {
     set({ status: "loading", errorMsg: null });
@@ -49,7 +50,10 @@ export const useAccessRequests = create<AccessRequestsStore>((set) => ({
     }
   },
 
-  setSearch: (query) => set({ search: query }),
+  setSearch: (query) => {
+    writeListMemory("messages", { search: query });
+    set({ search: query });
+  },
 
   create: async (userId, text) => {
     await createAccessRequest(userId, text);

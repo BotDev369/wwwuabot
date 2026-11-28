@@ -165,6 +165,7 @@ const rows = () =>
   [...document.querySelectorAll(".wb-table tbody tr")].map((row) => row.textContent);
 
 beforeEach(() => {
+  localStorage.clear();
   state.threads = [
     thread(1, { title: "Файли: стеля 20 МБ", turn: "serhii", unread: 1 }),
     thread(2, { title: "Хто пише першим", turn: "buffy", status: "doing" }),
@@ -200,6 +201,21 @@ describe("Стіл: список", () => {
 
     await waitFor(() => expect(rows()).toHaveLength(1));
     expect(state.queries[state.queries.length - 1]).toMatchObject({ turn: "buffy" });
+  });
+
+  it("вибір черги й архіву переживає перемонтування екрана", async () => {
+    const first = render(<DeskPage />);
+    await waitFor(() => expect(rows()).toHaveLength(2));
+
+    fireEvent.change(screen.getByLabelText("Фільтр архіву"), { target: { value: "only" } });
+    await waitFor(() => expect(screen.getByText("В архіві порожньо")).toBeTruthy());
+    first.unmount();
+
+    render(<DeskPage />);
+    expect((screen.getByLabelText("Фільтр архіву") as HTMLSelectElement).value).toBe("only");
+    await waitFor(() =>
+      expect(state.queries[state.queries.length - 1]).toMatchObject({ archived: "only" }),
+    );
   });
 });
 
