@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { PageTopbar } from "../../layout/PageTopbar";
+import { GlobalScopeBadge } from "../tenant/GlobalScopeBadge";
 import { apiFetch } from "../../shared/api/client";
 import { Icon } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
@@ -127,7 +128,10 @@ export function BotSettingsPage() {
   return (
     <>
       <PageTopbar>
-        <h1 className="wb-topbar-title">Налаштування бота</h1>
+        <div className="wb-topbar-left">
+          <h1 className="wb-topbar-title">Налаштування бота</h1>
+          <GlobalScopeBadge />
+        </div>
         <div className="wb-topbar-right">
           <button className="wb-btn wb-btn-secondary" onClick={fetchData} disabled={loading}>
             Оновити

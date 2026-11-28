@@ -19,6 +19,7 @@
  */
 
 import { PageTopbar } from "../../layout/PageTopbar";
+import { GlobalScopeBadge } from "../tenant/GlobalScopeBadge";
 import { Icon } from "@wwwuabot/shared";
 import { TOTAL_GROUP, diffSnapshots, groupValues } from "@wwwuabot/shared/monitoring";
 import { CollectorReportList } from "./CollectorReportList";
@@ -45,7 +46,10 @@ export function MonitoringPage() {
   return (
     <>
       <PageTopbar>
-        <h1 className="wb-topbar-title">Моніторинг</h1>
+        <div className="wb-topbar-left">
+          <h1 className="wb-topbar-title">Моніторинг</h1>
+          <GlobalScopeBadge />
+        </div>
         <div className="wb-topbar-right">
           {latest && <span className="mon-stamp">зріз {formatRelative(latest.collectedAt)}</span>}
           {latest && (

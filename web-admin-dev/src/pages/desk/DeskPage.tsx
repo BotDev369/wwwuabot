@@ -11,6 +11,7 @@ import { icons } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
 import { PageTopbar } from "../../layout/PageTopbar";
+import { GlobalScopeBadge } from "../tenant/GlobalScopeBadge";
 import {
   addDeskEntry,
   deleteDeskEntry,
@@ -258,6 +259,7 @@ export function DeskPage() {
       <PageTopbar>
         <div className="wb-topbar-left">
           <h1 className="wb-topbar-title">{labels.title}</h1>
+          <GlobalScopeBadge />
           {items.length > 0 && <span className="wb-count">{items.length}</span>}
         </div>
         <button

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useUsersStore } from "../../features/users/store";
 import { PageTopbar } from "../../layout/PageTopbar";
+import { GlobalScopeBadge } from "../tenant/GlobalScopeBadge";
 import { UsersTable } from "./UsersTable";
 import { UserBulkBar } from "./UserBulkBar";
 import { UserMessageModal } from "./UserMessageModal";
@@ -19,6 +20,7 @@ export function UsersPage() {
       <PageTopbar>
         <div className="wb-topbar-left">
           <h1 className="wb-topbar-title">Користувачі</h1>
+          <GlobalScopeBadge />
           {items.length > 0 && <span className="wb-count">{items.length}</span>}
         </div>
         <div className="wb-topbar-right">

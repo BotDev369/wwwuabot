@@ -13,6 +13,7 @@
 
 import type { ReactElement } from "react";
 import { PageTopbar } from "../../layout/PageTopbar";
+import { GlobalScopeBadge } from "../tenant/GlobalScopeBadge";
 import { AccountSection } from "./AccountSection";
 import { UserLookupSection } from "./UserLookupSection";
 
@@ -22,6 +23,7 @@ export function ProfilePage(): ReactElement {
       <PageTopbar>
         <div className="wb-topbar-left">
           <h1 className="wb-topbar-title">Профіль</h1>
+          <GlobalScopeBadge kind="personal" />
         </div>
       </PageTopbar>
 

@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAccessRequests } from "../../features/access-requests/store";
 import { accessRequestAuthor } from "@wwwuabot/shared/access-requests";
 import { PageTopbar } from "../../layout/PageTopbar";
+import { GlobalScopeBadge } from "../tenant/GlobalScopeBadge";
 import { RequestList } from "./RequestList";
 import { RequestModal } from "./RequestModal";
 import { RequestCreateModal } from "./RequestCreateModal";
@@ -47,6 +48,7 @@ export function AccessRequestsPage() {
       <PageTopbar>
         <div className="wb-topbar-left">
           <h1 className="wb-topbar-title">Повідомлення</h1>
+          <GlobalScopeBadge />
           {items.length > 0 && <span className="wb-count">{items.length}</span>}
         </div>
         <div className="wb-topbar-right">

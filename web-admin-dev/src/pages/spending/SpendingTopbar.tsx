@@ -10,6 +10,7 @@ import type { ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { PageTopbar } from "../../layout/PageTopbar";
+import { GlobalScopeBadge } from "../tenant/GlobalScopeBadge";
 import { formatPeriod, formatStamp } from "./format";
 
 interface SpendingTopbarProps {
@@ -40,6 +41,7 @@ export function SpendingTopbar({ title, back = false, children }: SpendingTopbar
           </Link>
         )}
         <h1 className="wb-topbar-title">{title}</h1>
+        <GlobalScopeBadge />
       </div>
       <div className="wb-topbar-right">{children}</div>
     </PageTopbar>

@@ -55,6 +55,13 @@ describe("UsersPage", () => {
     expect(screen.getByText("1")).toBeTruthy();
   });
 
+  it("підписана як глобальна: це люди всієї платформи, не проєкту", () => {
+    render(<UsersPage />);
+
+    expect(screen.getByText("Уся платформа")).toBeTruthy();
+    expect(screen.queryByLabelText("Проєкт")).toBeNull();
+  });
+
   it("порожній список не показує лічильник", () => {
     store.state = state({ items: [] });
     render(<UsersPage />);

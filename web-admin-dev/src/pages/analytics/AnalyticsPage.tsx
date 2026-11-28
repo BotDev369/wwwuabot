@@ -9,6 +9,7 @@
 import type { ReactElement } from "react";
 import { Icon, type IconName } from "@wwwuabot/shared";
 import type { EventMatrix } from "@wwwuabot/shared/events";
+import { GlobalScopeBadge } from "../tenant/GlobalScopeBadge";
 import { clockStamp, matrixDayNumber, matrixWeekday, userLabel } from "./analytics-view";
 import { CleanupModal } from "./CleanupModal";
 import { EventRows } from "./EventRows";
@@ -94,6 +95,7 @@ export function AnalyticsPage(): ReactElement {
             <h1 className="wb-page-title">
               <span className="ana-head-title">Аналітика</span>
             </h1>
+            <GlobalScopeBadge />
             <div className="ana-actions">
               {/* Режими — знаки: підпис читається з підказки й `aria-label`, а
                   місце лишається списку. */}
