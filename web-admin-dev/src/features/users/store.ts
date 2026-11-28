@@ -9,7 +9,7 @@ import {
 
 export type UsersStatus = "idle" | "loading" | "error";
 
-export type SortField = "user_id" | "first_name" | "username" | "created_at";
+export type SortField = "user_id" | "first_name" | "username" | "created_at" | "tenant_key";
 export type SortDir = "asc" | "desc";
 
 interface UsersStore {
@@ -20,6 +20,9 @@ interface UsersStore {
   sortField: SortField;
   sortDir: SortDir;
   search: string;
+  /** Ключ проєкту для фільтра; `null` — усі люди. */
+  tenantFilter: string | null;
+  setTenantFilter: (key: string | null) => void;
   load: () => Promise<void>;
   setSearch: (q: string) => void;
   setSort: (field: SortField) => void;
@@ -40,6 +43,7 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
   sortField: "user_id",
   sortDir: "asc",
   search: "",
+  tenantFilter: null,
 
   load: async () => {
     set({ status: "loading", errorMsg: null });
@@ -61,6 +65,8 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
   },
 
   setSearch: (q) => set({ search: q }),
+
+  setTenantFilter: (key) => set({ tenantFilter: key }),
 
   setSort: (field) => {
     const { sortField, sortDir } = get();

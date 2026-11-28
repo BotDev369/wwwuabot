@@ -7,6 +7,7 @@ import { UserEditModal } from "./UserEditModal";
 import projectLabels from "../tenant/project-labels.json";
 import { UserProjectCell } from "./UserProjectCell";
 import { formatName, relativeTime } from "./user-row";
+import { filteredUsers } from "./users-view";
 import { icons } from "@wwwuabot/shared";
 import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
 import { useDialog } from "@wwwuabot/ui/dialog";
@@ -41,8 +42,17 @@ interface Props {
 
 export function UsersTable({ onMessage }: Props) {
   const dialog = useDialog();
-  const { items, sortField, sortDir, search, setSort, selectedIds, toggleSelect, selectAll } =
-    useUsersStore();
+  const {
+    items,
+    sortField,
+    sortDir,
+    search,
+    tenantFilter,
+    setSort,
+    selectedIds,
+    toggleSelect,
+    selectAll,
+  } = useUsersStore();
 
   const [menuOpen, setMenuOpen] = useState<number | null>(null);
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
@@ -74,38 +84,10 @@ export function UsersTable({ onMessage }: Props) {
     }
   }, [menuOpen, cardUserId, editUserId, chatUserId, closeAll]);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    let list = items;
-    if (q) {
-      list = items.filter((u) => {
-        const name = formatName(u).toLowerCase();
-        const uname = (u.username ?? "").toLowerCase();
-        const id = String(u.user_id);
-        return name.includes(q) || uname.includes(q) || id.includes(q);
-      });
-    }
-    list = [...list].sort((a, b) => {
-      let va: string | number;
-      let vb: string | number;
-      if (sortField === "first_name") {
-        va = formatName(a);
-        vb = formatName(b);
-      } else if (sortField === "username") {
-        va = (a.username ?? "") as string;
-        vb = (b.username ?? "") as string;
-      } else {
-        va = (a[sortField] ?? "") as string | number;
-        vb = (b[sortField] ?? "") as string | number;
-      }
-      if (typeof va === "string") va = va.toLowerCase();
-      if (typeof vb === "string") vb = vb.toLowerCase();
-      if (va < vb) return sortDir === "asc" ? -1 : 1;
-      if (va > vb) return sortDir === "asc" ? 1 : -1;
-      return 0;
-    });
-    return list;
-  }, [items, search, sortField, sortDir]);
+  const filtered = useMemo(
+    () => filteredUsers(items, { search, tenantFilter, sortField, sortDir }),
+    [items, search, tenantFilter, sortField, sortDir],
+  );
 
   const allIds = filtered.map((u) => u.user_id);
   const allSelected = allIds.length > 0 && allIds.every((id) => selectedIds.has(id));
@@ -189,7 +171,7 @@ export function UsersTable({ onMessage }: Props) {
     },
     {
       key: "tenant_key",
-      header: projectLabels.label,
+      header: sortHeader("tenant_key", projectLabels.label),
       className: "wb-cell-nowrap",
       width: 160,
       render: (u) => <UserProjectCell user={u} />,
@@ -250,7 +232,9 @@ export function UsersTable({ onMessage }: Props) {
           empty={
             items.length === 0
               ? "У базі ще немає користувачів."
-              : `Нічого не знайдено за «${search}».`
+              : tenantFilter && search.trim() === ""
+                ? projectLabels.emptyProject
+                : `Нічого не знайдено за «${search}».`
           }
           rowClassName={(u) => (u.is_blocked === 1 ? "wb-row-blocked" : "")}
           minWidth={820}

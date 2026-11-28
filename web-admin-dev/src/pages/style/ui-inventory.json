@@ -217,7 +217,7 @@
           "note": "Нативний список у стилі поля.",
           "usage": {
             "platform": 2,
-            "admin": 3,
+            "admin": 4,
             "ui": 1,
             "shared": 0
           },

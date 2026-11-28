@@ -60,6 +60,7 @@ function state(overrides: Record<string, unknown> = {}) {
     sortField: "first_name",
     sortDir: "asc",
     search: "",
+    tenantFilter: null,
     setSort: vi.fn(),
     selectedIds: new Set<number>(),
     toggleSelect: vi.fn(),
@@ -132,6 +133,25 @@ describe("UsersTable", () => {
 
     fireEvent.click(screen.getByTitle("Вибрати всі"));
     expect(selectAll).toHaveBeenCalledWith([8, 7]);
+  });
+
+  it("заголовок «Проєкт» сортує, а фільтр лишає один проєкт", () => {
+    const setSort = vi.fn();
+    store.state = state({ setSort, tenantFilter: "shop-a" });
+    render(<UsersTable onMessage={vi.fn()} />);
+
+    expect(screen.getByText("Сергій Дискант")).toBeTruthy();
+    expect(screen.queryByText("Олена")).toBeNull();
+
+    fireEvent.click(screen.getByTitle("Сортувати за Проєкт"));
+    expect(setSort).toHaveBeenCalledWith("tenant_key");
+  });
+
+  it("порожній проєкт каже це словами, а не порожньою таблицею", () => {
+    store.state = state({ tenantFilter: "nope" });
+    render(<UsersTable onMessage={vi.fn()} />);
+
+    expect(screen.getByText("У цьому проєкті ще немає людей.")).toBeTruthy();
   });
 
   it("меню дій веде у картку, правку й повідомлення", () => {

@@ -6,9 +6,9 @@
  */
 
 import { create } from "zustand";
+import { MAIN_TENANT } from "./tenant-key";
 
-/** Головний проєкт: типовe значення й те, що видно без вибору. */
-export const MAIN_TENANT = "main";
+export { MAIN_TENANT };
 
 const STORAGE_KEY = "wb.admin.tenant";
 

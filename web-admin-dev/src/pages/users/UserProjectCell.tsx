@@ -6,18 +6,23 @@
 
 import type { UserRow } from "../../shared/api/users.api";
 import projectLabels from "../tenant/project-labels.json";
+import { MAIN_TENANT } from "../tenant/tenant-key";
+import { tenantKeyOf } from "./user-row";
 
 export function UserProjectCell({ user }: { user: UserRow }) {
-  // `tenant_id NULL` — головний проєкт (D26), а не «немає проєкту».
-  const key =
-    user.tenant_key ??
-    (user.tenant_id && user.tenant_id !== 1 ? `#${user.tenant_id}` : projectLabels.main);
+  const key = tenantKeyOf(user);
+  // Головний проєкт назви в `tenants` може не мати — тоді його слово бере лейбл.
+  const name =
+    user.tenant_name && user.tenant_name !== key
+      ? user.tenant_name
+      : key === MAIN_TENANT
+        ? projectLabels.main
+        : null;
+
   return (
     <>
       <span className="wb-cell-mono">{key}</span>
-      {user.tenant_name && user.tenant_name !== key && (
-        <span className="wb-text-muted wb-text-xs"> {user.tenant_name}</span>
-      )}
+      {name && <span className="wb-text-muted wb-text-xs"> {name}</span>}
     </>
   );
 }

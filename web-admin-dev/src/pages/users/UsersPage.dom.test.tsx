@@ -38,6 +38,8 @@ function state(overrides: Record<string, unknown> = {}) {
     load: vi.fn(),
     search: "",
     setSearch: vi.fn(),
+    tenantFilter: null,
+    setTenantFilter: vi.fn(),
     ...overrides,
   };
 }
@@ -59,7 +61,6 @@ describe("UsersPage", () => {
     render(<UsersPage />);
 
     expect(screen.getByText("Уся платформа")).toBeTruthy();
-    expect(screen.queryByLabelText("Проєкт")).toBeNull();
   });
 
   it("порожній список не показує лічильник", () => {

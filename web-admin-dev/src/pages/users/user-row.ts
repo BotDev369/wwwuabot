@@ -5,6 +5,7 @@
  */
 
 import type { UserRow } from "../../shared/api/users.api";
+import { MAIN_TENANT } from "../tenant/tenant-key";
 
 /** Ім'я для клітинки й заголовків: прізвище та ім'я, а як їх немає — прочерк. */
 export function formatName(user: UserRow): string {
@@ -30,4 +31,16 @@ export function relativeTime(value: string | null): string {
     month: "short",
     year: "numeric",
   }).format(date);
+}
+
+/**
+ * Ключ проєкту людини — той самий, що показує клітинка й сортує заголовок.
+ *
+ * `tenant_id NULL` — головний проєкт (D26); невідомий id без рядка `tenants`
+ * лишається числом, щоб не видавати чужого за головний.
+ */
+export function tenantKeyOf(user: UserRow): string {
+  return (
+    user.tenant_key ?? (user.tenant_id && user.tenant_id !== 1 ? `#${user.tenant_id}` : MAIN_TENANT)
+  );
 }
