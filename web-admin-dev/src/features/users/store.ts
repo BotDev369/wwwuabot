@@ -6,6 +6,7 @@ import {
   blockUser as apiBlockUser,
   type UserRow,
 } from "../../shared/api/users.api";
+import { keepKnownFilter, readTenantFilter, writeTenantFilter } from "./tenant-filter-storage";
 
 export type UsersStatus = "idle" | "loading" | "error";
 
@@ -35,101 +36,111 @@ interface UsersStore {
   refresh: () => Promise<void>;
 }
 
-export const useUsersStore = create<UsersStore>((set, get) => ({
-  items: [],
-  selectedIds: new Set(),
-  status: "idle",
-  errorMsg: null,
-  sortField: "user_id",
-  sortDir: "asc",
-  search: "",
-  tenantFilter: null,
+export const useUsersStore = create<UsersStore>((set, get) => {
+  /** Свіжий список; фільтр на проєкт, якого вже немає серед людей, знімається. */
+  function apply(items: UserRow[]): void {
+    const kept = keepKnownFilter(get().tenantFilter, items);
+    if (kept !== get().tenantFilter) writeTenantFilter(kept);
+    set({ items, status: "idle", tenantFilter: kept });
+  }
 
-  load: async () => {
-    set({ status: "loading", errorMsg: null });
-    try {
-      const items = await listUsers();
-      set({ items, status: "idle" });
-    } catch (e) {
-      set({ status: "error", errorMsg: (e as Error).message });
-    }
-  },
+  return {
+    items: [],
+    selectedIds: new Set(),
+    status: "idle",
+    errorMsg: null,
+    sortField: "user_id",
+    sortDir: "asc",
+    search: "",
+    tenantFilter: readTenantFilter(),
 
-  refresh: async () => {
-    try {
-      const items = await listUsers();
-      set({ items, status: "idle" });
-    } catch (e) {
-      set({ status: "error", errorMsg: (e as Error).message });
-    }
-  },
+    load: async () => {
+      set({ status: "loading", errorMsg: null });
+      try {
+        apply(await listUsers());
+      } catch (e) {
+        set({ status: "error", errorMsg: (e as Error).message });
+      }
+    },
 
-  setSearch: (q) => set({ search: q }),
+    refresh: async () => {
+      try {
+        apply(await listUsers());
+      } catch (e) {
+        set({ status: "error", errorMsg: (e as Error).message });
+      }
+    },
 
-  setTenantFilter: (key) => set({ tenantFilter: key }),
+    setSearch: (q) => set({ search: q }),
 
-  setSort: (field) => {
-    const { sortField, sortDir } = get();
-    if (sortField === field) {
-      set({ sortDir: sortDir === "asc" ? "desc" : "asc" });
-    } else {
-      set({ sortField: field, sortDir: "asc" });
-    }
-  },
+    setTenantFilter: (key) => {
+      writeTenantFilter(key);
+      set({ tenantFilter: key });
+    },
 
-  toggleSelect: (id) => {
-    const next = new Set(get().selectedIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    set({ selectedIds: next });
-  },
+    setSort: (field) => {
+      const { sortField, sortDir } = get();
+      if (sortField === field) {
+        set({ sortDir: sortDir === "asc" ? "desc" : "asc" });
+      } else {
+        set({ sortField: field, sortDir: "asc" });
+      }
+    },
 
-  selectAll: (ids) => {
-    const { selectedIds } = get();
-    if (selectedIds.size === ids.length) {
-      set({ selectedIds: new Set() });
-    } else {
-      set({ selectedIds: new Set(ids) });
-    }
-  },
+    toggleSelect: (id) => {
+      const next = new Set(get().selectedIds);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      set({ selectedIds: next });
+    },
 
-  clearSelection: () => set({ selectedIds: new Set() }),
+    selectAll: (ids) => {
+      const { selectedIds } = get();
+      if (selectedIds.size === ids.length) {
+        set({ selectedIds: new Set() });
+      } else {
+        set({ selectedIds: new Set(ids) });
+      }
+    },
 
-  deleteOne: async (id) => {
-    await apiDeleteUser(id);
-    set((s) => ({
-      items: s.items.filter((u) => u.user_id !== id),
-      selectedIds: (() => {
-        const n = new Set(s.selectedIds);
-        n.delete(id);
-        return n;
-      })(),
-    }));
-  },
+    clearSelection: () => set({ selectedIds: new Set() }),
 
-  blockOne: async (id, blocked) => {
-    await apiBlockUser(id, blocked);
-    set((s) => ({
-      items: s.items.map((u) => (u.user_id === id ? { ...u, is_blocked: blocked ? 1 : 0 } : u)),
-    }));
-  },
-
-  bulk: async (action) => {
-    const { selectedIds } = get();
-    const ids = Array.from(selectedIds);
-    if (ids.length === 0) return;
-    await apiBulkAction(action, ids);
-    if (action === "delete") {
+    deleteOne: async (id) => {
+      await apiDeleteUser(id);
       set((s) => ({
-        items: s.items.filter((u) => !selectedIds.has(u.user_id)),
-        selectedIds: new Set(),
+        items: s.items.filter((u) => u.user_id !== id),
+        selectedIds: (() => {
+          const n = new Set(s.selectedIds);
+          n.delete(id);
+          return n;
+        })(),
       }));
-    } else {
-      const val = action === "block" ? 1 : 0;
+    },
+
+    blockOne: async (id, blocked) => {
+      await apiBlockUser(id, blocked);
       set((s) => ({
-        items: s.items.map((u) => (selectedIds.has(u.user_id) ? { ...u, is_blocked: val } : u)),
-        selectedIds: new Set(),
+        items: s.items.map((u) => (u.user_id === id ? { ...u, is_blocked: blocked ? 1 : 0 } : u)),
       }));
-    }
-  },
-}));
+    },
+
+    bulk: async (action) => {
+      const { selectedIds } = get();
+      const ids = Array.from(selectedIds);
+      if (ids.length === 0) return;
+      await apiBulkAction(action, ids);
+      if (action === "delete") {
+        set((s) => ({
+          items: s.items.filter((u) => !selectedIds.has(u.user_id)),
+          selectedIds: new Set(),
+        }));
+      } else {
+        const val = action === "block" ? 1 : 0;
+        set((s) => ({
+          items: s.items.map((u) => (selectedIds.has(u.user_id) ? { ...u, is_blocked: val } : u)),
+          selectedIds: new Set(),
+        }));
+      }
+    },
+  };
+});

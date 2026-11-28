@@ -82,6 +82,18 @@ describe("store користувачів", () => {
     expect(useUsersStore.getState().tenantFilter).toBeNull();
   });
 
+  it("проєкт, якого вже немає серед людей, знімає фільтр при завантаженні", async () => {
+    useUsersStore.setState({ tenantFilter: "shop-a" });
+    api.list.mockResolvedValueOnce([PERSON]);
+    await useUsersStore.getState().load();
+    expect(useUsersStore.getState().tenantFilter).toBeNull();
+
+    useUsersStore.setState({ tenantFilter: "shop-a" });
+    api.list.mockResolvedValueOnce([PERSON, OTHER]);
+    await useUsersStore.getState().refresh();
+    expect(useUsersStore.getState().tenantFilter).toBe("shop-a");
+  });
+
   it("сортування за проєктом: перший клік — за зростанням, другий — за спаданням", () => {
     useUsersStore.getState().setSort("tenant_key");
     expect(useUsersStore.getState()).toMatchObject({ sortField: "tenant_key", sortDir: "asc" });
