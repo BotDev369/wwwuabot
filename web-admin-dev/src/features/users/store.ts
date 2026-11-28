@@ -7,6 +7,7 @@ import {
   type UserRow,
 } from "../../shared/api/users.api";
 import { keepKnownFilter, readTenantFilter, writeTenantFilter } from "./tenant-filter-storage";
+import { readViewMemory, writeViewMemory } from "./view-memory";
 
 export type UsersStatus = "idle" | "loading" | "error";
 
@@ -44,14 +45,16 @@ export const useUsersStore = create<UsersStore>((set, get) => {
     set({ items, status: "idle", tenantFilter: kept });
   }
 
+  const saved = readViewMemory();
+
   return {
     items: [],
     selectedIds: new Set(),
     status: "idle",
     errorMsg: null,
-    sortField: "user_id",
-    sortDir: "asc",
-    search: "",
+    sortField: saved.sortField,
+    sortDir: saved.sortDir,
+    search: saved.search,
     tenantFilter: readTenantFilter(),
 
     load: async () => {
@@ -71,7 +74,10 @@ export const useUsersStore = create<UsersStore>((set, get) => {
       }
     },
 
-    setSearch: (q) => set({ search: q }),
+    setSearch: (q) => {
+      set({ search: q });
+      writeViewMemory({ search: q, sortField: get().sortField, sortDir: get().sortDir });
+    },
 
     setTenantFilter: (key) => {
       writeTenantFilter(key);
@@ -80,11 +86,9 @@ export const useUsersStore = create<UsersStore>((set, get) => {
 
     setSort: (field) => {
       const { sortField, sortDir } = get();
-      if (sortField === field) {
-        set({ sortDir: sortDir === "asc" ? "desc" : "asc" });
-      } else {
-        set({ sortField: field, sortDir: "asc" });
-      }
+      const nextDir: SortDir = sortField === field ? (sortDir === "asc" ? "desc" : "asc") : "asc";
+      set({ sortField: field, sortDir: nextDir });
+      writeViewMemory({ search: get().search, sortField: field, sortDir: nextDir });
     },
 
     toggleSelect: (id) => {
