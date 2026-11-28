@@ -97,6 +97,28 @@ describe("UsersService", () => {
       expect(mockDb.prepare).toHaveBeenCalledWith("SELECT is_blocked FROM users LIMIT 0");
     });
 
+    it("список везе проєкт людини одним запитом", async () => {
+      const { env, mockDb } = createMockEnv();
+      mockDb.prepare.mockImplementation((sql: string) =>
+        sql.includes("LIMIT 0")
+          ? { first: vi.fn().mockResolvedValue(null) }
+          : {
+              all: vi.fn().mockResolvedValue({
+                results: [
+                  { user_id: 1, tenant_id: 2, tenant_key: "shop-a", tenant_name: "Магазин" },
+                ],
+              }),
+            },
+      );
+
+      const rows = await new UsersService(env).listUsers();
+
+      expect(rows[0]).toMatchObject({ tenant_key: "shop-a", tenant_name: "Магазин" });
+      const sql = mockDb.prepare.mock.calls.map((call) => String(call[0])).join("\n");
+      expect(sql).toContain("LEFT JOIN tenants");
+      expect(sql).toContain("COALESCE(u.tenant_id, 1)");
+    });
+
     it("⛔ відсутня таблиця — порожній список, а не падіння адмінки", async () => {
       const { env, mockDb } = createMockEnv();
       mockDb.prepare.mockImplementation((sql: string) =>

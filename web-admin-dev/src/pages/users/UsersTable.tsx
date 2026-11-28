@@ -4,6 +4,8 @@ import type { UserRow } from "../../shared/api/users.api";
 import { UserCardModal } from "./UserCardModal";
 import { UserChatModal } from "./UserChatModal";
 import { UserEditModal } from "./UserEditModal";
+import projectLabels from "../tenant/project-labels.json";
+import { UserProjectCell } from "./UserProjectCell";
 import { formatName, relativeTime } from "./user-row";
 import { icons } from "@wwwuabot/shared";
 import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
@@ -184,6 +186,13 @@ export function UsersTable({ onMessage }: Props) {
       className: "wb-cell-mono wb-cell-nowrap",
       width: 130,
       render: (u) => (u.username ? `@${u.username}` : "—"),
+    },
+    {
+      key: "tenant_key",
+      header: projectLabels.label,
+      className: "wb-cell-nowrap",
+      width: 160,
+      render: (u) => <UserProjectCell user={u} />,
     },
     {
       key: "user_id",

@@ -10,6 +10,10 @@ export interface UserRow {
   language: string | null;
   created_at: string | null;
   is_blocked: number | null;
+  /** Поточний проєкт людини: id, ключ і назва з `tenants`. */
+  tenant_id?: number | null;
+  tenant_key?: string | null;
+  tenant_name?: string | null;
 
   // ── Permission / profile fields (auto-migrated by D1) ──
   /** Роль користувача (user, moderator, admin, vip) */

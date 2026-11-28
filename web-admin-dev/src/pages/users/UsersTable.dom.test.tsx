@@ -35,6 +35,9 @@ const PERSON = {
   is_blocked: 0,
   role: "admin",
   tariff: "pro",
+  tenant_id: 2,
+  tenant_key: "shop-a",
+  tenant_name: "Магазин",
 };
 
 const BLOCKED = {
@@ -46,6 +49,9 @@ const BLOCKED = {
   is_blocked: 1,
   role: "user",
   tariff: "free",
+  tenant_id: null,
+  tenant_key: null,
+  tenant_name: null,
 };
 
 function state(overrides: Record<string, unknown> = {}) {
@@ -77,6 +83,14 @@ function openMenu(name: string): void {
 }
 
 describe("UsersTable", () => {
+  it("показує поточний проєкт ключем і назвою, без проєкту — головний", () => {
+    render(<UsersTable onMessage={vi.fn()} />);
+
+    expect(screen.getByText("shop-a")).toBeTruthy();
+    expect(screen.getByText("Магазин")).toBeTruthy();
+    expect(screen.getByText("Головний")).toBeTruthy();
+  });
+
   it("малює ім'я, позначку тарифу й статус", () => {
     render(<UsersTable onMessage={vi.fn()} />);
 

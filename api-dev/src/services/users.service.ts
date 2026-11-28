@@ -22,8 +22,15 @@ export class UsersService {
   async listUsers(): Promise<Record<string, unknown>[]> {
     try {
       await this.ensureIsBlocked();
+      // Проєкт їде разом із рядком: інакше таблиця показувала б лише id, а
+      // ключ і назву довелося б зшивати другим запитом у браузері.
       const result = await this.env.DB.prepare(
-        "SELECT user_id, first_name, last_name, username, language, created_at, is_blocked FROM users ORDER BY user_id ASC",
+        `SELECT u.user_id, u.first_name, u.last_name, u.username, u.language,
+                u.created_at, u.is_blocked, COALESCE(u.tenant_id, 1) AS tenant_id,
+                t.key AS tenant_key, t.name AS tenant_name
+           FROM users u
+           LEFT JOIN tenants t ON t.id = COALESCE(u.tenant_id, 1)
+          ORDER BY u.user_id ASC`,
       ).all<Record<string, unknown>>();
       return result.results ?? [];
     } catch (error: unknown) {
